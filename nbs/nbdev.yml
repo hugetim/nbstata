@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "nbstata"
+  site-url: "https://hugetim.github.io/nbstata"
+  description: "Jupyter kernel for Stata based on pystata"
+  repo-branch: main
+  repo-url: "https://github.com/hugetim/nbstata"
