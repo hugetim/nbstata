@@ -4,8 +4,9 @@
 __all__ = ['InVar']
 
 # %% ../nbs/00_helpers.ipynb 3
-def InVar(code):
-    """Return in-statement range (for default unit increment)"""    
+def InVar(code, # str: Stata 'in' specification
+         ):
+    """Return in-statement range"""    
     code = code.replace(' in ','').strip()
     slash_pos = code.find('/')
     if slash_pos == -1:
