@@ -5,4 +5,4 @@ d = { 'settings': { 'branch': 'main',
                 'doc_host': 'https://hugetim.github.io',
                 'git_url': 'https://github.com/hugetim/nbstata',
                 'lib_path': 'nbstata'},
-  'syms': {'nbstata.core': {'nbstata.core.foo': ('core.html#foo', 'nbstata/core.py')}}}
+  'syms': {'nbstata.helpers': {'nbstata.helpers.InVar': ('helpers.html#invar', 'nbstata/helpers.py')}}}
