@@ -6,7 +6,8 @@ __all__ = ['count', 'resolve_macro', 'better_dataframe_from_stata', 'better_pdat
 # %% ../nbs/02_stata_helpers.ipynb 3
 import pandas as pd
 import numpy as np
-from .helpers import set_pystata_path, launch_stata
+from .config import set_pystata_path
+from .helpers import launch_stata
 
 # %% ../nbs/02_stata_helpers.ipynb 4
 set_pystata_path()
@@ -18,7 +19,7 @@ def count():
     import sfi
     return sfi.Data.getObsTotal()
 
-# %% ../nbs/02_stata_helpers.ipynb 8
+# %% ../nbs/02_stata_helpers.ipynb 7
 def resolve_macro(macro):
     import sfi
     macro = macro.strip()
@@ -30,7 +31,7 @@ def resolve_macro(macro):
         macro = sfi.Macro.getGlobal(macro[1:])
     return macro
 
-# %% ../nbs/02_stata_helpers.ipynb 10
+# %% ../nbs/02_stata_helpers.ipynb 9
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -54,14 +55,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/02_stata_helpers.ipynb 11
+# %% ../nbs/02_stata_helpers.ipynb 10
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import sfi
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/02_stata_helpers.ipynb 12
+# %% ../nbs/02_stata_helpers.ipynb 11
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import sfi
     pystata.config.check_initialized()
