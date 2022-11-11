@@ -2,6 +2,7 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_parsers.ipynb
+      - 00_config.ipynb
       - 01_helpers.ipynb
       - 02_stata_helpers.ipynb
+      - 03_parsers.ipynb
