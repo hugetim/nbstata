@@ -25,5 +25,4 @@ d = { 'settings': { 'branch': 'main',
                                                                                                'nbstata/stata_helpers.py'),
                                        'nbstata.stata_helpers.count': ('stata_helpers.html#count', 'nbstata/stata_helpers.py'),
                                        'nbstata.stata_helpers.resolve_macro': ( 'stata_helpers.html#resolve_macro',
-                                                                                'nbstata/stata_helpers.py')},
-            'nbstata.utils': {}}}
+                                                                                'nbstata/stata_helpers.py')}}}
