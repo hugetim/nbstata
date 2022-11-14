@@ -23,6 +23,9 @@ exception is `install.py`.
 The [@patch_to](https://fastcore.fast.ai/basics.html#patch_to) decorator
 is occasionally used to break up class definitions into separate cells.
 
+For more, see
+[CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md).
+
 ## Acknowledgements
 
 Kyle Barron authored the original `stata_kernel` and Vinci Chow carried
