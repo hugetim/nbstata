@@ -40,7 +40,8 @@ class StataMagics():
     }
     
     csshelp_default = resource_filename(
-        'pystata-kernel', 'css/_StataKernelHelpDefault.css')
+        'nbstata', 'css/_StataKernelHelpDefault.css'
+    )
 
     def magic(self, code, kernel):
         match = self.magic_regex.match(code.strip())
