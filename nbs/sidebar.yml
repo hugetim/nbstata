@@ -4,5 +4,6 @@ website:
       - index.ipynb
       - 00_config.ipynb
       - 01_helpers.ipynb
-      - 02_stata_helpers.ipynb
-      - 03_parsers.ipynb
+      - 02_parsers.ipynb
+      - 03_magics.ipynb
+      - 04_kernel.ipynb
