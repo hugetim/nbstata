@@ -3,18 +3,18 @@
 # %% auto 0
 __all__ = ['count', 'resolve_macro', 'better_dataframe_from_stata', 'better_pdataframe_from_data', 'better_pdataframe_from_frame']
 
-# %% ../nbs/01_helpers.ipynb 3
+# %% ../nbs/01_helpers.ipynb 4
 from .config import launch_stata
 import pandas as pd
 import numpy as np
 
-# %% ../nbs/01_helpers.ipynb 4
+# %% ../nbs/01_helpers.ipynb 5
 def count():
     """Count the number of observations"""
     import sfi
     return sfi.Data.getObsTotal()
 
-# %% ../nbs/01_helpers.ipynb 6
+# %% ../nbs/01_helpers.ipynb 7
 def resolve_macro(macro):
     import sfi
     macro = macro.strip()
@@ -26,7 +26,7 @@ def resolve_macro(macro):
         macro = sfi.Macro.getGlobal(macro[1:])
     return macro
 
-# %% ../nbs/01_helpers.ipynb 8
+# %% ../nbs/01_helpers.ipynb 10
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -50,14 +50,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/01_helpers.ipynb 9
+# %% ../nbs/01_helpers.ipynb 11
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/01_helpers.ipynb 10
+# %% ../nbs/01_helpers.ipynb 12
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
