@@ -104,12 +104,9 @@ def launch_stata(path=None, edition=None, splash=True):
 
 # %% ../nbs/00_config.ipynb 14
 def get_config():
-    """
-    Version 1.10:
-    First check if a configuration file exists, if not, query the system.    
-    """
-    global_config_path = Path(os.path.join(sys.prefix,'etc','pystata-kernel.conf'))
-    user_config_path = Path('~/.pystata-kernel.conf').expanduser()
+    """First check if a configuration file exists, if not, query the system."""
+    global_config_path = Path(os.path.join(sys.prefix,'etc','nbstata.conf'))
+    user_config_path = Path('~/.nbstata.conf').expanduser()
 
     env = {'stata_dir': None,
            'edition': None,
@@ -124,7 +121,7 @@ def get_config():
             if cpath.is_file():
                 config = ConfigParser()
                 config.read(str(cpath))
-                env.update(dict(config.items('pystata-kernel')))
+                env.update(dict(config.items('nbstata')))
         except:
             pass
 
