@@ -29,9 +29,6 @@ class PyStataKernel(IPythonKernel):
         super().__init__(**kwargs)
         self.stata_ready = False
         self.shell.execution_count = 0
-        self.echo = False
-        self.noecho = False
-        self.quietly = False
         self.magic_handler = None
         self.env = None
 
@@ -61,40 +58,14 @@ def set_graph_format(self, graph_format):
         from pystata.config import set_graph_format
         set_graph_format(graph_format)
 
-# %% ../nbs/04_kernel.ipynb 7
+# %% ../nbs/04_kernel.ipynb 8
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
     if not self.stata_ready:
         self.init_stata()
-
-    # Read settings from env dict every time so that these can be modified by magics 
-    # for each cell.
-    if self.env['echo'] == 'None':
-        self.noecho = True
-        self.echo = False
-    elif self.env['echo'] == 'True':
-        self.noecho = False
-        self.echo = True
-    else:
-        self.noecho = False
-        self.echo = False
-    self.quietly = False
-
-    # Process magics
-    code = self.magic_handler.magic(code, self)
-
-    # Execute Stata code after magics
-    if code != '':
-        # Supress echo?
-        if self.noecho and not self.quietly:
-            code = parsers.clean_code(code,noisily=True)
-            self.quietly = True
-        from pystata.stata import run
-        run(code, quietly=self.quietly, inline=True, echo=self.echo)
-
+    Cell(self, code).run()
     self.shell.execution_count += 1
-
     return {
         'status': 'ok',
         'execution_count': self.execution_count,

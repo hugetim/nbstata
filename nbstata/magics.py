@@ -43,7 +43,7 @@ class StataMagics():
         'nbstata', 'css/_StataKernelHelpDefault.css'
     )
 
-    def magic(self, code, kernel):
+    def magic(self, code, kernel, cell):
         match = self.magic_regex.match(code.strip())
         if match:
             v = match.groupdict()
@@ -58,27 +58,27 @@ class StataMagics():
                     print_kernel(self.available_magics[name].format(name), kernel)
                     code = ''
                 else:
-                    code = getattr(self, "magic_" + name)(code, kernel)
+                    code = getattr(self, "magic_" + name)(code, kernel, cell)
             else:
                 print_kernel("Unknown magic %{0}.".format(name), kernel)
     
         return code        
 
-    def magic_quietly(self,code,kernel):
+    def magic_quietly(self,code,kernel,cell):
         """
         Supress all display for the current cell.
         """
-        kernel.quietly = True
+        cell.quietly = True
         return code
 
-    def magic_noecho(self,code,kernel):
+    def magic_noecho(self,code,kernel,cell):
         """
         Supress echo for the current cell.
         """
-        kernel.noecho = True
+        cell.noecho = True
         return code        
         
-    def magic_browse(self,code,kernel):
+    def magic_browse(self,code,kernel,cell):
         """
         Display data in a nicely-formatted table.
         """
@@ -137,7 +137,7 @@ class StataMagics():
 
         return ''
 
-    def magic_help(self,code,kernel):
+    def magic_help(self,code,kernel,cell):
         """
         Show help file from stata.com.
         """
