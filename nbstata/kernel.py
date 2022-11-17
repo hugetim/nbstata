@@ -35,30 +35,28 @@ class PyStataKernel(IPythonKernel):
 # %% ../nbs/04_kernel.ipynb 6
 @patch_to(PyStataKernel)
 def init_stata(self):
+    def _set_graph_format(graph_format):
+        if graph_format == 'nbstata':
+            pass
+        else:
+            from pystata.config import set_graph_format
+            set_graph_format(graph_format)
+    
     self.env = get_config()
     if self.env['echo'] not in ('True', 'False', 'None'):
         raise OSError("'" + self.env['echo'] + "' is not an acceptable value for 'echo'.")
 
     launch_stata(self.env['stata_dir'], self.env['edition'],
                  False if self.env['splash']=='False' else True)
-    import pystata # can only be imported after adding Stata to sys.path
 
-    self.set_graph_format(self.env['graph_format'])
+    _set_graph_format(self.env['graph_format'])
 
     from .magics import StataMagics
     self.magic_handler = StataMagics()
 
     self.stata_ready = True
 
-@patch_to(PyStataKernel)
-def set_graph_format(self, graph_format):
-    if graph_format == 'pystata':
-        pass
-    else:
-        from pystata.config import set_graph_format
-        set_graph_format(graph_format)
-
-# %% ../nbs/04_kernel.ipynb 8
+# %% ../nbs/04_kernel.ipynb 9
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):

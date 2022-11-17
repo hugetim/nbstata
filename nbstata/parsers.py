@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['parse_code_if_in_regex', 'delimit_regex', 'comment_regex', 'left_regex', 'multi_regex', 'parse_code_if_in',
-           'in_range', 'Selectvar', 'clean_code']
+           'in_range', 'Selectvar', 'clean_code', 'is_start_of_program_block']
 
 # %% ../nbs/02_parsers.ipynb 3
 import re
@@ -72,14 +72,12 @@ left_regex = re.compile(r'\n +')
 # Detect Multiple whitespace
 multi_regex = re.compile(r' +')
 
-def clean_code(code, noisily=False):
-    """
-    Remove comments spanning multiple lines and replace custom delimiters
-    """
-    
+def clean_code(code):
+    """Remove comments spanning multiple lines and replace custom delimiters"""
+
     def _replace_delimiter(code,delimiter=None):
         # Recursively replace custom delimiter with newline
-        
+
         split = delimit_regex.split(code.strip(),maxsplit=1)
 
         if len(split) == 3:
@@ -88,7 +86,7 @@ def clean_code(code, noisily=False):
         else:
             before = code
             after = ''
-            
+
         if delimiter != 'cr' and delimiter != None:
             before = before.replace('\r', '').replace('\n', '')
             before = before.replace(';','\n')
@@ -97,42 +95,42 @@ def clean_code(code, noisily=False):
 
     # Apply custom delimiter
     code = _replace_delimiter(code)
-    
+
     # Delete comments spanning multiple lines
     code = comment_regex.sub(' ',code)
-    
+
     # Delete whitespace at start of line
     code = left_regex.sub('\n',code)
-    
+
     # Replace multiple whitespace with one
     code = multi_regex.sub(' ',code)
 
-    # Add 'noisily' to each newline
-    if noisily:
-        cl = code.splitlines()
-        co = []
-        in_program = False
-        for c in cl:
-            cs = c.strip()
-
-            # Are we starting a program definition?
-            if  'program define' in cs:
-                in_program = True
-
-            if not (cs.startswith('quietly') 
-                    or cs.startswith('noisily') 
-                    or cs.startswith('}')
-                    or cs.startswith('forv')
-                    or cs.startswith('foreach')
-                    or cs.startswith('while')
-                    or in_program):
-                c = 'noisily ' + c
-            co.append(c)
-
-            # Are we ending a program definition?
-            if cs.startswith('end'):
-                in_program = False
-
-        code = '\n'.join(co)
-    
     return code
+
+# %% ../nbs/02_parsers.ipynb 21
+def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
+    for j in range(len(shortest_abbrev), len(full_command)+1):
+        if string.startswith(full_command[0:j] + ' '):
+            return True
+    return False
+
+# %% ../nbs/02_parsers.ipynb 24
+def _remove_prog_prefixes(cs):
+    if (_startswith_stata_abbrev(cs, 'quietly', 'qui')
+        or cs.startswith('capture ')
+        or _startswith_stata_abbrev(cs, 'noisily', 'n')):
+        return _remove_prog_prefixes(cs.split(None, maxsplit=1)[1])
+    else:
+        return cs
+
+# %% ../nbs/02_parsers.ipynb 26
+def is_start_of_program_block(clean_code_line_stripped):
+    cs = _remove_prog_prefixes(clean_code_line_stripped)
+    _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
+                       and not (cs == 'program di'
+                                or cs == 'program dir'
+                                or cs.startswith('program drop ')
+                                or _startswith_stata_abbrev(cs, 'program list', 'program l')))
+    return (_starts_program
+            or (cs in ['mata', 'mata:'])
+            or (cs in ['python', 'python:']))
