@@ -6,6 +6,7 @@ __all__ = ['PyStataKernel', 'Cell']
 # %% ../nbs/04_kernel.ipynb 4
 from .config import get_config, launch_stata
 from . import parsers
+from .magics import StataMagics
 from fastcore.basics import patch_to
 from ipykernel.ipkernel import IPythonKernel
 import os
@@ -52,7 +53,6 @@ def init_stata(self):
 
     _set_graph_format(self.env['graph_format'])
 
-    from .magics import StataMagics
     self.magic_handler = StataMagics()
 
     self.stata_ready = True
@@ -81,7 +81,7 @@ class Cell:
                 from pystata.stata import run
                 run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
 
-# %% ../nbs/04_kernel.ipynb 8
+# %% ../nbs/04_kernel.ipynb 17
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
