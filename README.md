@@ -16,8 +16,8 @@ Under construction
 ## Contributing
 
 `nbstata` is being developed using [nbdev](https://nbdev.fast.ai/). The
-“nbs” directory is where edits to the source code should be made. (The
-python code is then exported to the “nbdev” library folder.) The one
+`/nbs` directory is where edits to the source code should be made. (The
+python code is then exported to the `/nbdev` library folder.) The one
 exception is `install.py`.
 
 The [@patch_to](https://fastcore.fast.ai/basics.html#patch_to) decorator
