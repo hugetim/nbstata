@@ -111,8 +111,8 @@ def get_config():
     env = {'stata_dir': None,
            'edition': None,
            'graph_format': 'png',
-           'echo': 'False',
-           'splash': 'True',
+           'echo': 'None',
+           'splash': 'False',
            'missing': '.',
           }
 
