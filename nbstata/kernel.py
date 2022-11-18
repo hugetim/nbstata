@@ -8,13 +8,13 @@ from .config import get_config, launch_stata
 from . import parsers
 from .magics import StataMagics
 from fastcore.basics import patch_to
-from ipykernel.ipkernel import IPythonKernel
+from ipykernel.kernelbase import Kernel
 import os
 import sys
 from packaging import version
 
 # %% ../nbs/04_kernel.ipynb 5
-class PyStataKernel(IPythonKernel):
+class PyStataKernel(Kernel):
     implementation = 'nbstata'
     implementation_version = '0.0.1'
     language = 'stata'
@@ -30,7 +30,6 @@ class PyStataKernel(IPythonKernel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stata_ready = False
-        self.shell.execution_count = 0
         self.magic_handler = None
         self.env = None
 
@@ -87,7 +86,6 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
     if not self.stata_ready:
         self.init_stata()
-    self.shell.execution_count += 1
     try:
         Cell(self, code).run()
         return {
@@ -98,7 +96,6 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
             }
     except SystemError as err:
         reply_content = {
-            'status': "error",
             "traceback": [],
             "ename": "Stata error",
             "evalue": str(err),
@@ -106,9 +103,12 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
         self.send_response(
             self.iopub_socket,
             "error",
-            reply_content,
-            ident=self._topic("error"),
-            channel="shell",
-        )
-        reply_content['execution_count'] = self.execution_count
+            reply_content,)
+#             ident=self._topic("error"),
+#             channel="shell",
+#         )
+        reply_content.update({
+            'status': "error",
+            'execution_count': self.execution_count,
+        })
         return reply_content
