@@ -87,11 +87,28 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
     if not self.stata_ready:
         self.init_stata()
-    Cell(self, code).run()
     self.shell.execution_count += 1
-    return {
-        'status': 'ok',
-        'execution_count': self.execution_count,
-        'payload': [],
-        'user_expressions': {},
+    try:
+        Cell(self, code).run()
+        return {
+            'status': 'ok',
+            'execution_count': self.execution_count,
+            'payload': [],
+            'user_expressions': {},
+            }
+    except SystemError as err:
+        reply_content = {
+            'status': "error",
+            "traceback": [],
+            "ename": "Stata error",
+            "evalue": str(err),
         }
+        self.send_response(
+            self.iopub_socket,
+            "error",
+            reply_content,
+            ident=self._topic("error"),
+            channel="shell",
+        )
+        reply_content['execution_count'] = self.execution_count
+        return reply_content

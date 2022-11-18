@@ -14,7 +14,7 @@ from textwrap import dedent
 
 kernel_json = {
     "argv": [sys.executable, "-m", "nbstata", "-f", "{connection_file}"],
-    "display_name": "Stata",
+    "display_name": "Stata (nbstata)",
     "language": "stata",
 }
 
@@ -29,7 +29,7 @@ def install_my_kernel_spec(user=True, prefix=None):
         copyfile(logo_path, os.path.join(td, 'logo-64x64.png'))
 
         print('Installing Jupyter kernel spec')
-        KernelSpecManager().install_kernel_spec(td, 'pystata', user=user, prefix=prefix)
+        KernelSpecManager().install_kernel_spec(td, 'nbstata', user=user, prefix=prefix)
 
 def install_conf(conf_file,gen_file=False):
     """
