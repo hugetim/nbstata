@@ -3,7 +3,7 @@ website:
     contents:
       - index.ipynb
       - 00_config.ipynb
-      - 01_helpers.ipynb
-      - 02_parsers.ipynb
+      - 01_parsers.ipynb
+      - 02_helpers.ipynb
       - 03_magics.ipynb
       - 04_kernel.ipynb

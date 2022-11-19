@@ -81,11 +81,11 @@ class Cell:
                 from pystata.stata import run
                 run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
 
-# %% ../nbs/04_kernel.ipynb 17
+# %% ../nbs/04_kernel.ipynb 18
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")
 
-# %% ../nbs/04_kernel.ipynb 19
+# %% ../nbs/04_kernel.ipynb 20
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
