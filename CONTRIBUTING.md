@@ -3,7 +3,16 @@
 This project is developed using [nbdev](https://nbdev.fast.ai/), a way to create delightful software with Jupyter notebooks. The Python library and docs are automatically created from the notebooks in the `/nbs` directory.
 
 ## How to get started
-Before anything else, please install the git hooks that run automatic scripts during each commit and merge to strip the notebooks of superfluous metadata (and avoid merge conflicts). After cloning the repository, run this command inside it: [nbdev_install_hooks](https://nbdev.fast.ai/tutorials/modular_nbdev.html#jupyter-git-integration)
+Note: nbdev works on macOS, Linux, and most Unix-style operating systems. It works on Windows under [WSL](https://learn.microsoft.com/en-us/windows/wsl/setup/environment), but some features will not work under cmd or Powershell.
+
+Follow the [install nbdev](https://nbdev.fast.ai/tutorials/tutorial.html#installation) instructions, specifically:
+
+1. [Install jupyter notebook](https://nbdev.fast.ai/tutorials/tutorial.html#install-jupyter-notebook)
+2. [Install nbdev](https://nbdev.fast.ai/tutorials/tutorial.html#install-nbdev)
+3. [Install quarto](https://nbdev.fast.ai/tutorials/tutorial.html#install-quarto)
+4. After cloning the repository, run this command inside it: [nbdev_install_hooks](https://nbdev.fast.ai/tutorials/modular_nbdev.html#jupyter-git-integration)
+5. Run [nbdev_export](https://nbdev.fast.ai/tutorials/tutorial.html#install-quarto) inside the project directory
+6. Run [pip install -e '.[dev]'](https://nbdev.fast.ai/tutorials/tutorial.html#install-your-package) inside the project directory
 
 ## How to submit notebook PRs
 After making changes to the `/nbs` notebooks, you should run [nbdev_prepare](https://nbdev.fast.ai/tutorials/tutorial.html#prepare-your-changes) and make any necessary changes in order to pass all the tests.
