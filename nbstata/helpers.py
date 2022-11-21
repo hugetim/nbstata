@@ -16,16 +16,18 @@ def count():
     import sfi
     return sfi.Data.getObsTotal()
 
-# %% ../nbs/02_helpers.ipynb 11
+# %% ../nbs/02_helpers.ipynb 15
 def _run_as_program(clean_non_prog_code):
     from pystata.stata import run
-    _program_name = "temp_nbstata_kernel_program_name"
+    _program_name = "temp_nbstata_program_name"
     _program_define_code = f"program {_program_name}\n{clean_non_prog_code}\nend\n"
     run(_program_define_code, quietly=True)
-    run(_program_name, quietly=False, inline=True, echo=False)
-    run(f"program drop {_program_name}", quietly=True)
+    try:
+        run(_program_name, quietly=False, inline=True, echo=False)
+    finally:
+        run(f"program drop {_program_name}", quietly=True)
 
-# %% ../nbs/02_helpers.ipynb 14
+# %% ../nbs/02_helpers.ipynb 19
 def run_non_prog_noecho(clean_non_prog_code):
     from pystata.stata import run
     if len(clean_non_prog_code.splitlines()) == 1:  # to avoid outputting extra blank lines
@@ -33,7 +35,7 @@ def run_non_prog_noecho(clean_non_prog_code):
     else:
         _run_as_program(clean_non_prog_code)
 
-# %% ../nbs/02_helpers.ipynb 17
+# %% ../nbs/02_helpers.ipynb 22
 def run_prog_noecho(clean_prog_code):
     from pystata.stata import run
     if clean_prog_code.splitlines()[0] in ['mata', 'mata:']:  # b/c 'quietly' blocks all mata output
@@ -41,7 +43,7 @@ def run_prog_noecho(clean_prog_code):
     else:
         run(clean_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/02_helpers.ipynb 21
+# %% ../nbs/02_helpers.ipynb 26
 def run_noecho(code):
     """
     Split code into program and non-program blocks, running each block noecho
@@ -52,7 +54,7 @@ def run_noecho(code):
         else:
             run_non_prog_noecho(block['std_code'])
 
-# %% ../nbs/02_helpers.ipynb 23
+# %% ../nbs/02_helpers.ipynb 28
 def resolve_macro(macro):
     import sfi
     macro = macro.strip()
@@ -64,7 +66,7 @@ def resolve_macro(macro):
         macro = sfi.Macro.getGlobal(macro[1:])
     return macro
 
-# %% ../nbs/02_helpers.ipynb 26
+# %% ../nbs/02_helpers.ipynb 31
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -88,14 +90,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/02_helpers.ipynb 27
+# %% ../nbs/02_helpers.ipynb 32
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/02_helpers.ipynb 28
+# %% ../nbs/02_helpers.ipynb 33
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
