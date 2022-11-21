@@ -43,6 +43,7 @@ setuptools.setup(
     include_package_data = True,
     install_requires = requirements,
     extras_require={ 'dev': dev_requirements },
+    setup_requires = ['wheel'], # https://stackoverflow.com/questions/34819221/why-is-python-setup-py-saying-invalid-command-bdist-wheel-on-travis-ci#comment99762029_54833684
     dependency_links = cfg.get('dep_links','').split(),
     python_requires  = '>=' + cfg['min_python'],
     long_description = open('README.md').read(),
