@@ -174,6 +174,6 @@ class HiddenPrints:
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
-# %% ../nbs/01_utils.ipynb 35
+# %% ../nbs/01_utils.ipynb 36
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")
