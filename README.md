@@ -99,6 +99,7 @@ be treated by Stata as a single-line comment.
 |:------------|:--------------------------------------|:----------------------------------------|
 | `*%browse`  | View dataset                          | `*%browse [-h] [N] [varlist] [if] [in]` |
 | `*%help`    | Display a help file in rich text      | `*%help [-h] command_or_topic_name`     |
+| `*%echo`    | Ensure echo in current cell           | `*%echo`                                |
 | `*%noecho`  | Suppress echo in current cell         | `*%noecho`                              |
 | `*%quietly` | Suppress all output from current cell | `*%quietly`                             |
 

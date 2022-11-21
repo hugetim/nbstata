@@ -29,10 +29,10 @@ def resolve_macro(macro):
     return macro
 
 # %% ../nbs/02_helpers.ipynb 19
-def _run_as_program(clean_non_prog_code):
+def _run_as_program(std_non_prog_code):
     from pystata.stata import run
     _program_name = "temp_nbstata_program_name"
-    _program_define_code = f"program {_program_name}\n{clean_non_prog_code}\nend\n"
+    _program_define_code = f"program {_program_name}\n{std_non_prog_code}\nend\n"
     with HiddenPrints():
         run(_program_define_code, quietly=True)
     try:
@@ -41,20 +41,20 @@ def _run_as_program(clean_non_prog_code):
         run(f"program drop {_program_name}", quietly=True)
 
 # %% ../nbs/02_helpers.ipynb 23
-def run_non_prog_noecho(clean_non_prog_code):
+def run_non_prog_noecho(std_non_prog_code):
     from pystata.stata import run
-    if len(clean_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
-        run(clean_non_prog_code, quietly=False, inline=True, echo=False)
+    if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
+        run(std_non_prog_code, quietly=False, inline=True, echo=False)
     else:
-        _run_as_program(clean_non_prog_code)
+        _run_as_program(std_non_prog_code)
 
 # %% ../nbs/02_helpers.ipynb 26
-def run_prog_noecho(clean_prog_code):
+def run_prog_noecho(std_prog_code):
     from pystata.stata import run
-    if clean_prog_code.splitlines()[0] in ['mata', 'mata:']:  # b/c 'quietly' blocks all mata output
-        run(clean_prog_code, quietly=False, inline=True, echo=False)
+    if std_prog_code.splitlines()[0] in ['mata', 'mata:']:  # b/c 'quietly' blocks all mata output
+        run(std_prog_code, quietly=False, inline=True, echo=False)
     else:
-        run(clean_prog_code, quietly=True, inline=True, echo=False)
+        run(std_prog_code, quietly=True, inline=True, echo=False)
 
 # %% ../nbs/02_helpers.ipynb 30
 def run_noecho(code):

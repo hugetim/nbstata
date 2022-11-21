@@ -37,7 +37,8 @@ class StataMagics():
         'browse': '{} [-h] [N] [varlist] [if] [in]',
         'help': '{} [-h] command_or_topic_name',
         'quietly': '',
-        'noecho': ''
+        'noecho': '',
+        'echo': '',
     }
     
     csshelp_default = resource_filename(
@@ -77,8 +78,17 @@ class StataMagics():
         Supress echo for the current cell.
         """
         cell.noecho = True
-        return code        
-        
+        cell.echo = False
+        return code
+    
+    def magic_echo(self,code,kernel,cell):
+        """
+        Supress echo for the current cell.
+        """
+        cell.noecho = False
+        cell.echo = True
+        return code
+    
     def magic_browse(self,code,kernel,cell):
         """
         Display data in a nicely-formatted table.
