@@ -11,6 +11,7 @@ import re
 import urllib
 from pkg_resources import resource_filename
 import numpy as np
+from bs4 import BeautifulSoup as bs
 
 # %% ../nbs/03_magics.ipynb 4
 def print_kernel(msg, kernel):
@@ -88,8 +89,8 @@ class StataMagics():
         args = parse_code_if_in(code)
         
         # If and in statements
-        sel_var = SelVar(args['if'])
-        start,end = InVar(args['in'])
+        sel_var = Selectvar(args['if'])
+        start,end = in_range(args['in'])
             
         vargs = [c.strip() for c in args['code'].split(' ') if c]
 
