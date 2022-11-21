@@ -5,7 +5,6 @@ __all__ = ['PyStataKernel', 'Cell', 'print_red']
 
 # %% ../nbs/04_kernel.ipynb 4
 from .config import get_config, launch_stata
-from . import parsers
 from .magics import StataMagics
 from fastcore.basics import patch_to
 from ipykernel.ipkernel import IPythonKernel

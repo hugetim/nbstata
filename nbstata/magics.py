@@ -6,7 +6,7 @@ __all__ = ['print_kernel', 'StataMagics']
 # %% ../nbs/03_magics.ipynb 3
 from .config import get_config
 from .helpers import *
-from .parsers import *
+from .utils import *
 import re
 import urllib
 from pkg_resources import resource_filename
