@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['parse_code_if_in_regex', 'delimit_regex', 'comment_regex', 'left_regex', 'multi_regex', 'parse_code_if_in',
            'in_range', 'Selectvar', 'standardize_code', 'is_start_of_program_block', 'break_out_prog_blocks',
-           'HiddenPrints']
+           'HiddenPrints', 'print_red']
 
 # %% ../nbs/01_utils.ipynb 3
 import re
@@ -173,3 +173,7 @@ class HiddenPrints:
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
         sys.stdout = self._original_stdout
+
+# %% ../nbs/01_utils.ipynb 35
+def print_red(text):
+    print(f"\x1b[31m{text}\x1b[0m")
