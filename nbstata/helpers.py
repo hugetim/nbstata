@@ -40,7 +40,7 @@ def _run_as_program(std_non_prog_code):
     finally:
         run(f"program drop {_program_name}", quietly=True)
 
-# %% ../nbs/02_helpers.ipynb 23
+# %% ../nbs/02_helpers.ipynb 24
 def run_non_prog_noecho(std_non_prog_code):
     from pystata.stata import run
     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
@@ -48,7 +48,7 @@ def run_non_prog_noecho(std_non_prog_code):
     else:
         _run_as_program(std_non_prog_code)
 
-# %% ../nbs/02_helpers.ipynb 26
+# %% ../nbs/02_helpers.ipynb 27
 def run_prog_noecho(std_prog_code):
     from pystata.stata import run
     if std_prog_code.splitlines()[0] in ['mata', 'mata:']:  # b/c 'quietly' blocks all mata output
@@ -56,18 +56,16 @@ def run_prog_noecho(std_prog_code):
     else:
         run(std_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/02_helpers.ipynb 30
+# %% ../nbs/02_helpers.ipynb 31
 def run_noecho(code):
-    """
-    Split code into program and non-program blocks, running each block noecho
-    """
+    """Split code into program and non-program blocks, running each block noecho"""
     for block in break_out_prog_blocks(code):
         if block['is_prog']:
             run_prog_noecho(block['std_code'])
         else:
             run_non_prog_noecho(block['std_code'])
 
-# %% ../nbs/02_helpers.ipynb 34
+# %% ../nbs/02_helpers.ipynb 35
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -91,14 +89,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/02_helpers.ipynb 35
+# %% ../nbs/02_helpers.ipynb 36
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/02_helpers.ipynb 36
+# %% ../nbs/02_helpers.ipynb 37
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
