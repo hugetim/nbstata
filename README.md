@@ -73,7 +73,7 @@ Settings must be under the title `[nbstata]`. Example:
     echo = True
     splash = False
 
-#### Default Graph Format
+### Default Graph Format
 
 Both `pystata` and `stata_kernel` default to the SVG image format.
 `nbstata` defaults to the PNG image format instead for several reasons:
@@ -85,7 +85,7 @@ Both `pystata` and `stata_kernel` default to the SVG image format.
 - SVG images cannot be copied and pasted directly into Word or
   PowerPoint.
 
-### Magics
+## Magics
 
 Magics are commands that only work in `nbstata` and are not part of
 Stata’s syntax. Magics normally start with `%`, but this will cause
@@ -103,15 +103,17 @@ be treated by Stata as a single-line comment.
 | `*%noecho`  | Suppress echo in current cell         | `*%noecho`                              |
 | `*%quietly` | Suppress all output from current cell | `*%quietly`                             |
 
-### Stata Implementation Details
+## Stata Implementation Details
 
-#### \#delimit behavior
+### \#delimit behavior
 
 A [`#delimit;`](https://www.stata.com/manuals/pdelimit.pdf) command in
-one cell will persist into the other cells, until `#delimit cr` is
-called. (If anyone desires each cell to instead be treated as a separate
-.do file, so that every cell defaults to `#delimit cr` at the start,
-please raise an Issue to request this as a configuration option.)
+one cell will persist into other cells, until `#delimit cr` is called.
+For example, see [delimit
+tests.ipynb](https://github.com/hugetim/nbstata/blob/master/manual_test_nbs/delimit%20tests.ipynb).
+(If anyone desires each cell to instead be treated as a separate .do
+file, so that every cell defaults to `#delimit cr` at the start, please
+raise an Issue to request this as a configuration option.)
 
 ## Contributing
 
