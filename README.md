@@ -103,6 +103,16 @@ be treated by Stata as a single-line comment.
 | `*%noecho`  | Suppress echo in current cell         | `*%noecho`                              |
 | `*%quietly` | Suppress all output from current cell | `*%quietly`                             |
 
+### Stata Implementation Details
+
+#### \#delimit behavior
+
+A [`#delimit;`](https://www.stata.com/manuals/pdelimit.pdf) command in
+one cell will persist into the other cells, until `#delimit cr` is
+called. (If anyone desires each cell to instead be treated as a separate
+.do file, so that every cell defaults to `#delimit cr` at the start,
+please raise an Issue to request this as a configuration option.)
+
 ## Contributing
 
 `nbstata` is being developed using [nbdev](https://nbdev.fast.ai/). The

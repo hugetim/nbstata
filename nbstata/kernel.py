@@ -5,7 +5,7 @@ __all__ = ['PyStataKernel', 'Cell', 'print_stata_error']
 
 # %% ../nbs/04_kernel.ipynb 4
 from .config import get_config, launch_stata
-from .utils import print_red
+from .utils import print_red, ending_delimiter, is_cr_delimiter
 from .magics import StataMagics
 from fastcore.basics import patch_to
 from ipykernel.ipkernel import IPythonKernel
@@ -32,6 +32,7 @@ class PyStataKernel(IPythonKernel):
         self.stata_ready = False
         self.shell.execution_count = 0
         self.magic_handler = None
+        self.starting_delimiter = None
         self.env = None
 
 # %% ../nbs/04_kernel.ipynb 6
@@ -59,7 +60,7 @@ def init_stata(self):
 
 # %% ../nbs/04_kernel.ipynb 7
 class Cell:
-    def __init__(self, kernel, code_w_magics):
+    def __init__(self, kernel, code_w_magics, silent=False):
         if kernel.env['echo'] == 'None':
             self.noecho = True
             self.echo = False
@@ -69,16 +70,19 @@ class Cell:
         else:
             self.noecho = False
             self.echo = False
-        self.quietly = False
+        self.quietly = silent
+        self.starting_delimiter = kernel.starting_delimiter
         self.code = kernel.magic_handler.magic(code_w_magics, kernel, self)
     
     def run(self):
         if self.code != '':
             if self.noecho and not self.quietly:
                 from nbstata.helpers import run_noecho
-                run_noecho(self.code)
+                run_noecho(self.code, self.starting_delimiter)
             else:
                 from pystata.stata import run
+                if not is_cr_delimiter(self.starting_delimiter):
+                    self.code = "#delimit;\n" + self.code
                 run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
 
 # %% ../nbs/04_kernel.ipynb 18
@@ -95,8 +99,13 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
     if not self.stata_ready:
         self.init_stata()
     self.shell.execution_count += 1
+    _ending_delimiter = ending_delimiter(code, self.starting_delimiter)
     try:
-        Cell(self, code).run()
+        Cell(self, code, silent).run()
+        self.starting_delimiter = _ending_delimiter
+        if _ending_delimiter == ';' and code.strip()[-1] != ';':
+            print_red("Warning: Code cell (with #delimit; in effect) does not end in ';'. "
+                      "Exported .do script will behave differently from notebook.")
         return {
             'status': 'ok',
             'execution_count': self.execution_count,
@@ -104,20 +113,24 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
             'user_expressions': {},
             }
     except SystemError as err:
-        reply_content = {
-            "traceback": [],
-            "ename": "Stata error",
-            "evalue": str(err),
-        }
-        if not silent:
-            print_stata_error(reply_content['evalue'])
-#             self.send_response(
-#                 self.iopub_socket,
-#                 "error",
-#                 reply_content,
-#             )
-        reply_content.update({
-            'status': "error",
-            'execution_count': self.execution_count,
-        })
-        return reply_content
+        return _handle_error(err, silent, self.execution_count)
+
+# %% ../nbs/04_kernel.ipynb 21
+def _handle_error(err, silent, execution_count):
+    reply_content = {
+        "traceback": [],
+        "ename": "Stata error",
+        "evalue": str(err),
+    }
+    if not silent:
+        print_stata_error(reply_content['evalue'])
+#         self.send_response(
+#             self.iopub_socket,
+#             "error",
+#             reply_content,
+#         )
+    reply_content.update({
+        'status': "error",
+        'execution_count': execution_count,
+    })
+    return reply_content

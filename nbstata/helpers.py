@@ -57,9 +57,9 @@ def run_prog_noecho(std_prog_code):
         run(std_prog_code, quietly=True, inline=True, echo=False)
 
 # %% ../nbs/02_helpers.ipynb 31
-def run_noecho(code):
+def run_noecho(code, starting_delimiter=None):
     """Split code into program and non-program blocks, running each block noecho"""
-    for block in break_out_prog_blocks(code):
+    for block in break_out_prog_blocks(code, starting_delimiter):
         if block['is_prog']:
             run_prog_noecho(block['std_code'])
         else:
