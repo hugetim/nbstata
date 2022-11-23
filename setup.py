@@ -40,7 +40,6 @@ setuptools.setup(
     ] + ['Programming Language :: Python :: '+o for o in py_versions[py_versions.index(min_python):]] + (['License :: ' + lic[1] ] if lic[1] else []),
     url = cfg['git_url'],
     packages = setuptools.find_packages(),
-    package_data={'nbstata': ['logo-64x64.png']},
     include_package_data = True,
     install_requires = requirements,
     extras_require={ 'dev': dev_requirements },
