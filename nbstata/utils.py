@@ -63,16 +63,16 @@ class Selectvar():
 
 # %% ../nbs/01_utils.ipynb 17
 # Detect comments spanning multiple lines
-comment_regex = re.compile(r'((\/\/\/)(.)*(\n|\r)|(\/\*)(.|\s)*?(\*\/))')
+comment_regex = re.compile(r'(((?: |\t)\/\/\/)(.)*(\n|\r)|(\/\*)(.|\s)*?(\*\/))')
 
 def _remove_multi_line_comments(code):
     return comment_regex.sub(' ',code)
 
-# %% ../nbs/01_utils.ipynb 21
+# %% ../nbs/01_utils.ipynb 22
 def is_cr_delimiter(delimiter):
     return delimiter in {'cr', None}
 
-# %% ../nbs/01_utils.ipynb 22
+# %% ../nbs/01_utils.ipynb 24
 delimit_regex = re.compile(r'#delimit(.*$)', flags=re.MULTILINE)
 def _replace_delimiter(code, starting_delimiter=None):
     # Recursively replace custom delimiter with newline
@@ -92,7 +92,7 @@ def _replace_delimiter(code, starting_delimiter=None):
 
     return before + after
 
-# %% ../nbs/01_utils.ipynb 24
+# %% ../nbs/01_utils.ipynb 26
 def ending_delimiter(code, starting_delimiter=None):
     code = _remove_multi_line_comments(code)
     # Recursively determine ending delimiter
@@ -105,7 +105,7 @@ def ending_delimiter(code, starting_delimiter=None):
         delimiter = starting_delimiter
     return None if is_cr_delimiter(delimiter) else ';'
 
-# %% ../nbs/01_utils.ipynb 27
+# %% ../nbs/01_utils.ipynb 29
 # Detect Multiple whitespace
 multi_regex = re.compile(r' +')
 
@@ -128,14 +128,14 @@ def standardize_code(code, starting_delimiter=None):
             co.append(cs)
     return '\n'.join(co)
 
-# %% ../nbs/01_utils.ipynb 35
+# %% ../nbs/01_utils.ipynb 37
 def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
     for j in range(len(shortest_abbrev), len(full_command)+1):
         if string.startswith(full_command[0:j] + ' '):
             return True
     return False
 
-# %% ../nbs/01_utils.ipynb 38
+# %% ../nbs/01_utils.ipynb 40
 def _remove_prog_prefixes(cs):
     if (_startswith_stata_abbrev(cs, 'quietly', 'qui')
         or cs.startswith('capture ')
@@ -144,7 +144,7 @@ def _remove_prog_prefixes(cs):
     else:
         return cs
 
-# %% ../nbs/01_utils.ipynb 40
+# %% ../nbs/01_utils.ipynb 42
 def is_start_of_program_block(std_code_line):
     cs = _remove_prog_prefixes(std_code_line)
     _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
@@ -156,7 +156,7 @@ def is_start_of_program_block(std_code_line):
             or (cs in {'mata', 'mata:'})
             or (cs in {'python', 'python:'}))
 
-# %% ../nbs/01_utils.ipynb 42
+# %% ../nbs/01_utils.ipynb 44
 def break_out_prog_blocks(code, starting_delimiter=None):
     cl = standardize_code(code, starting_delimiter).splitlines()
     co = []
@@ -179,7 +179,7 @@ def break_out_prog_blocks(code, starting_delimiter=None):
         blocks.append({"is_prog": False, "std_code": '\n'.join(co)})
     return blocks
 
-# %% ../nbs/01_utils.ipynb 46
+# %% ../nbs/01_utils.ipynb 48
 class HiddenPrints:
     def __enter__(self):
         self._original_stdout = sys.stdout
@@ -188,6 +188,6 @@ class HiddenPrints:
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
-# %% ../nbs/01_utils.ipynb 48
+# %% ../nbs/01_utils.ipynb 50
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")

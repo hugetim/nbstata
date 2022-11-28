@@ -14,28 +14,32 @@ To install, run:
 
 ``` sh
 pip install nbstata
-python -m nbstata.install [--sys-prefix] [--prefix] [--conf-file]
+python -m nbstata.install [--sys-prefix] [--prefix PREFIX] [--conf-file]
 ```
 
-Include `--sys-prefix` if you are installing `nbstata` in a multi-user
-environment, or `--prefix` if you want to specify a path yourself.
+Include `--sys-prefix` to install to `sys.prefix` (e.g. a virtualenv or
+conda env), or `--prefix PREFIX` if you want to specify the install path
+yourself.
 
-At runtime, `nbstata` will try to determine the location of your Stata
-installation. You can create a configuration file to preempt this
-detection with the `--conf-file` option. Even if you do not include this
-option, the configuration file will still be created if the installer
-cannot find any Stata installation.
+### Configuration file
 
-The location of the configuration file is:
+The `--conf-file` option creates a configuration file for you. (Note: If
+the installer cannot find the location of your Stata installation, a
+configuration file will be created even if you do not include the
+`--conf-file` option to allow you to manually specify the Stata
+location.) The location of the configuration file will be:
 
 - `[prefix]/etc/nbstata.conf` if `--sys-prefix` or `--prefix` is
   specified.
 - `~/.nbstata.conf` otherwise.
 
-If a configuration file exists in both locations, the user version takes
-precedence.
+(Note: If a configuration file exists in both locations at kernel
+runtime, the user version takes precedence.)
 
-Syntax highlighting is the same as `stata_kernel`:
+### Syntax highlighting
+
+Stata syntax highlighting can be installed for Jupyter Lab ([just as for
+stata_kernel](https://kylebarron.dev/stata_kernel/getting_started/#jupyter)):
 
 ``` sh
 conda install nodejs -c conda-forge --repodata-fn=repodata.json
@@ -52,12 +56,10 @@ The following settings are permitted inside the configuration file:
 - `graph_format`: Graph format. Acceptable values are ‘png’, ‘pdf’,
   ‘svg’ and ‘pystata’. Specify the last option if you want to use
   `nbstata`‘s setting. Default is ’png’.
-- `echo`: controls the echo of commands:
+- `echo`: controls the echo of commands, with the default being ‘None’:
   - ‘True’: the kernel will echo all commands.
   - ‘False’: the kernel will not echo single-line commands.
   - ‘None’: the kernel will not echo any command.
-
-  Default is ‘None’.
 - `splash`: controls display of the splash message during Stata startup.
   Default is ‘False’.
 - `missing`: What should be displayed in the output of the `*%browse`
@@ -72,6 +74,7 @@ Settings must be under the title `[nbstata]`. Example:
     graph_format = svg
     echo = True
     splash = False
+    missing = NA
 
 ### Default Graph Format
 
