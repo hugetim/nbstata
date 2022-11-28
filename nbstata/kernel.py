@@ -46,7 +46,7 @@ def init_stata(self):
             set_graph_format(graph_format)
     
     self.env = get_config()
-    if self.env['echo'] not in ('True', 'False', 'None'):
+    if self.env['echo'] not in {'True', 'False', 'None'}:
         raise OSError("'" + self.env['echo'] + "' is not an acceptable value for 'echo'.")
 
     launch_stata(self.env['stata_dir'], self.env['edition'],
@@ -102,6 +102,9 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
     _ending_delimiter = ending_delimiter(code, self.starting_delimiter)
     try:
         Cell(self, code, silent).run()
+    except SystemError as err:
+        return _handle_error(err, silent, self.execution_count)
+    else:
         self.starting_delimiter = _ending_delimiter
         if _ending_delimiter == ';' and code.strip()[-1] != ';':
             print_red("Warning: Code cell (with #delimit; in effect) does not end in ';'. "
@@ -112,8 +115,6 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
             'payload': [],
             'user_expressions': {},
             }
-    except SystemError as err:
-        return _handle_error(err, silent, self.execution_count)
 
 # %% ../nbs/04_kernel.ipynb 21
 def _handle_error(err, silent, execution_count):

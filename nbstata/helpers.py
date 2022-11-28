@@ -51,7 +51,7 @@ def run_non_prog_noecho(std_non_prog_code):
 # %% ../nbs/02_helpers.ipynb 27
 def run_prog_noecho(std_prog_code):
     from pystata.stata import run
-    if std_prog_code.splitlines()[0] in ['mata', 'mata:']:  # b/c 'quietly' blocks all mata output
+    if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
         run(std_prog_code, quietly=False, inline=True, echo=False)
     else:
         run(std_prog_code, quietly=True, inline=True, echo=False)

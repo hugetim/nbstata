@@ -153,8 +153,8 @@ def is_start_of_program_block(std_code_line):
                                 or cs.startswith('program drop ')
                                 or _startswith_stata_abbrev(cs, 'program list', 'program l')))
     return (_starts_program
-            or (cs in ['mata', 'mata:'])
-            or (cs in ['python', 'python:']))
+            or (cs in {'mata', 'mata:'})
+            or (cs in {'python', 'python:'}))
 
 # %% ../nbs/01_utils.ipynb 42
 def break_out_prog_blocks(code, starting_delimiter=None):
