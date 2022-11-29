@@ -1,7 +1,5 @@
 website:
   sidebar:
-    collapse-level: 1
-    style: docked
     contents:
       - index.ipynb
       - section: Developer Docs

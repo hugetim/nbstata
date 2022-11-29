@@ -1,0 +1,8 @@
+website:
+  sidebar:
+    collapse-level: 1
+    style: docked
+  navbar:
+    right:
+      - icon: github
+        href: "https://github.com/hugetim/nbstata"
