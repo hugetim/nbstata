@@ -40,7 +40,7 @@ class PyStataKernel(IPythonKernel):
 @patch_to(PyStataKernel)
 def init_stata(self):
     def _set_graph_format(graph_format):
-        if graph_format == 'nbstata':
+        if graph_format == 'pystata':
             pass
         else:
             from pystata.config import set_graph_format

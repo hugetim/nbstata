@@ -53,9 +53,9 @@ The following settings are permitted inside the configuration file:
 - `stata_dir`: Stata installation directory.
 - `edition`: Stata edition. Acceptable values are ‘be’, ‘se’ and ‘mp’.
   Default is ‘be’.
-- `graph_format`: Graph format. Acceptable values are ‘png’, ‘pdf’,
-  ‘svg’ and ‘pystata’. Specify the last option if you want to use
-  `nbstata`‘s setting. Default is ’png’.
+- `graph_format`: Graph format. Acceptable values are ‘png’ (the
+  default), ‘pdf’, ‘svg’ and ‘pystata’. Specify the last option if you
+  want to use `pystata`’s default setting.
 - `echo`: controls the echo of commands, with the default being ‘None’:
   - ‘True’: the kernel will echo all commands.
   - ‘False’: the kernel will not echo single-line commands.
