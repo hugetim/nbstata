@@ -1,9 +1,13 @@
 website:
   sidebar:
+    collapse-level: 1
+    style: docked
     contents:
       - index.ipynb
-      - 00_config.ipynb
-      - 01_parsers.ipynb
-      - 02_helpers.ipynb
-      - 03_magics.ipynb
-      - 04_kernel.ipynb
+      - section: Developer Docs
+        contents:
+          - 00_config.ipynb
+          - 01_utils.ipynb
+          - 02_helpers.ipynb
+          - 03_magics.ipynb
+          - 04_kernel.ipynb

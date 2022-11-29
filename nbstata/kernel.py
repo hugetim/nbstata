@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['PyStataKernel', 'Cell', 'print_stata_error']
 
-# %% ../nbs/04_kernel.ipynb 4
+# %% ../nbs/04_kernel.ipynb 5
 from .config import get_config, launch_stata
 from .utils import print_red, ending_delimiter, is_cr_delimiter
 from .magics import StataMagics
@@ -13,7 +13,7 @@ import os
 import sys
 from packaging import version
 
-# %% ../nbs/04_kernel.ipynb 5
+# %% ../nbs/04_kernel.ipynb 6
 class PyStataKernel(IPythonKernel):
     implementation = 'nbstata'
     implementation_version = '0.0.1'
@@ -35,7 +35,7 @@ class PyStataKernel(IPythonKernel):
         self.starting_delimiter = None
         self.env = None
 
-# %% ../nbs/04_kernel.ipynb 6
+# %% ../nbs/04_kernel.ipynb 7
 @patch_to(PyStataKernel)
 def init_stata(self):
     def _set_graph_format(graph_format):
@@ -58,7 +58,7 @@ def init_stata(self):
 
     self.stata_ready = True
 
-# %% ../nbs/04_kernel.ipynb 7
+# %% ../nbs/04_kernel.ipynb 8
 class Cell:
     def __init__(self, kernel, code_w_magics, silent=False):
         if kernel.env['echo'] == 'None':
@@ -85,14 +85,14 @@ class Cell:
                     self.code = "#delimit;\n" + self.code
                 run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
 
-# %% ../nbs/04_kernel.ipynb 18
+# %% ../nbs/04_kernel.ipynb 19
 def print_stata_error(text):
     lines = text.splitlines()
     if len(lines) > 2:
         print("\n".join(lines[:-2]))
     print_red("\n".join(lines[-2:]))
 
-# %% ../nbs/04_kernel.ipynb 20
+# %% ../nbs/04_kernel.ipynb 21
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
@@ -116,7 +116,7 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
             'user_expressions': {},
             }
 
-# %% ../nbs/04_kernel.ipynb 21
+# %% ../nbs/04_kernel.ipynb 22
 def _handle_error(err, silent, execution_count):
     reply_content = {
         "traceback": [],
