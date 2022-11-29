@@ -22,6 +22,7 @@ def print_kernel(msg, kernel):
 
 # %% ../nbs/03_magics.ipynb 5
 class StataMagics():
+    """Class for handling magics"""
     html_base = "https://www.stata.com"
     html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
 

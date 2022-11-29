@@ -15,6 +15,7 @@ from packaging import version
 
 # %% ../nbs/04_kernel.ipynb 6
 class PyStataKernel(IPythonKernel):
+    """A jupyter kernel based on pystata"""
     implementation = 'nbstata'
     implementation_version = '0.0.1'
     language = 'stata'
@@ -60,6 +61,7 @@ def init_stata(self):
 
 # %% ../nbs/04_kernel.ipynb 8
 class Cell:
+    """A class for managing execution of a single code cell"""
     def __init__(self, kernel, code_w_magics, silent=False):
         if kernel.env['echo'] == 'None':
             self.noecho = True

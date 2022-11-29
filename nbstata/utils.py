@@ -161,8 +161,9 @@ def break_out_prog_blocks(code, starting_delimiter=None):
         blocks.append({"is_prog": False, "std_code": '\n'.join(co)})
     return blocks
 
-# %% ../nbs/01_utils.ipynb 47
+# %% ../nbs/01_utils.ipynb 46
 class HiddenPrints:
+    """A context manager for suppressing `print` output"""
     def __enter__(self):
         self._original_stdout = sys.stdout
         sys.stdout = open(os.devnull, 'w')
