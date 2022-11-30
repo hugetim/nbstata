@@ -36,6 +36,16 @@ location.) The location of the configuration file will be:
 (Note: If a configuration file exists in both locations at kernel
 runtime, the user version takes precedence.)
 
+### Updating
+
+To update from a previous version of `nbstata`, run:
+
+``` sh
+pip install nbstata --upgrade
+```
+
+When updating, you don’t have to run `python -m nbstata.install` again.
+
 ### Syntax highlighting
 
 Stata syntax highlighting can be installed for Jupyter Lab ([just as for
