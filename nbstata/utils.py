@@ -69,7 +69,7 @@ def _replace_delimiter(code, starting_delimiter=None):
         after = ''
 
     if not is_cr_delimiter(starting_delimiter):
-        before = before.replace('\r', '').replace('\n', '')
+        before = before.replace('\r', ' ').replace('\n', ' ')
         before = before.replace(';','\n')
 
     return before + after
