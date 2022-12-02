@@ -102,8 +102,9 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
         self.init_stata()
     self.shell.execution_count += 1
     _ending_delimiter = ending_delimiter(code, self.starting_delimiter)
+    code_cell = Cell(self, code, silent)
     try:
-        Cell(self, code, silent).run()
+        code_cell.run()
     except SystemError as err:
         return _handle_error(err, silent, self.execution_count)
     else:
