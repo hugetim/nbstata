@@ -1,5 +1,6 @@
 website:
-  google-analytics: "G-1XLFCC9FMF"
+  google-analytics: 
+    tracking-id: "G-1XLFCC9FMF"
     storage: none
   sidebar:
     collapse-level: 1
