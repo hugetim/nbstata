@@ -1,4 +1,5 @@
 website:
+  google-analytics: "G-1XLFCC9FMF"
   sidebar:
     collapse-level: 1
     style: docked
