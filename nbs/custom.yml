@@ -1,6 +1,6 @@
 website:
   google-analytics: "G-1XLFCC9FMF"
-  storage: none
+    storage: none
   sidebar:
     collapse-level: 1
     style: docked
