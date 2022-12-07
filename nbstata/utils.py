@@ -143,25 +143,23 @@ def break_out_prog_blocks(code, starting_delimiter=None):
     cl = standardize_code(code, starting_delimiter).splitlines()
     co = []
     blocks = []
+    _in_program = False
     for c in cl:
-        # Are we starting a program definition?
         if is_start_of_program_block(c):
             if co: # lines before the start of a program block
                 blocks.append({"is_prog": False, "std_code": '\n'.join(co)})
                 co = []
-
+            _in_program = True
         co.append(c)
-
-        # Are we ending a program definition?
-        if c == 'end':
+        if c == 'end': # Are we ending a program definition?
             blocks.append({"is_prog": True, "std_code": '\n'.join(co)})
             co = []
-
-    if co: 
-        blocks.append({"is_prog": False, "std_code": '\n'.join(co)})
+            _in_program = False
+    if co:
+        blocks.append({"is_prog": _in_program, "std_code": '\n'.join(co)})
     return blocks
 
-# %% ../nbs/01_utils.ipynb 46
+# %% ../nbs/01_utils.ipynb 48
 class HiddenPrints:
     """A context manager for suppressing `print` output"""
     def __enter__(self):
@@ -171,6 +169,6 @@ class HiddenPrints:
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
-# %% ../nbs/01_utils.ipynb 49
+# %% ../nbs/01_utils.ipynb 51
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")
