@@ -40,8 +40,9 @@ def install_conf(conf_file,gen_file=False):
     # complete the installation process in virtual environments
     # without needing this submodule nor its downstream imports.
     from .config import find_dir_edition
-    stata_dir,stata_ed = find_dir_edition()
-    if not stata_dir:
+    try:
+        stata_dir,stata_ed = find_dir_edition()
+    except OSError as err:
         gen_file = True
         msg = """\
             WARNING: Could not find Stata path.

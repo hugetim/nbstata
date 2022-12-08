@@ -66,6 +66,8 @@ def find_path():
 # %% ../nbs/00_config.ipynb 9
 def find_dir_edition():
     stata_path = find_path()
+    if stata_path is None:
+        raise OSError("Stata path not found.")
     stata_dir = str(os.path.dirname(stata_path))
     stata_exe = str(os.path.basename(stata_path)).lower()
 
