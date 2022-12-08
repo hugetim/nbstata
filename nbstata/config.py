@@ -96,7 +96,10 @@ def launch_stata(path=None, edition=None, splash=True):
         path_found, edition_found = find_dir_edition()
         path = path_found if path==None else path
         edition = edition_found if edition==None else edition
-    set_pystata_path(path)
+    try:
+        set_pystata_path(path)
+    except OSError as err:
+        pass
     import pystata
     if version.parse(pystata.__version__) >= version.parse("0.1.1"):
         # Splash message control is a new feature of pystata-0.1.1

@@ -43,6 +43,7 @@ def install_conf(conf_file,gen_file=False):
     try:
         stata_dir,stata_ed = find_dir_edition()
     except OSError as err:
+        stata_dir,stata_ed = "", ""
         gen_file = True
         msg = """\
             WARNING: Could not find Stata path.
