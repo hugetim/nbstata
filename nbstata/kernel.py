@@ -153,3 +153,44 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
         'payload': [],
         'user_expressions': {},
     }
+
+# %% ../nbs/04_kernel.ipynb 27
+@patch_to(PyStataKernel)
+def do_complete(self, code, cursor_pos):
+    """Overrides IPythonKernel with kernelbase version"""
+    return {
+        "matches": [],
+        "cursor_end": cursor_pos,
+        "cursor_start": cursor_pos,
+        "metadata": {},
+        "status": "ok",
+    }
+
+# %% ../nbs/04_kernel.ipynb 28
+@patch_to(PyStataKernel)
+def do_is_complete(self, code):
+    """Overrides IPythonKernel with kernelbase version"""
+    return {"status": "unknown"}
+
+# %% ../nbs/04_kernel.ipynb 29
+@patch_to(PyStataKernel)
+def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
+    """Overrides IPythonKernel with kernelbase version"""
+    return {"status": "ok", "data": {}, "metadata": {}, "found": False}
+
+# %% ../nbs/04_kernel.ipynb 30
+@patch_to(PyStataKernel)
+def do_history(
+    self,
+    hist_access_type,
+    output,
+    raw,
+    session=None,
+    start=None,
+    stop=None,
+    n=None,
+    pattern=None,
+    unique=False,
+):
+    """Overrides IPythonKernel with kernelbase version"""
+    return {"status": "ok", "history": []}
