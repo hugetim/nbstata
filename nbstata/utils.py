@@ -43,18 +43,18 @@ def in_range(stata_in_code):
     if end.strip() == 'l': end = count()
     return (int(start)-1, int(end))
 
-# %% ../nbs/01_utils.ipynb 15
+# %% ../nbs/01_utils.ipynb 16
 # Detect comments spanning multiple lines
 comment_regex = re.compile(r'(((?: |\t)\/\/\/)(.)*(\n|\r)|(\/\*)(.|\s)*?(\*\/))')
 
 def _remove_multi_line_comments(code):
     return comment_regex.sub(' ',code)
 
-# %% ../nbs/01_utils.ipynb 21
+# %% ../nbs/01_utils.ipynb 22
 def is_cr_delimiter(delimiter):
     return delimiter in {'cr', None}
 
-# %% ../nbs/01_utils.ipynb 23
+# %% ../nbs/01_utils.ipynb 24
 delimit_regex = re.compile(r'#delimit(.*$)', flags=re.MULTILINE)
 def _replace_delimiter(code, starting_delimiter=None):
     # Recursively replace custom delimiter with newline
@@ -74,7 +74,7 @@ def _replace_delimiter(code, starting_delimiter=None):
 
     return before + after
 
-# %% ../nbs/01_utils.ipynb 25
+# %% ../nbs/01_utils.ipynb 26
 def ending_delimiter(code, starting_delimiter=None):
     code = _remove_multi_line_comments(code)
     # Recursively determine ending delimiter
@@ -87,7 +87,7 @@ def ending_delimiter(code, starting_delimiter=None):
         delimiter = starting_delimiter
     return None if is_cr_delimiter(delimiter) else ';'
 
-# %% ../nbs/01_utils.ipynb 28
+# %% ../nbs/01_utils.ipynb 29
 # Detect Multiple whitespace
 multi_regex = re.compile(r' +')
 
@@ -102,22 +102,22 @@ def standardize_code(code, starting_delimiter=None):
     code = multi_regex.sub(' ',code)
     
     # Delete blank lines and whitespace at start and end of lines
-    cl = code.splitlines()
-    co = []
-    for c in cl:
-        cs = c.strip()
+    code_lines = code.splitlines()
+    std_lines = []
+    for code_line in code_lines:
+        cs = code_line.strip()
         if cs:
-            co.append(cs)
-    return '\n'.join(co)
+            std_lines.append(cs)
+    return '\n'.join(std_lines)
 
-# %% ../nbs/01_utils.ipynb 36
+# %% ../nbs/01_utils.ipynb 38
 def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
     for j in range(len(shortest_abbrev), len(full_command)+1):
         if string.startswith(full_command[0:j] + ' '):
             return True
     return False
 
-# %% ../nbs/01_utils.ipynb 39
+# %% ../nbs/01_utils.ipynb 41
 def _remove_prog_prefixes(cs):
     if (_startswith_stata_abbrev(cs, 'quietly', 'qui')
         or cs.startswith('capture ')
@@ -126,7 +126,7 @@ def _remove_prog_prefixes(cs):
     else:
         return cs
 
-# %% ../nbs/01_utils.ipynb 41
+# %% ../nbs/01_utils.ipynb 43
 def is_start_of_program_block(std_code_line):
     cs = _remove_prog_prefixes(std_code_line)
     _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
@@ -138,28 +138,34 @@ def is_start_of_program_block(std_code_line):
             or (cs in {'mata', 'mata:'})
             or (cs in {'python', 'python:'}))
 
-# %% ../nbs/01_utils.ipynb 43
+# %% ../nbs/01_utils.ipynb 45
 def break_out_prog_blocks(code, starting_delimiter=None):
-    cl = standardize_code(code, starting_delimiter).splitlines()
-    co = []
-    blocks = []
-    _in_program = False
-    for c in cl:
-        if is_start_of_program_block(c):
-            if co: # lines before the start of a program block
-                blocks.append({"is_prog": False, "std_code": '\n'.join(co)})
-                co = []
-            _in_program = True
-        co.append(c)
-        if c == 'end': # Are we ending a program definition?
-            blocks.append({"is_prog": True, "std_code": '\n'.join(co)})
-            co = []
-            _in_program = False
-    if co:
-        blocks.append({"is_prog": _in_program, "std_code": '\n'.join(co)})
-    return blocks
+    std_code_lines = standardize_code(code, starting_delimiter).splitlines()
+    return list(_prog_blocks(std_code_lines))
 
-# %% ../nbs/01_utils.ipynb 48
+# %% ../nbs/01_utils.ipynb 46
+def _prog_blocks(std_code_lines):
+    next_block_lines = []
+    in_program = False
+    for std_code_line in std_code_lines:         
+        if is_start_of_program_block(std_code_line):
+            if next_block_lines: # previous lines
+                yield _block(next_block_lines, is_prog=in_program)
+                next_block_lines = []
+            in_program = True
+        next_block_lines.append(std_code_line)
+        if std_code_line == 'end': # regardless of whether in_program
+            yield _block(next_block_lines, is_prog=True)
+            next_block_lines = []
+            in_program = False
+    if next_block_lines:
+        yield _block(next_block_lines, in_program)
+        
+
+def _block(block_lines, is_prog):
+    return {"is_prog": is_prog, "std_code": '\n'.join(block_lines)}
+
+# %% ../nbs/01_utils.ipynb 50
 class HiddenPrints:
     """A context manager for suppressing `print` output"""
     def __enter__(self):
@@ -169,6 +175,6 @@ class HiddenPrints:
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
-# %% ../nbs/01_utils.ipynb 51
+# %% ../nbs/01_utils.ipynb 53
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")
