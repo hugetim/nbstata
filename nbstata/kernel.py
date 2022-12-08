@@ -37,29 +37,22 @@ class PyStataKernel(IPythonKernel):
         self.env = None
 
 # %% ../nbs/04_kernel.ipynb 7
-@patch_to(PyStataKernel)
-def init_stata(self):
-    def _set_graph_format(graph_format):
-        if graph_format == 'pystata':
-            pass
-        else:
-            from pystata.config import set_graph_format
-            set_graph_format(graph_format)
-    
-    self.env = get_config()
-    if self.env['echo'] not in {'True', 'False', 'None'}:
-        raise OSError("'" + self.env['echo'] + "' is not an acceptable value for 'echo'.")
-
-    launch_stata(self.env['stata_dir'], self.env['edition'],
-                 False if self.env['splash']=='False' else True)
-
-    _set_graph_format(self.env['graph_format'])
-
-    self.magic_handler = StataMagics()
-
-    self.stata_ready = True
+def _set_graph_format(graph_format):
+    if graph_format != 'pystata':
+        from pystata.config import set_graph_format
+        set_graph_format(graph_format)
 
 # %% ../nbs/04_kernel.ipynb 8
+@patch_to(PyStataKernel)
+def init_stata(self):
+    self.env = get_config()
+    launch_stata(self.env['stata_dir'], self.env['edition'],
+                 False if self.env['splash']=='False' else True)
+    _set_graph_format(self.env['graph_format'])
+    self.magic_handler = StataMagics()
+    self.stata_ready = True
+
+# %% ../nbs/04_kernel.ipynb 9
 class Cell:
     """A class for managing execution of a single code cell"""
     def __init__(self, kernel, code_w_magics, silent=False):
@@ -87,40 +80,35 @@ class Cell:
                     self.code = "#delimit;\n" + self.code
                 run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
 
-# %% ../nbs/04_kernel.ipynb 19
+# %% ../nbs/04_kernel.ipynb 20
+_missing_stata_message = (
+    "pystata path not found\n"
+    "A Stata 17 installation is required to use the nbstata Stata kernel. "
+    "If you already have Stata 17 installed, "
+    "please specify its path in your configuration file."
+)
+
+# %% ../nbs/04_kernel.ipynb 22
+def _handle_stata_import_error(err, silent, execution_count):
+    if not silent:
+        print_red(f"ModuleNotFoundError: {_missing_stata_message}")
+    return {
+        "traceback": [],
+        "ename": "ModuleNotFoundError",
+        "evalue": _missing_stata_message,
+        'status': "error",
+        'execution_count': execution_count,
+    }
+
+# %% ../nbs/04_kernel.ipynb 23
 def print_stata_error(text):
     lines = text.splitlines()
     if len(lines) > 2:
         print("\n".join(lines[:-2]))
     print_red("\n".join(lines[-2:]))
 
-# %% ../nbs/04_kernel.ipynb 21
-@patch_to(PyStataKernel)
-def do_execute(self, code, silent, store_history=True, user_expressions=None,
-               allow_stdin=False):
-    if not self.stata_ready:
-        self.init_stata()
-    self.shell.execution_count += 1
-    _ending_delimiter = ending_delimiter(code, self.starting_delimiter)
-    code_cell = Cell(self, code, silent)
-    try:
-        code_cell.run()
-    except SystemError as err:
-        return _handle_error(err, silent, self.execution_count)
-    else:
-        self.starting_delimiter = _ending_delimiter
-        if _ending_delimiter == ';' and code.strip()[-1] != ';':
-            print_red("Warning: Code cell (with #delimit; in effect) does not end in ';'. "
-                      "Exported .do script will behave differently from notebook.")
-        return {
-            'status': 'ok',
-            'execution_count': self.execution_count,
-            'payload': [],
-            'user_expressions': {},
-            }
-
-# %% ../nbs/04_kernel.ipynb 22
-def _handle_error(err, silent, execution_count):
+# %% ../nbs/04_kernel.ipynb 25
+def _handle_stata_error(err, silent, execution_count):
     reply_content = {
         "traceback": [],
         "ename": "Stata error",
@@ -138,3 +126,30 @@ def _handle_error(err, silent, execution_count):
         'execution_count': execution_count,
     })
     return reply_content
+
+# %% ../nbs/04_kernel.ipynb 26
+@patch_to(PyStataKernel)
+def do_execute(self, code, silent, store_history=True, user_expressions=None,
+               allow_stdin=False):
+    if not self.stata_ready:
+        try:
+            self.init_stata()
+        except ModuleNotFoundError as err:
+            return _handle_stata_import_error(err, silent, self.execution_count)
+    self.shell.execution_count += 1
+    _ending_delimiter = ending_delimiter(code, self.starting_delimiter)
+    code_cell = Cell(self, code, silent)
+    try:
+        code_cell.run()
+    except SystemError as err:
+        return _handle_stata_error(err, silent, self.execution_count)
+    if _ending_delimiter == ';' and code.strip()[-1] != ';':
+        print_red("Warning: Code cell (with #delimit; in effect) does not end in ';'. "
+                  "Exported .do script may behave differently from notebook.")
+    self.starting_delimiter = _ending_delimiter
+    return {
+        'status': 'ok',
+        'execution_count': self.execution_count,
+        'payload': [],
+        'user_expressions': {},
+    }

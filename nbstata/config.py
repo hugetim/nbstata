@@ -104,10 +104,9 @@ def launch_stata(path=None, edition=None, splash=True):
 
 # %% ../nbs/00_config.ipynb 14
 def get_config():
-    """First check if a configuration file exists, if not, query the system."""
+    """First check if a configuration file exists. If not, try `find_dir_edition`."""
     global_config_path = Path(os.path.join(sys.prefix,'etc','nbstata.conf'))
     user_config_path = Path('~/.nbstata.conf').expanduser()
-
     env = {'stata_dir': None,
            'edition': None,
            'graph_format': 'png',
@@ -115,7 +114,6 @@ def get_config():
            'splash': 'False',
            'missing': '.',
           }
-
     for cpath in (global_config_path, user_config_path):
         try:
             if cpath.is_file():
@@ -124,9 +122,10 @@ def get_config():
                 env.update(dict(config.items('nbstata')))
         except:
             pass
-
     if env['stata_dir']==None or env['edition']==None:     
         stata_dir,stata_ed = find_dir_edition()     
         default_env = {'stata_dir': stata_dir, 'edition': stata_ed}
         env.update(default_env)
+    if env['echo'] not in {'True', 'False', 'None'}:
+        env['echo'] = 'None'
     return env
