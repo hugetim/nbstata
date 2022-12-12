@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['PyStataKernel', 'Cell', 'print_stata_error']
 
-# %% ../nbs/04_kernel.ipynb 5
+# %% ../nbs/04_kernel.ipynb 4
 from .config import get_config, launch_stata
 from .utils import print_red, ending_delimiter, is_cr_delimiter
 from .magics import StataMagics
@@ -13,7 +13,7 @@ import os
 import sys
 from packaging import version
 
-# %% ../nbs/04_kernel.ipynb 6
+# %% ../nbs/04_kernel.ipynb 5
 class PyStataKernel(IPythonKernel):
     """A jupyter kernel based on pystata"""
     implementation = 'nbstata'
@@ -36,13 +36,13 @@ class PyStataKernel(IPythonKernel):
         self.starting_delimiter = None
         self.env = None
 
-# %% ../nbs/04_kernel.ipynb 7
+# %% ../nbs/04_kernel.ipynb 6
 def _set_graph_format(graph_format):
     if graph_format != 'pystata':
         from pystata.config import set_graph_format
         set_graph_format(graph_format)
 
-# %% ../nbs/04_kernel.ipynb 8
+# %% ../nbs/04_kernel.ipynb 7
 @patch_to(PyStataKernel)
 def init_stata(self):
     self.env = get_config()
@@ -52,7 +52,7 @@ def init_stata(self):
     self.magic_handler = StataMagics()
     self.stata_ready = True
 
-# %% ../nbs/04_kernel.ipynb 9
+# %% ../nbs/04_kernel.ipynb 8
 class Cell:
     """A class for managing execution of a single code cell"""
     def __init__(self, kernel, code_w_magics, silent=False):
@@ -80,7 +80,7 @@ class Cell:
                     self.code = "#delimit;\n" + self.code
                 run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
 
-# %% ../nbs/04_kernel.ipynb 20
+# %% ../nbs/04_kernel.ipynb 19
 _missing_stata_message = (
     "pystata path not found\n"
     "A Stata 17 installation is required to use the nbstata Stata kernel. "
@@ -88,7 +88,7 @@ _missing_stata_message = (
     "please specify its path in your configuration file."
 )
 
-# %% ../nbs/04_kernel.ipynb 22
+# %% ../nbs/04_kernel.ipynb 21
 def _handle_stata_import_error(err, silent, execution_count):
     if not silent:
         print_red(f"ModuleNotFoundError: {_missing_stata_message}")
@@ -100,14 +100,14 @@ def _handle_stata_import_error(err, silent, execution_count):
         'execution_count': execution_count,
     }
 
-# %% ../nbs/04_kernel.ipynb 23
+# %% ../nbs/04_kernel.ipynb 22
 def print_stata_error(text):
     lines = text.splitlines()
     if len(lines) > 2:
         print("\n".join(lines[:-2]))
     print_red("\n".join(lines[-2:]))
 
-# %% ../nbs/04_kernel.ipynb 25
+# %% ../nbs/04_kernel.ipynb 24
 def _handle_stata_error(err, silent, execution_count):
     reply_content = {
         "traceback": [],
@@ -127,10 +127,11 @@ def _handle_stata_error(err, silent, execution_count):
     })
     return reply_content
 
-# %% ../nbs/04_kernel.ipynb 26
+# %% ../nbs/04_kernel.ipynb 25
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent, store_history=True, user_expressions=None,
                allow_stdin=False):
+    """Execute Stata code cell"""
     if not self.stata_ready:
         try:
             self.init_stata()
@@ -154,10 +155,10 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
         'user_expressions': {},
     }
 
-# %% ../nbs/04_kernel.ipynb 27
+# %% ../nbs/04_kernel.ipynb 26
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
-    """Overrides IPythonKernel with kernelbase version"""
+    """Overrides IPythonKernel with kernelbase default"""
     return {
         "matches": [],
         "cursor_end": cursor_pos,
@@ -166,19 +167,19 @@ def do_complete(self, code, cursor_pos):
         "status": "ok",
     }
 
-# %% ../nbs/04_kernel.ipynb 28
+# %% ../nbs/04_kernel.ipynb 27
 @patch_to(PyStataKernel)
 def do_is_complete(self, code):
-    """Overrides IPythonKernel with kernelbase version"""
+    """Overrides IPythonKernel with kernelbase default"""
     return {"status": "unknown"}
 
-# %% ../nbs/04_kernel.ipynb 29
+# %% ../nbs/04_kernel.ipynb 28
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
-    """Overrides IPythonKernel with kernelbase version"""
+    """Overrides IPythonKernel with kernelbase default"""
     return {"status": "ok", "data": {}, "metadata": {}, "found": False}
 
-# %% ../nbs/04_kernel.ipynb 30
+# %% ../nbs/04_kernel.ipynb 29
 @patch_to(PyStataKernel)
 def do_history(
     self,
@@ -192,5 +193,5 @@ def do_history(
     pattern=None,
     unique=False,
 ):
-    """Overrides IPythonKernel with kernelbase version"""
+    """Overrides IPythonKernel with kernelbase default"""
     return {"status": "ok", "history": []}

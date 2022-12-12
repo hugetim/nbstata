@@ -4,19 +4,19 @@
 __all__ = ['count', 'resolve_macro', 'Selectvar', 'run_as_program', 'run_non_prog_noecho', 'run_prog_noecho', 'run_noecho',
            'better_dataframe_from_stata', 'better_pdataframe_from_data', 'better_pdataframe_from_frame']
 
-# %% ../nbs/02_helpers.ipynb 5
+# %% ../nbs/02_helpers.ipynb 4
 from .config import launch_stata
 from .utils import break_out_prog_blocks, HiddenPrints
 import pandas as pd
 import numpy as np
 
-# %% ../nbs/02_helpers.ipynb 7
+# %% ../nbs/02_helpers.ipynb 6
 def count():
     """Count the number of observations"""
     import sfi
     return sfi.Data.getObsTotal()
 
-# %% ../nbs/02_helpers.ipynb 9
+# %% ../nbs/02_helpers.ipynb 8
 def resolve_macro(macro):
     import sfi
     macro = macro.strip()
@@ -28,7 +28,7 @@ def resolve_macro(macro):
         macro = sfi.Macro.getGlobal(macro[1:])
     return macro
 
-# %% ../nbs/02_helpers.ipynb 11
+# %% ../nbs/02_helpers.ipynb 10
 class Selectvar():
     """Class for generating Stata selectvar for getAsDict"""
     varname = None
@@ -59,7 +59,7 @@ def run_as_program(std_non_prog_code):
     finally:
         run(f"program drop {_program_name}", quietly=True)
 
-# %% ../nbs/02_helpers.ipynb 30
+# %% ../nbs/02_helpers.ipynb 31
 def run_non_prog_noecho(std_non_prog_code):
     from pystata.stata import run
     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
@@ -75,7 +75,7 @@ def run_prog_noecho(std_prog_code):
     else:
         run(std_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/02_helpers.ipynb 38
+# %% ../nbs/02_helpers.ipynb 39
 def run_noecho(code, starting_delimiter=None):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
     for block in break_out_prog_blocks(code, starting_delimiter):
@@ -84,7 +84,7 @@ def run_noecho(code, starting_delimiter=None):
         else:
             run_non_prog_noecho(block['std_code'])
 
-# %% ../nbs/02_helpers.ipynb 42
+# %% ../nbs/02_helpers.ipynb 43
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -108,14 +108,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/02_helpers.ipynb 43
+# %% ../nbs/02_helpers.ipynb 44
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/02_helpers.ipynb 44
+# %% ../nbs/02_helpers.ipynb 45
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()

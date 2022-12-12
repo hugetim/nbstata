@@ -5,18 +5,18 @@ __all__ = ['parse_code_if_in_regex', 'comment_regex', 'delimit_regex', 'multi_re
            'is_cr_delimiter', 'ending_delimiter', 'standardize_code', 'is_start_of_program_block',
            'break_out_prog_blocks', 'HiddenPrints', 'print_red']
 
-# %% ../nbs/01_utils.ipynb 4
+# %% ../nbs/01_utils.ipynb 3
 import re
 import sys
 import os
 
-# %% ../nbs/01_utils.ipynb 6
+# %% ../nbs/01_utils.ipynb 5
 parse_code_if_in_regex = re.compile(
     r'\A(?P<code>(?!if\s)(?!\sif)(?!in\s)(?!\sin).+?)?(?P<if>\s*if\s+.+?)?(?P<in>\s*in\s.+?)?\Z',
     flags=re.DOTALL + re.MULTILINE
 )
 
-# %% ../nbs/01_utils.ipynb 7
+# %% ../nbs/01_utils.ipynb 6
 def parse_code_if_in(code):
     """Parse line of Stata code into code, if, in"""
     match = parse_code_if_in_regex.match(code.strip())
@@ -54,7 +54,7 @@ def _remove_multi_line_comments(code):
 def is_cr_delimiter(delimiter):
     return delimiter in {'cr', None}
 
-# %% ../nbs/01_utils.ipynb 24
+# %% ../nbs/01_utils.ipynb 23
 delimit_regex = re.compile(r'#delimit(.*$)', flags=re.MULTILINE)
 def _replace_delimiter(code, starting_delimiter=None):
     # Recursively replace custom delimiter with newline
@@ -74,7 +74,7 @@ def _replace_delimiter(code, starting_delimiter=None):
 
     return before + after
 
-# %% ../nbs/01_utils.ipynb 26
+# %% ../nbs/01_utils.ipynb 27
 def ending_delimiter(code, starting_delimiter=None):
     code = _remove_multi_line_comments(code)
     # Recursively determine ending delimiter
@@ -87,7 +87,7 @@ def ending_delimiter(code, starting_delimiter=None):
         delimiter = starting_delimiter
     return None if is_cr_delimiter(delimiter) else ';'
 
-# %% ../nbs/01_utils.ipynb 29
+# %% ../nbs/01_utils.ipynb 30
 # Detect Multiple whitespace
 multi_regex = re.compile(r' +')
 
@@ -110,7 +110,7 @@ def standardize_code(code, starting_delimiter=None):
             std_lines.append(cs)
     return '\n'.join(std_lines)
 
-# %% ../nbs/01_utils.ipynb 38
+# %% ../nbs/01_utils.ipynb 39
 def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
     for j in range(len(shortest_abbrev), len(full_command)+1):
         if string.startswith(full_command[0:j] + ' '):
