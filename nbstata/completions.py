@@ -111,7 +111,7 @@ def variable_names():
     from sfi import Data
     return [Data.getVarName(i) for i in range(Data.getVarCount())]
 
-# %% ../nbs/04_completions.ipynb 9
+# %% ../nbs/04_completions.ipynb 10
 def diverted_stata_output(code):
     import pystata
     pystata.stata.run("capture log off", quietly=True)
@@ -124,7 +124,7 @@ def diverted_stata_output(code):
     pystata.stata.run("capture log on", quietly=True)
     return out #.replace("\n> ", "")
 
-# %% ../nbs/04_completions.ipynb 10
+# %% ../nbs/04_completions.ipynb 11
 @patch_to(CompletionsManager)
 def _completions(self):
 #     return dedent(f"""\
@@ -150,7 +150,7 @@ def _completions(self):
         disp `"`:all matrices'"'
     """))
 
-# %% ../nbs/04_completions.ipynb 12
+# %% ../nbs/04_completions.ipynb 13
 @patch_to(CompletionsManager)
 def get_suggestions(self):
     match = self.matchall(self._completions())
@@ -189,7 +189,7 @@ def get_suggestions(self):
 
     return suggestions
 
-# %% ../nbs/04_completions.ipynb 14
+# %% ../nbs/04_completions.ipynb 15
 @patch_to(CompletionsManager)
 def get_file_paths(self, chunk):
     """Get file paths based on chunk
@@ -252,7 +252,7 @@ def get_file_paths(self, chunk):
 
     return sorted(results)
 
-# %% ../nbs/04_completions.ipynb 16
+# %% ../nbs/04_completions.ipynb 17
 class Env(IntEnum):
     GENERAL = 0    # varlist and/or file path
     LOCAL = 1      # `x* completed with `x*'
@@ -265,7 +265,7 @@ class Env(IntEnum):
     MATRIX_VAR = 8 # matrices and varlist, matrix .* = x* completed with x*
     MATA = 9       # inline or in mata environment
 
-# %% ../nbs/04_completions.ipynb 17
+# %% ../nbs/04_completions.ipynb 18
 @patch_to(CompletionsManager)
 def get_env(self, code, r2chars, sc_delimit_mode, mata_mode=False):
     """Returns completions environment
@@ -458,7 +458,7 @@ def get_env(self, code, r2chars, sc_delimit_mode, mata_mode=False):
 
     return env, pos, code[pos:], rcomp
 
-# %% ../nbs/04_completions.ipynb 18
+# %% ../nbs/04_completions.ipynb 19
 relevant_suggestion_keys = {
     Env.GENERAL: ['varlist'],
     Env.LOCAL: ['locals'],
