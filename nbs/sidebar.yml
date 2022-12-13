@@ -8,4 +8,5 @@ website:
           - 01_utils.ipynb
           - 02_helpers.ipynb
           - 03_magics.ipynb
-          - 04_kernel.ipynb
+          - 04_completions.ipynb
+          - 05_kernel.ipynb
