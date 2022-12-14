@@ -2,11 +2,14 @@
 
 # %% auto 0
 __all__ = ['count', 'resolve_macro', 'Selectvar', 'run_as_program', 'run_non_prog_noecho', 'run_prog_noecho', 'run_noecho',
-           'better_dataframe_from_stata', 'better_pdataframe_from_data', 'better_pdataframe_from_frame']
+           'diverted_stata_output', 'better_dataframe_from_stata', 'better_pdataframe_from_data',
+           'better_pdataframe_from_frame']
 
 # %% ../nbs/02_helpers.ipynb 4
 from .config import launch_stata
 from .utils import break_out_prog_blocks, HiddenPrints
+import sys
+from io import StringIO
 import pandas as pd
 import numpy as np
 
@@ -84,7 +87,20 @@ def run_noecho(code, starting_delimiter=None):
         else:
             run_non_prog_noecho(block['std_code'])
 
-# %% ../nbs/02_helpers.ipynb 43
+# %% ../nbs/02_helpers.ipynb 42
+def diverted_stata_output(code):
+    import pystata
+    pystata.stata.run("capture log off", quietly=True)
+    old_stdout = sys.stdout
+    diverted = StringIO()
+    sys.stdout = diverted
+    run_noecho(code) # multi-line code run as a program, which clears locals
+    sys.stdout = old_stdout
+    out = diverted.getvalue()
+    pystata.stata.run("capture log on", quietly=True)
+    return out #.replace("\n> ", "")
+
+# %% ../nbs/02_helpers.ipynb 45
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -108,14 +124,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/02_helpers.ipynb 44
+# %% ../nbs/02_helpers.ipynb 46
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/02_helpers.ipynb 45
+# %% ../nbs/02_helpers.ipynb 47
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()

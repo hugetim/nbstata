@@ -7,6 +7,7 @@ website:
           - 00_config.ipynb
           - 01_utils.ipynb
           - 02_helpers.ipynb
-          - 03_magics.ipynb
-          - 04_completions.ipynb
-          - 05_kernel.ipynb
+          - 03_stata_session.ipynb
+          - 04_magics.ipynb
+          - 05_completions.ipynb
+          - 06_kernel.ipynb
