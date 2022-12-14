@@ -171,15 +171,17 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
     """Provide context-aware suggestions"""
-    env, pos, chunk, rcomp = self.completions.get_env(
-        code[:cursor_pos], code[cursor_pos:(cursor_pos + 2)],
-        not is_cr_delimiter(self.starting_delimiter))
-
+    cursor_start, cursor_end, matches = self.completions.do(
+        code,
+        cursor_pos,
+        not is_cr_delimiter(self.starting_delimiter),
+    )
     return {
         'status': 'ok',
-        'cursor_start': pos,
-        'cursor_end': cursor_pos,
-        'matches': self.completions.get(chunk, env, rcomp)}
+        'cursor_start': cursor_start,
+        'cursor_end': cursor_end,
+        'matches': matches,
+    }
 
 # %% ../nbs/06_kernel.ipynb 28
 @patch_to(PyStataKernel)

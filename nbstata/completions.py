@@ -372,3 +372,13 @@ def get(self, starts, env, rcomp):
 #         return [
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
+
+# %% ../nbs/05_completions.ipynb 13
+@patch_to(CompletionsManager)
+def do(self, code, cursor_pos, sc_delimit_mode=False):
+    env, pos, chunk, rcomp = self.get_env(
+        code[:cursor_pos], 
+        code[cursor_pos:(cursor_pos + 2)],
+        sc_delimit_mode,
+    )
+    return pos, cursor_pos, self.get(chunk, env, rcomp)
