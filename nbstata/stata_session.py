@@ -4,7 +4,7 @@
 __all__ = ['StataSession', 'variable_names']
 
 # %% ../nbs/03_stata_session.ipynb 4
-from .helpers import run_noecho, diverted_stata_output
+from .helpers import diverted_stata_output, run_as_program
 from fastcore.basics import patch_to
 from textwrap import dedent
 import re
@@ -57,7 +57,7 @@ def variable_names():
     from sfi import Data
     return [Data.getVarName(i) for i in range(Data.getVarCount())]
 
-# %% ../nbs/03_stata_session.ipynb 10
+# %% ../nbs/03_stata_session.ipynb 12
 @patch_to(StataSession)
 def _completions(self):
 #     return dedent(f"""\
@@ -83,41 +83,61 @@ def _completions(self):
         disp `"`:all matrices'"'
     """))
 
-# %% ../nbs/03_stata_session.ipynb 12
+# %% ../nbs/03_stata_session.ipynb 14
+@patch_to(StataSession)
+def get_locals(self):
+    all_locals = """mata : invtokens(st_dir("local", "macro", "*")')"""
+    res = '\r\n'.join(
+        re.split(r'[\r\n]{1,2}', diverted_stata_output(all_locals)))
+    if res.strip():
+        return self.varlist.findall(self.varclean('', res))
+    else:
+        return []
+
+# %% ../nbs/03_stata_session.ipynb 15
 @patch_to(StataSession)
 def get_suggestions(self):
     match = self.matchall(self._completions())
-    if match:
-        suggestions = match.groupdict()
+    suggestions = match.groupdict()
 #         suggestions['mata'] = self._parse_mata_desc(suggestions['mata'])
 #         suggestions['programs'] = self._parse_programs_desc(
 #             suggestions['programs'])
-        for k, v in suggestions.items():
+    for k, v in suggestions.items():
 #             if k in ['mata', 'programs']:
 #                 continue
 #             elif k in ['logfiles']:
 #                 suggestions[k] = [
 #                     f for f in self.filelist.split(v.strip()) if f]
 #             else:
-            suggestions[k] = self.varlist.findall(self.varclean('', v))
-
-        all_locals = """mata : invtokens(st_dir("local", "macro", "*")')"""
-        res = '\r\n'.join(
-            re.split(r'[\r\n]{1,2}', diverted_stata_output(all_locals)))
-        if res.strip():
-            suggestions['locals'] = self.varlist.findall(
-                self.varclean('', res))
-        else:
-            suggestions['locals'] = []
-    else:
-        suggestions = {
-            'varlist': [],
-            'scalars': [],
-            'matrices': [],
-#             'logfiles': [],
-            'globals': [],
-#             'programs': [],
-            'locals': [],
-        }
-
+        suggestions[k] = self.varlist.findall(self.varclean('', v))
+    suggestions['locals'] = self.get_locals()
     return suggestions
+
+# %% ../nbs/03_stata_session.ipynb 18
+@patch_to(StataSession)
+def run_as_prog_with_locals(self, std_code):
+    """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
+    from sfi import Macro
+    local_defs = (f"""local {name} `"{Macro.getLocal(name)}"'"""
+                  for name in self.get_locals())
+    locals_code = "\n".join(local_defs)
+    run_as_program(f"""{locals_code}\n{std_code}""")
+
+# %% ../nbs/03_stata_session.ipynb 22
+# @patch_to(StataSession)
+# def run_non_prog_noecho(self, std_non_prog_code):
+#     from pystata.stata import run
+#     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
+#         run(std_non_prog_code, quietly=False, inline=True, echo=False)
+#     else:
+#         self._run_as_prog_with_locals(std_non_prog_code)
+
+# %% ../nbs/03_stata_session.ipynb 23
+# @patch_to(StataSession)
+# def run_noecho(self, code, starting_delimiter=None):
+#     """After `break_out_prog_blocks`, run each prog and non-prog (with locals) block noecho"""
+#     for block in break_out_prog_blocks(code, starting_delimiter):
+#         if block['is_prog']:
+#             run_prog_noecho(block['std_code'])
+#         else:
+#             self.run_non_prog_noecho(block['std_code'])

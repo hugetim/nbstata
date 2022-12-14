@@ -63,12 +63,12 @@ def run_as_program(std_non_prog_code):
         run(f"program drop {_program_name}", quietly=True)
 
 # %% ../nbs/02_helpers.ipynb 31
-def run_non_prog_noecho(std_non_prog_code):
+def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program):
     from pystata.stata import run
     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
         run(std_non_prog_code, quietly=False, inline=True, echo=False)
     else:
-        run_as_program(std_non_prog_code)
+        run_as_prog(std_non_prog_code)
 
 # %% ../nbs/02_helpers.ipynb 33
 def run_prog_noecho(std_prog_code):
@@ -79,22 +79,22 @@ def run_prog_noecho(std_prog_code):
         run(std_prog_code, quietly=True, inline=True, echo=False)
 
 # %% ../nbs/02_helpers.ipynb 39
-def run_noecho(code, starting_delimiter=None):
+def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
     for block in break_out_prog_blocks(code, starting_delimiter):
         if block['is_prog']:
             run_prog_noecho(block['std_code'])
         else:
-            run_non_prog_noecho(block['std_code'])
+            run_non_prog_noecho(block['std_code'], run_as_prog=run_as_prog)
 
 # %% ../nbs/02_helpers.ipynb 42
-def diverted_stata_output(code):
+def diverted_stata_output(code, run_as_prog=run_as_program):
     import pystata
     pystata.stata.run("capture log off", quietly=True)
     old_stdout = sys.stdout
     diverted = StringIO()
     sys.stdout = diverted
-    run_noecho(code) # multi-line code run as a program, which clears locals
+    run_noecho(code, run_as_prog=run_as_prog) # multi-line code run as a program, which clears locals
     sys.stdout = old_stdout
     out = diverted.getvalue()
     pystata.stata.run("capture log on", quietly=True)

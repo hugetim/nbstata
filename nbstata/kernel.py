@@ -71,13 +71,15 @@ class Cell:
             self.echo = False
         self.quietly = silent
         self.starting_delimiter = kernel.starting_delimiter
+        self.stata_session = kernel.stata_session
         self.code = kernel.magic_handler.magic(code_w_magics, kernel, self)
     
     def run(self):
         if self.code != '':
             if self.noecho and not self.quietly:
                 from nbstata.helpers import run_noecho
-                run_noecho(self.code, self.starting_delimiter)
+                run_noecho(self.code, self.starting_delimiter,
+                           run_as_prog=self.stata_session.run_as_prog_with_locals)
             else:
                 from pystata.stata import run
                 if not is_cr_delimiter(self.starting_delimiter):
