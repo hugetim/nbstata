@@ -29,7 +29,7 @@ notebook](https://www.stata.com/python/pystata/notebook/Example2.html)).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="55" height="8.25" src="index_files/figure-commonmark/c64e8952-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/bec463a9-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
