@@ -24,12 +24,12 @@ notebook](https://www.stata.com/python/pystata/notebook/Example2.html)).
   - interactive
   - preserved for future reference/editing
 - Presenting results in a way that interweaves:
-  - code: `reg price trend`
+  - code
   - results (including figures)
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  images
+    3.  <img align="left" width="55" height="8.25" src="index_files/figure-commonmark/c64e8952-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -38,7 +38,6 @@ notebook](https://www.stata.com/python/pystata/notebook/Example2.html)).
 - Stata side panels: Variables and Properties
 - Stata data editor (browse)
 - Stata drop-down menus
-- code completion (and reliable syntax highlighting)
 
 ## Install
 
