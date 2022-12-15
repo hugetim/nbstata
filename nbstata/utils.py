@@ -87,7 +87,7 @@ def ending_delimiter(code, starting_delimiter=None):
         delimiter = starting_delimiter
     return None if is_cr_delimiter(delimiter) else ';'
 
-# %% ../nbs/01_utils.ipynb 30
+# %% ../nbs/01_utils.ipynb 31
 # Detect Multiple whitespace
 multi_regex = re.compile(r' +')
 
@@ -110,14 +110,14 @@ def standardize_code(code, starting_delimiter=None):
             std_lines.append(cs)
     return '\n'.join(std_lines)
 
-# %% ../nbs/01_utils.ipynb 39
+# %% ../nbs/01_utils.ipynb 40
 def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
     for j in range(len(shortest_abbrev), len(full_command)+1):
         if string.startswith(full_command[0:j] + ' '):
             return True
     return False
 
-# %% ../nbs/01_utils.ipynb 41
+# %% ../nbs/01_utils.ipynb 42
 def _remove_prog_prefixes(cs):
     if (_startswith_stata_abbrev(cs, 'quietly', 'qui')
         or cs.startswith('capture ')
@@ -126,7 +126,7 @@ def _remove_prog_prefixes(cs):
     else:
         return cs
 
-# %% ../nbs/01_utils.ipynb 43
+# %% ../nbs/01_utils.ipynb 44
 def is_start_of_program_block(std_code_line):
     cs = _remove_prog_prefixes(std_code_line)
     _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
@@ -138,12 +138,12 @@ def is_start_of_program_block(std_code_line):
             or (cs in {'mata', 'mata:'})
             or (cs in {'python', 'python:'}))
 
-# %% ../nbs/01_utils.ipynb 45
+# %% ../nbs/01_utils.ipynb 46
 def break_out_prog_blocks(code, starting_delimiter=None):
     std_code_lines = standardize_code(code, starting_delimiter).splitlines()
     return list(_prog_blocks(std_code_lines))
 
-# %% ../nbs/01_utils.ipynb 46
+# %% ../nbs/01_utils.ipynb 47
 def _prog_blocks(std_code_lines):
     next_block_lines = []
     in_program = False
@@ -165,7 +165,7 @@ def _prog_blocks(std_code_lines):
 def _block(block_lines, is_prog):
     return {"is_prog": is_prog, "std_code": '\n'.join(block_lines)}
 
-# %% ../nbs/01_utils.ipynb 50
+# %% ../nbs/01_utils.ipynb 51
 class HiddenPrints:
     """A context manager for suppressing `print` output"""
     def __enter__(self):
@@ -175,6 +175,6 @@ class HiddenPrints:
         sys.stdout.close()
         sys.stdout = self._original_stdout
 
-# %% ../nbs/01_utils.ipynb 53
+# %% ../nbs/01_utils.ipynb 54
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")

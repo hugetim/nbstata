@@ -67,7 +67,7 @@ class CompletionsManager():
                     **kwargs).search,
             'delimit_line':
                 re.compile(
-                    r"(?:\A|;)(?P<last_line>\s*({0}\s+)*(?P<first_word>\S+)\s[^;]*?)\Z".format(pre),
+                    r"(?:\A|;)(?P<last_line>\s*({0}\s+)*(?P<first_word>[^\s;]+)\s[^;]*?)\Z".format(pre),
                     **kwargs).search
         }
 
@@ -116,7 +116,7 @@ def _last_line_first_word(self, code, sc_delimit_mode=False):
     else:
         return None, None
 
-# %% ../nbs/05_completions.ipynb 18
+# %% ../nbs/05_completions.ipynb 20
 @patch_to(CompletionsManager)
 def get_file_paths(self, chunk):
     """Get file paths based on chunk
@@ -179,7 +179,7 @@ def get_file_paths(self, chunk):
 
     return sorted(results)
 
-# %% ../nbs/05_completions.ipynb 21
+# %% ../nbs/05_completions.ipynb 23
 class Env(IntEnum):
 #     -2: %set magic, %set x*
 #     -1: magics, %x*
@@ -192,7 +192,7 @@ class Env(IntEnum):
     MATRIX_VAR = 8 # matrices and varlist, matrix .* = x* completed with x*
     MATA = 9       # inline or in mata environment
 
-# %% ../nbs/05_completions.ipynb 22
+# %% ../nbs/05_completions.ipynb 24
 @patch_to(CompletionsManager)
 def _start_of_last_chunk(self, code):
     #any word at the end of a string that is not immediately preceded by one of the characters `, $, ", {, or /
@@ -202,7 +202,7 @@ def _start_of_last_chunk(self, code):
     search = self.last_chunk(code)
     return search.start() + 1 if search else 0
 
-# %% ../nbs/05_completions.ipynb 25
+# %% ../nbs/05_completions.ipynb 27
 @patch_to(CompletionsManager)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
@@ -352,7 +352,7 @@ def get_env(self,
     out_chunk = code[pos:]
     return env, pos, out_chunk, rcomp
 
-# %% ../nbs/05_completions.ipynb 26
+# %% ../nbs/05_completions.ipynb 30
 relevant_suggestion_keys = {
     Env.GENERAL: ['varlist', 'scalars'],
     Env.LOCAL: ['locals'],
@@ -390,7 +390,7 @@ def get(self, starts, env, rcomp):
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
 
-# %% ../nbs/05_completions.ipynb 27
+# %% ../nbs/05_completions.ipynb 31
 @patch_to(CompletionsManager)
 def do(self, code, cursor_pos, starting_delimiter=None):
     env, pos, chunk, rcomp = self.get_env(
