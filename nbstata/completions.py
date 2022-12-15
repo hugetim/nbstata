@@ -144,13 +144,13 @@ class Env(IntEnum):
 
 # %% ../nbs/05_completions.ipynb 11
 def _start_of_word(code):
-    #any word at the end of a string that is not immediately preceded by one of the characters $, ", {, or /
+    #any word at the end of a string that is not immediately preceded by one of the characters `, $, ", {, or /
     search = re.search(r'(?<![`$"{/])\b\w+\Z', code, flags=re.MULTILINE) 
     
     searchpos = -1 if search is None else search.start() - 1
     return max(code.rfind(' '), code.rfind('"'), searchpos) + 1
 
-# %% ../nbs/05_completions.ipynb 12
+# %% ../nbs/05_completions.ipynb 14
 @patch_to(CompletionsManager)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
@@ -326,7 +326,7 @@ def get_env(self,
     out_chunk = code[pos:]
     return env, pos, out_chunk, rcomp
 
-# %% ../nbs/05_completions.ipynb 13
+# %% ../nbs/05_completions.ipynb 15
 relevant_suggestion_keys = {
     Env.GENERAL: ['varlist'],
     Env.LOCAL: ['locals'],
@@ -366,7 +366,7 @@ def get(self, starts, env, rcomp):
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
 
-# %% ../nbs/05_completions.ipynb 14
+# %% ../nbs/05_completions.ipynb 16
 @patch_to(CompletionsManager)
 def do(self, code, cursor_pos, sc_delimit_mode=False):
     env, pos, chunk, rcomp = self.get_env(
