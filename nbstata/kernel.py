@@ -174,7 +174,7 @@ def do_complete(self, code, cursor_pos):
     cursor_start, cursor_end, matches = self.completions.do(
         code,
         cursor_pos,
-        not is_cr_delimiter(self.starting_delimiter),
+        self.starting_delimiter,
     )
     return {
         'status': 'ok',

@@ -4,6 +4,7 @@
 __all__ = ['relevant_suggestion_keys', 'CompletionsManager', 'Env']
 
 # %% ../nbs/05_completions.ipynb 4
+from .utils import ending_delimiter, is_cr_delimiter
 from .helpers import run_noecho
 from .stata_session import StataSession
 from fastcore.basics import patch_to
@@ -18,6 +19,9 @@ class CompletionsManager():
     def __init__(self, stata_session: StataSession):
         self.stata_session = stata_session
 
+        self.last_chunk = re.compile(
+            r'[\s"=][^\s"=]*?\Z', flags=re.MULTILINE).search
+        
         # Path completion
         self.path_search = re.compile(
             r'^(?P<fluff>.*")(?P<path>[^"]*)\Z').search
@@ -46,25 +50,73 @@ class CompletionsManager():
             r'|qui(e|et|etl|etly)?'
             r'|n(o|oi|ois|oisi|oisil|oisily)?)')
         kwargs = {'flags': re.MULTILINE}
-        self.context = {
+        self.fcontext = {
             'function':
                 re.compile(
-                    r"(\s+|(?P<equals>\=))(?P<context>\S+?)"
-                    r"\([^\)\s]*?\Z", **kwargs).search,
-            'lfunction':
-                re.compile(
-                    r"\s(?P<fluff>.*?)`\=(?P<context>\S+?)"
-                    r"\([^\)\s]*?\Z", **kwargs).search,
+                    r"(\s+|\=|`=)\s*(?P<name>\w+?)"
+                    r"\([^\)]*?(?P<last_word>\w*)\Z", **kwargs).search,
+#             'local_function':
+#                 re.compile(
+#                     r"\s.*?`\=\s*(?P<name>\w+?)"
+#                     r"\([^\)]*?\Z", **kwargs).search,
+        }
+        self.context = {
             'line':
                 re.compile(
-                    r"^\s*({0}\s+)*(?P<context>\S+)".format(pre),
+                    r"^(?P<last_line>\s*({0}\s+)*(?P<first_word>\S+) .*?)\Z".format(pre),
                     **kwargs).search,
             'delimit_line':
                 re.compile(
-                    r"\A\s*({0}\s+)*(?P<context>\S+)".format(pre),
-                    **kwargs).search}
+                    r"(?:\A|;)(?P<last_line>\s*({0}\s+)*(?P<first_word>\S+)\s[^;]*?)\Z".format(pre),
+                    **kwargs).search
+        }
 
-# %% ../nbs/05_completions.ipynb 7
+# %% ../nbs/05_completions.ipynb 6
+@patch_to(CompletionsManager)
+def _scalar_f_pos_rcomp(self, code, r2chars):
+    scalar_f = False
+#     lfuncontext = self.fcontext['local_function'](code)
+#     if lfuncontext:
+#         lfunction = lfuncontext.groupdict()['name']
+#         if lfunction == 'scalar':
+#             scalar_f = True
+#             pos =
+#             if r2chars == ")'":
+#                 rcomp = ""
+#             elif r2chars[0:1] == ")":
+#                 rcomp = ""
+#             elif r2chars[0:1] == "'":
+#                 rcomp = ")"
+#             else:
+#                 rcomp = ")'"
+#     else:
+    funcontext = self.fcontext['function'](code)
+    if funcontext:
+        function = funcontext.group('name')
+        if function == 'scalar':
+            scalar_f = True
+            pos = funcontext.start('last_word') if funcontext.start('last_word') else len(code)
+            rcomp = "" if (r2chars[0:1] == ")" or r2chars == " )") else ")"
+    if scalar_f:
+        return True, pos, rcomp
+    else:
+        return False, None, None
+
+# %% ../nbs/05_completions.ipynb 13
+@patch_to(CompletionsManager)
+def _last_line_first_word(self, code, sc_delimit_mode=False):
+    if sc_delimit_mode:
+        linecontext = self.context['delimit_line'](code)
+    else:
+        linecontext = self.context['line'](code)
+    if linecontext:
+        last_line = linecontext.groupdict()['last_line']
+        first_word = linecontext.groupdict()['first_word']
+        return last_line, first_word
+    else:
+        return None, None
+
+# %% ../nbs/05_completions.ipynb 18
 @patch_to(CompletionsManager)
 def get_file_paths(self, chunk):
     """Get file paths based on chunk
@@ -127,35 +179,35 @@ def get_file_paths(self, chunk):
 
     return sorted(results)
 
-# %% ../nbs/05_completions.ipynb 10
+# %% ../nbs/05_completions.ipynb 21
 class Env(IntEnum):
 #     -2: %set magic, %set x*
 #     -1: magics, %x*
     GENERAL = 0    # varlist and/or file path
     LOCAL = 1      # `x* completed with `x*'
-    GLOBAL = 2     # $x* completed with $x*
-    GLOBAL_R = 3   # ${x* completed with ${x*}
-    SCALAR = 4     # scalar .* x* completed with x*
-    SCALAR_R = 5   # scalar(x* completed with scalar(x*)
+    GLOBAL = 2     # $x* completed with $x* or ${x* completed with ${x*}
+    SCALAR = 4     # scalar .* x* completed with x* or scalar(x* completed with scalar(x*)
     MATRIX = 6     # matrix .* x* completed with x*
     SCALAR_VAR = 7 # scalars and varlist, scalar .* = x* completed with x*
     MATRIX_VAR = 8 # matrices and varlist, matrix .* = x* completed with x*
     MATA = 9       # inline or in mata environment
 
-# %% ../nbs/05_completions.ipynb 11
-def _start_of_word(code):
+# %% ../nbs/05_completions.ipynb 22
+@patch_to(CompletionsManager)
+def _start_of_last_chunk(self, code):
     #any word at the end of a string that is not immediately preceded by one of the characters `, $, ", {, or /
-    search = re.search(r'(?<![`$"{/])\b\w+\Z', code, flags=re.MULTILINE) 
-    
-    searchpos = -1 if search is None else search.start() - 1
-    return max(code.rfind(' '), code.rfind('"'), searchpos) + 1
+#     search = re.search(r'(?<![`$"{/])\b\w+\Z', code, flags=re.MULTILINE)   
+#     searchpos = -1 #if search is None else search.start() - 1
+#     return max(code.rfind(' '), code.rfind('"'), searchpos) + 1
+    search = self.last_chunk(code)
+    return search.start() + 1 if search else 0
 
-# %% ../nbs/05_completions.ipynb 14
+# %% ../nbs/05_completions.ipynb 25
 @patch_to(CompletionsManager)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
             r2chars: str, # The two characters immediately after `code`, used to accurately determine rcomp
-            sc_delimit_mode: bool, # Whether #delimit ; is on
+            starting_delimiter,
             mata_mode: bool = False, # Whether mata is on
            ) -> Tuple[Env, int, str, str]:
     """Returns completions environment
@@ -186,12 +238,12 @@ def get_env(self,
 #         env = -2
 #         rcomp = ""
 #         return env, pos, code[pos:], rcomp
-
+    delimiter = ending_delimiter(code, starting_delimiter)
     env = Env.GENERAL
     rcomp = ''
     
     # Detect space-delimited word.
-    pos = _start_of_word(code)
+    pos = self._start_of_last_chunk(code)
 
 #     if mata_mode:
 #         env = Env.MATA
@@ -199,50 +251,24 @@ def get_env(self,
     if pos >= 1:
         # Figure out if current statement is a matrix or scalar
         # statement. If so, will add them to completions list.
-        if sc_delimit_mode:
-            linecontext = self.context['delimit_line'](code)
-        else:
-            linecontext = self.context['line'](code)
-
-        if linecontext:
-            context = linecontext.groupdict()['context']
-            equals_present = (code.find('=') > 0)
-            if re.match(r'^sca(lar|la|l)?$', context.strip()):
+        last_line, first_word = self._last_line_first_word(code, not is_cr_delimiter(delimiter))
+        if first_word:
+            equals_present = (last_line.find('=') > 0)
+            if re.match(r'^sca(lar|la|l)?$', first_word): #.strip()
                 env = Env.SCALAR_VAR if equals_present else Env.SCALAR
-            elif re.match(r'^mat(rix|ri|r)?$', context.strip()):
+            elif re.match(r'^mat(rix|ri|r)?$', first_word): #.strip()
                 env = Env.MATRIX_VAR if equals_present else Env.MATRIX
-    #                 elif self.matainline(context.strip()):
+    #                 elif self.matainline(first_word.strip()):
     #                     env = 9
 
         # Constructs of the form scalar(x<tab> will be filled only
         # with scalars. This can be preceded by = or `=
         if env is Env.GENERAL:
-            lfuncontext = self.context['lfunction'](code)
-            if lfuncontext:
-                lfunction = lfuncontext.groupdict()['context']
-                fluff = lfuncontext.groupdict()['fluff']
-                lfluff = 0 if not fluff else len(fluff)
-                if lfunction == 'scalar':
-                    env = Env.SCALAR_R
-                    pos += len(lfunction) + 3 + lfluff
-                    if r2chars == ")'":
-                        rcomp = ""
-                    elif r2chars[0:1] == ")":
-                        rcomp = ""
-                    elif r2chars[0:1] == "'":
-                        rcomp = ")"
-                    else:
-                        rcomp = ")'"
-            else:
-                funcontext = self.context['function'](code)
-                if funcontext:
-                    function = funcontext.groupdict()['context']
-                    extra = 2 if funcontext.groupdict()['equals'] else 1
-                    if function == 'scalar':
-                        env = Env.SCALAR_R
-                        pos += len(function) + extra
-                        rcomp = "" if r2chars[0:1] == ")" else ")"
-
+            scalar_f, new_pos, new_rcomp = self._scalar_f_pos_rcomp(code, r2chars)
+            if scalar_f:
+                env = Env.SCALAR
+                pos = new_pos
+                rcomp = new_rcomp
 
     # Figure out if this is a local or global; env = 0 (default)
     # will suggest variables in memory.
@@ -258,9 +284,9 @@ def get_env(self,
         rcomp = "" if r2chars[0:1] == "'" else "'"
     elif gfind >= 0 and not path_chars:
         bfind = chunk.rfind('{')
-        if bfind >= 0 and (bfind > gfind): # why not bfind == gfind+1?
+        if bfind >= 0 and (bfind == gfind+1):
             pos += bfind + 1
-            env = Env.GLOBAL_R
+            env = Env.GLOBAL
             rcomp = "" if r2chars[0:1] == "}" else "}"
         else:
             env = Env.GLOBAL
@@ -326,14 +352,12 @@ def get_env(self,
     out_chunk = code[pos:]
     return env, pos, out_chunk, rcomp
 
-# %% ../nbs/05_completions.ipynb 15
+# %% ../nbs/05_completions.ipynb 26
 relevant_suggestion_keys = {
-    Env.GENERAL: ['varlist'],
+    Env.GENERAL: ['varlist', 'scalars'],
     Env.LOCAL: ['locals'],
     Env.GLOBAL: ['globals'],
-    Env.GLOBAL_R: ['globals'],
     Env.SCALAR: ['scalars'],
-    Env.SCALAR_R: ['scalars'],
     Env.MATRIX: ['matrices'],
     Env.SCALAR_VAR: ['scalars', 'varlist'],
     Env.MATRIX_VAR: ['matrices', 'varlist'],
@@ -366,12 +390,12 @@ def get(self, starts, env, rcomp):
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
 
-# %% ../nbs/05_completions.ipynb 16
+# %% ../nbs/05_completions.ipynb 27
 @patch_to(CompletionsManager)
-def do(self, code, cursor_pos, sc_delimit_mode=False):
+def do(self, code, cursor_pos, starting_delimiter=None):
     env, pos, chunk, rcomp = self.get_env(
         code[:cursor_pos], 
         code[cursor_pos:(cursor_pos + 2)],
-        sc_delimit_mode,
+        starting_delimiter,
     )
     return pos, cursor_pos, self.get(chunk, env, rcomp)
