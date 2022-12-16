@@ -10,6 +10,7 @@ from .config import launch_stata
 from .utils import break_out_prog_blocks, HiddenPrints
 import sys
 from io import StringIO
+from textwrap import dedent
 import pandas as pd
 import numpy as np
 
@@ -50,7 +51,7 @@ class Selectvar():
         if self.varname != None:
             pystata.stata.run(f"capture drop {self.varname}", quietly=True)  
 
-# %% ../nbs/02_helpers.ipynb 25
+# %% ../nbs/02_helpers.ipynb 24
 def run_as_program(std_non_prog_code):
     from pystata.stata import run
     _program_name = "temp_nbstata_program_name"
@@ -62,7 +63,7 @@ def run_as_program(std_non_prog_code):
     finally:
         run(f"program drop {_program_name}", quietly=True)
 
-# %% ../nbs/02_helpers.ipynb 31
+# %% ../nbs/02_helpers.ipynb 30
 def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program):
     from pystata.stata import run
     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
@@ -70,7 +71,7 @@ def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program):
     else:
         run_as_prog(std_non_prog_code)
 
-# %% ../nbs/02_helpers.ipynb 33
+# %% ../nbs/02_helpers.ipynb 32
 def run_prog_noecho(std_prog_code):
     from pystata.stata import run
     if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
@@ -78,7 +79,7 @@ def run_prog_noecho(std_prog_code):
     else:
         run(std_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/02_helpers.ipynb 39
+# %% ../nbs/02_helpers.ipynb 38
 def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
     for block in break_out_prog_blocks(code, starting_delimiter):
@@ -87,20 +88,24 @@ def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
         else:
             run_non_prog_noecho(block['std_code'], run_as_prog=run_as_prog)
 
-# %% ../nbs/02_helpers.ipynb 42
-def diverted_stata_output(code, run_as_prog=run_as_program):
+# %% ../nbs/02_helpers.ipynb 41
+def diverted_stata_output(std_code, noecho=True):
     import pystata
-    pystata.stata.run("capture log off", quietly=True)
     old_stdout = sys.stdout
     diverted = StringIO()
     sys.stdout = diverted
-    run_noecho(code, run_as_prog=run_as_prog) # multi-line code run as a program, which clears locals
+    if noecho:
+        code = f"capture log off\n{std_code}\ncapture log on"""
+        run_noecho(code) # multi-line code run as a program, which clears locals
+    else:
+        pystata.stata.run("capture log off", quietly=True)
+        code = f"{std_code}\ncapture log on"""
+        pystata.stata.run(code, quietly=False, inline=True, echo=False)
     sys.stdout = old_stdout
     out = diverted.getvalue()
-    pystata.stata.run("capture log on", quietly=True)
     return out #.replace("\n> ", "")
 
-# %% ../nbs/02_helpers.ipynb 45
+# %% ../nbs/02_helpers.ipynb 48
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -120,18 +125,18 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
     idx = pd.array(idx, dtype='Int64')
 
-    pystata.stata.run("drop `indexvar'")
+    pystata.stata.run("drop `indexvar'", quietly=True)
 
     return pd.DataFrame(data=data, index=idx).convert_dtypes()
 
-# %% ../nbs/02_helpers.ipynb 46
+# %% ../nbs/02_helpers.ipynb 49
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
 
-# %% ../nbs/02_helpers.ipynb 47
+# %% ../nbs/02_helpers.ipynb 50
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
     import pystata
     pystata.config.check_initialized()

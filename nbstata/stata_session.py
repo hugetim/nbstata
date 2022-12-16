@@ -15,10 +15,11 @@ class StataSession():
         """"""
         self.matchall = re.compile(
             r"\A.*?"
-            r"%varlist%(?P<varlist>.*?)"
+            r"^%varlist%(?P<varlist>.*?)"
             r"%globals%(?P<globals>.*?)"
+            r"%locals%(?P<locals>.*?)"
             r"%scalars%(?P<scalars>.*?)"
-            r"%matrices%(?P<matrices>.*?)(\Z|---+\s*end)",
+            r"%matrices%(?P<matrices>.*?)%end%", #"(\Z|---+\s*end)",
             flags=re.DOTALL + re.MULTILINE).match
 
         # Varlist-style matching; applies to most
@@ -72,32 +73,34 @@ def _completions(self):
 #     {' '.join(global_names())}
 #     """
     return diverted_stata_output(dedent("""\
+        local _temp_completions_while_local_ = 1
+        while `_temp_completions_while_local_' {
         set more off
         set trace off
+        if `"`varlist'"' != "" {
+        local _temp_completions_varlist_loc_ `"`varlist'"'
+        }
         syntax [varlist]
         disp "%varlist%"
         disp `"`varlist'"'
+        macro drop _varlist __temp_completions_while_local_
+        if `"`_temp_completions_varlist_loc_'"' != "" {
+        local varlist `"`_temp_completions_varlist_loc_'"'
+        macro drop __temp_completions_varlist_loc_
+        }
         disp "%globals%"
         disp `"`:all globals'"'
-        * NOTE: This only works for globals; locals are, well, local ):
-        * disp "%locals%"
-        * mata : invtokens(st_dir("local", "macro", "*")')
+        disp "%locals%"
+        mata : invtokens(st_dir("local", "macro", "*")')
         disp "%scalars%"
         disp `"`:all scalars'"'
         disp "%matrices%"
         disp `"`:all matrices'"'
-    """))
-
-# %% ../nbs/03_stata_session.ipynb 14
-@patch_to(StataSession)
-def get_locals(self):
-    all_locals = """mata : invtokens(st_dir("local", "macro", "*")')"""
-    res = '\r\n'.join(
-        re.split(r'[\r\n]{1,2}', diverted_stata_output(all_locals)))
-    if res.strip():
-        return self.varlist.findall(self.varclean('', res))
-    else:
-        return []
+        disp "%end%"
+        local _temp_completions_while_local_ = 0
+        }
+        macro drop _temp_completions_while_local_
+    """), noecho=False)
 
 # %% ../nbs/03_stata_session.ipynb 15
 @patch_to(StataSession)
@@ -115,10 +118,23 @@ def get_suggestions(self):
 #                     f for f in self.filelist.split(v.strip()) if f]
 #             else:
         suggestions[k] = self.varlist.findall(self.varclean('', v))
-    suggestions['locals'] = self.get_locals()
+    #suggestions['locals'] = self.get_locals()
     return suggestions
 
-# %% ../nbs/03_stata_session.ipynb 18
+# %% ../nbs/03_stata_session.ipynb 17
+@patch_to(StataSession)
+def get_locals(self):
+    suggestions = self.get_suggestions() if self.suggestions is None else self.suggestions
+    return suggestions['locals']
+#     all_locals = """mata : invtokens(st_dir("local", "macro", "*")')"""
+#     res = '\r\n'.join(
+#         re.split(r'[\r\n]{1,2}', diverted_stata_output(all_locals)))
+#     if res.strip():
+#         return self.varlist.findall(self.varclean('', res))
+#     else:
+#         return []
+
+# %% ../nbs/03_stata_session.ipynb 21
 @patch_to(StataSession)
 def run_as_prog_with_locals(self, std_code):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
