@@ -137,7 +137,7 @@ def get_locals(self):
 # %% ../nbs/03_stata_session.ipynb 22
 @patch_to(StataSession)
 def run_as_prog_with_locals(self, std_code):
-    """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
+    """After `break_out_prog_blocks`, run noecho, inserting locals when needed"""
     from sfi import Macro
     local_defs = (f"""local {name} `"{Macro.getLocal(name)}"'"""
                   for name in self.get_locals())
