@@ -102,7 +102,7 @@ def _completions(self):
         macro drop _temp_completions_while_local_
     """), noecho=False)
 
-# %% ../nbs/03_stata_session.ipynb 15
+# %% ../nbs/03_stata_session.ipynb 16
 @patch_to(StataSession)
 def get_suggestions(self):
     match = self.matchall(self._completions())
@@ -121,7 +121,7 @@ def get_suggestions(self):
     #suggestions['locals'] = self.get_locals()
     return suggestions
 
-# %% ../nbs/03_stata_session.ipynb 17
+# %% ../nbs/03_stata_session.ipynb 18
 @patch_to(StataSession)
 def get_locals(self):
     suggestions = self.get_suggestions() if self.suggestions is None else self.suggestions
@@ -134,7 +134,7 @@ def get_locals(self):
 #     else:
 #         return []
 
-# %% ../nbs/03_stata_session.ipynb 21
+# %% ../nbs/03_stata_session.ipynb 22
 @patch_to(StataSession)
 def run_as_prog_with_locals(self, std_code):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
