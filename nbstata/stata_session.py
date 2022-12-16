@@ -12,7 +12,7 @@ import re
 # %% ../nbs/03_stata_session.ipynb 5
 class StataSession():
     def __init__(self):
-
+        """"""
         self.matchall = re.compile(
             r"\A.*?"
             r"%varlist%(?P<varlist>.*?)"
@@ -41,16 +41,21 @@ class StataSession():
 #         self.mataclean = re.compile(r"\W.*?(\b|$)")
 #         self.matasearch = re.compile(r"(?P<kw>\w.*?(?=\W|\b|$))").search
 
-        self.refresh()
+        self.clear_suggestions()
 #         self.suggestions = self.get_suggestions(kernel)
 #         self.suggestions['magics'] = kernel.magics.available_magics
 #         self.suggestions['magics_set'] = config.all_settings
 
-    def refresh(self):
-        self.suggestions = self.get_suggestions()
-#         self.suggestions['magics'] = kernel.magics.available_magics
-#         self.suggestions['magics_set'] = config.all_settings
-#         self.globals = self.get_globals(kernel)
+    def clear_suggestions(self):
+        self.suggestions = None
+
+# %% ../nbs/03_stata_session.ipynb 6
+@patch_to(StataSession)
+def refresh_suggestions(self):
+    self.suggestions = self.get_suggestions()
+#     self.suggestions['magics'] = kernel.magics.available_magics
+#     self.suggestions['magics_set'] = config.all_settings
+#     self.globals = self.get_globals(kernel)
 
 # %% ../nbs/03_stata_session.ipynb 7
 def variable_names():
@@ -122,22 +127,3 @@ def run_as_prog_with_locals(self, std_code):
                   for name in self.get_locals())
     locals_code = "\n".join(local_defs)
     run_as_program(f"""{locals_code}\n{std_code}""")
-
-# %% ../nbs/03_stata_session.ipynb 22
-# @patch_to(StataSession)
-# def run_non_prog_noecho(self, std_non_prog_code):
-#     from pystata.stata import run
-#     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
-#         run(std_non_prog_code, quietly=False, inline=True, echo=False)
-#     else:
-#         self._run_as_prog_with_locals(std_non_prog_code)
-
-# %% ../nbs/03_stata_session.ipynb 23
-# @patch_to(StataSession)
-# def run_noecho(self, code, starting_delimiter=None):
-#     """After `break_out_prog_blocks`, run each prog and non-prog (with locals) block noecho"""
-#     for block in break_out_prog_blocks(code, starting_delimiter):
-#         if block['is_prog']:
-#             run_prog_noecho(block['std_code'])
-#         else:
-#             self.run_non_prog_noecho(block['std_code'])

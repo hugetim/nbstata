@@ -136,7 +136,7 @@ def _handle_stata_error(err, silent, execution_count):
 # %% ../nbs/06_kernel.ipynb 25
 @patch_to(PyStataKernel)
 def post_do_hook(self):
-    self.stata_session.refresh()
+    self.stata_session.clear_suggestions()
 
 # %% ../nbs/06_kernel.ipynb 26
 @patch_to(PyStataKernel)
