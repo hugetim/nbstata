@@ -34,9 +34,11 @@ class PyStataKernel(IPythonKernel):
         super().__init__(**kwargs)
         self.stata_ready = False
         self.shell.execution_count = 0
-        self.magic_handler = None
         self.starting_delimiter = None
-        self.env = None
+        try:
+            self.init_stata()
+        except ModuleNotFoundError as err:
+            pass # wait for first do_execute so error message can be displayed under cell
 
 # %% ../nbs/06_kernel.ipynb 6
 def _set_graph_format(graph_format):
