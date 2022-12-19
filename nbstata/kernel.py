@@ -161,7 +161,7 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
     self.starting_delimiter = _ending_delimiter
     self.post_do_hook()
     return {
-        'status': 'ok',
+        'status': "ok",
         'execution_count': self.execution_count,
         'payload': [],
         'user_expressions': {},
@@ -171,17 +171,27 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
     """Provide context-aware suggestions"""
-    cursor_start, cursor_end, matches = self.completions.do(
-        code,
-        cursor_pos,
-        self.starting_delimiter,
-    )
-    return {
-        'status': 'ok',
-        'cursor_start': cursor_start,
-        'cursor_end': cursor_end,
-        'matches': matches,
-    }
+    if self.stata_ready:
+        cursor_start, cursor_end, matches = self.completions.do(
+            code,
+            cursor_pos,
+            self.starting_delimiter,
+        )
+        return {
+            'status': "ok",
+            'cursor_start': cursor_start,
+            'cursor_end': cursor_end,
+            'metadata': {},
+            'matches': matches,
+        }
+    else:
+        return {
+            'status': "ok",
+            'cursor_start': cursor_pos,
+            'cursor_end': cursor_pos,
+            'metadata': {},
+            'matches': [],
+        }
 
 # %% ../nbs/06_kernel.ipynb 28
 @patch_to(PyStataKernel)

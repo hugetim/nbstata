@@ -353,7 +353,7 @@ def get_env(self,
     out_chunk = code[pos:]
     return env, pos, out_chunk, rcomp
 
-# %% ../nbs/05_completions.ipynb 29
+# %% ../nbs/05_completions.ipynb 31
 relevant_suggestion_keys = {
     Env.GENERAL: ['varlist', 'scalars'],
     Env.LOCAL: ['locals'],
@@ -391,7 +391,7 @@ def get(self, starts, env, rcomp):
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
 
-# %% ../nbs/05_completions.ipynb 30
+# %% ../nbs/05_completions.ipynb 32
 @patch_to(CompletionsManager)
 def do(self, code, cursor_pos, starting_delimiter=None):
     if self.stata_session.suggestions is None:
