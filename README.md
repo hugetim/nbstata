@@ -29,7 +29,7 @@ notebook](https://www.stata.com/python/pystata/notebook/Example2.html)).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/bec463a9-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/ad716282-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -84,12 +84,10 @@ When updating, you don’t have to run `python -m nbstata.install` again.
 
 ### Syntax highlighting
 
-Stata syntax highlighting can be installed for Jupyter Lab ([just as for
-stata_kernel](https://kylebarron.dev/stata_kernel/getting_started/#jupyter)):
+Stata syntax highlighting can be installed for Jupyter Lab:
 
 ``` sh
-conda install nodejs -c conda-forge --repodata-fn=repodata.json
-jupyter labextension install jupyterlab-stata-highlight
+pip install jupyterlab_stata_highlight2
 ```
 
 ## Configuration
