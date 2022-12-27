@@ -54,7 +54,6 @@ class StataSession():
 @patch_to(StataSession)
 def refresh_suggestions(self):
     self.suggestions = self.get_suggestions()
-#     self.suggestions['magics'] = kernel.magics.available_magics
 #     self.suggestions['magics_set'] = config.all_settings
 #     self.globals = self.get_globals(kernel)
 

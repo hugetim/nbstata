@@ -55,7 +55,7 @@ def init_stata(self):
     _set_graph_format(self.env['graph_format'])
     self.stata_session = StataSession()
     self.magic_handler = StataMagics()
-    self.completions = CompletionsManager(self.stata_session)
+    self.completions = CompletionsManager(self.stata_session, list(self.magic_handler.available_magics.keys()))
     self.stata_ready = True
 
 # %% ../nbs/06_kernel.ipynb 8

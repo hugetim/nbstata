@@ -16,10 +16,11 @@ import platform
 
 # %% ../nbs/05_completions.ipynb 5
 class CompletionsManager():
-    def __init__(self, stata_session: StataSession):
+    def __init__(self, stata_session: StataSession, available_magics):
         """"""
         self.stata_session = stata_session
-
+        self.available_magics = available_magics
+        
         self.last_chunk = re.compile(
             r'[\s"=][^\s"=]*?\Z', flags=re.MULTILINE).search
         
@@ -27,12 +28,9 @@ class CompletionsManager():
         self.path_search = re.compile(
             r'^(?P<fluff>.*")(?P<path>[^"]*)\Z').search
 
-#         # Magic completion
-#         self.magic_completion = re.compile(
-#             r'\A%(?P<magic>\S*)\Z', flags=re.DOTALL + re.MULTILINE).match
-
-#         self.set_magic_completion = re.compile(
-#             r'\A%set (?P<setting>\S*)\Z', flags=re.DOTALL + re.MULTILINE).match
+        # Magic completion
+        self.magic_completion = re.compile(
+            r'\A\*?%(?P<magic>\S*)\Z', flags=re.DOTALL + re.MULTILINE).match
 
 #         self.matainline = re.compile(r"^m(ata)?\b").search
 
@@ -103,7 +101,7 @@ def _scalar_f_pos_rcomp(self, code, r2chars):
     else:
         return False, None, None
 
-# %% ../nbs/05_completions.ipynb 13
+# %% ../nbs/05_completions.ipynb 14
 @patch_to(CompletionsManager)
 def _last_line_first_word(self, code, sc_delimit_mode=False):
     if sc_delimit_mode:
@@ -117,7 +115,7 @@ def _last_line_first_word(self, code, sc_delimit_mode=False):
     else:
         return None, None
 
-# %% ../nbs/05_completions.ipynb 19
+# %% ../nbs/05_completions.ipynb 20
 @patch_to(CompletionsManager)
 def get_file_paths(self, chunk):
     """Get file paths based on chunk
@@ -180,10 +178,9 @@ def get_file_paths(self, chunk):
 
     return sorted(results)
 
-# %% ../nbs/05_completions.ipynb 22
+# %% ../nbs/05_completions.ipynb 23
 class Env(IntEnum):
-#     -2: %set magic, %set x*
-#     -1: magics, %x*
+    MAGIC = -1     # magics, %x*
     GENERAL = 0    # varlist and/or file path
     LOCAL = 1      # `x* completed with `x*'
     GLOBAL = 2     # $x* completed with $x* or ${x* completed with ${x*}
@@ -193,7 +190,7 @@ class Env(IntEnum):
     MATRIX_VAR = 8 # matrices and varlist, matrix .* = x* completed with x*
     MATA = 9       # inline or in mata environment
 
-# %% ../nbs/05_completions.ipynb 23
+# %% ../nbs/05_completions.ipynb 24
 @patch_to(CompletionsManager)
 def _start_of_last_chunk(self, code):
     #any word at the end of a string that is not immediately preceded by one of the characters `, $, ", {, or /
@@ -203,7 +200,7 @@ def _start_of_last_chunk(self, code):
     search = self.last_chunk(code)
     return search.start() + 1 if search else 0
 
-# %% ../nbs/05_completions.ipynb 26
+# %% ../nbs/05_completions.ipynb 27
 @patch_to(CompletionsManager)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
@@ -228,17 +225,12 @@ def get_env(self,
         scalars (if start with `): )'
     """
 
-#     lcode = code.lstrip()
-#     if self.magic_completion(lcode):
-#         pos = code.rfind("%") + 1
-#         env = -1
-#         rcomp = ""
-#         return env, pos, code[pos:], rcomp
-#     elif self.set_magic_completion(lcode):
-#         pos = max(code.rfind(' '), code.rfind('"')) + 1
-#         env = -2
-#         rcomp = ""
-#         return env, pos, code[pos:], rcomp
+    lcode = code.lstrip()
+    if self.magic_completion(lcode):
+        pos = code.rfind("%") + 1
+        env = Env.MAGIC
+        rcomp = ""
+        return env, pos, code[pos:], rcomp
     delimiter = ending_delimiter(code, starting_delimiter)
     env = Env.GENERAL
     rcomp = ''
@@ -353,7 +345,7 @@ def get_env(self,
     out_chunk = code[pos:]
     return env, pos, out_chunk, rcomp
 
-# %% ../nbs/05_completions.ipynb 31
+# %% ../nbs/05_completions.ipynb 34
 relevant_suggestion_keys = {
     Env.GENERAL: ['varlist', 'scalars'],
     Env.LOCAL: ['locals'],
@@ -367,10 +359,15 @@ relevant_suggestion_keys = {
 @patch_to(CompletionsManager)
 def get(self, starts, env, rcomp):
     """Return environment-aware completions list."""
-    relevant_suggestions = [var + rcomp 
-                            for key in relevant_suggestion_keys[env]
-                            for var in self.stata_session.suggestions[key]
-                            if var.startswith(starts)]
+    if env is env.MAGIC:
+        candidate_suggestions = self.available_magics
+    else:
+        candidate_suggestions = [suggestion
+                                 for key in relevant_suggestion_keys[env]
+                                 for suggestion in self.stata_session.suggestions[key]]
+    relevant_suggestions = [candidate + rcomp 
+                            for candidate in candidate_suggestions
+                            if candidate.startswith(starts)]
     if env is Env.GENERAL:
         relevant_suggestions += self.get_file_paths(starts)
     return relevant_suggestions
@@ -391,7 +388,7 @@ def get(self, starts, env, rcomp):
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
 
-# %% ../nbs/05_completions.ipynb 32
+# %% ../nbs/05_completions.ipynb 35
 @patch_to(CompletionsManager)
 def do(self, code, cursor_pos, starting_delimiter=None):
     if self.stata_session.suggestions is None:
