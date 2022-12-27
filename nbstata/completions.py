@@ -54,10 +54,6 @@ class CompletionsManager():
                 re.compile(
                     r"(\s+|\=|`=)\s*(?P<name>\w+?)"
                     r"\([^\)]*?(?P<last_word>\w*)\Z", **kwargs).search,
-#             'local_function':
-#                 re.compile(
-#                     r"\s.*?`\=\s*(?P<name>\w+?)"
-#                     r"\([^\)]*?\Z", **kwargs).search,
         }
         self.context = {
             'line':
@@ -74,21 +70,6 @@ class CompletionsManager():
 @patch_to(CompletionsManager)
 def _scalar_f_pos_rcomp(self, code, r2chars):
     scalar_f = False
-#     lfuncontext = self.fcontext['local_function'](code)
-#     if lfuncontext:
-#         lfunction = lfuncontext.groupdict()['name']
-#         if lfunction == 'scalar':
-#             scalar_f = True
-#             pos =
-#             if r2chars == ")'":
-#                 rcomp = ""
-#             elif r2chars[0:1] == ")":
-#                 rcomp = ""
-#             elif r2chars[0:1] == "'":
-#                 rcomp = ")"
-#             else:
-#                 rcomp = ")'"
-#     else:
     funcontext = self.fcontext['function'](code)
     if funcontext:
         function = funcontext.group('name')
