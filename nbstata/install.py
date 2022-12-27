@@ -67,9 +67,8 @@ def install_conf(conf_file,gen_file=False):
         try:
             with conf_file.open('w') as f:
                 f.write(conf_default)
-            print("Success!")
         except:
-            print("Failed!")
+            print("Actually, due to an error, configuration file was not created.")
 
 def _is_root():
     try:
