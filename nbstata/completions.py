@@ -98,6 +98,15 @@ def _last_line_first_word(self, code, sc_delimit_mode=False):
 
 # %% ../nbs/05_completions.ipynb 20
 @patch_to(CompletionsManager)
+def get_globals(self):
+    from sfi import Macro
+    if self.stata_session.suggestions:
+        return {k: Macro.getGlobal(k) for k in self.stata_session.suggestions['globals']}
+    else:
+        return {}
+
+# %% ../nbs/05_completions.ipynb 21
+@patch_to(CompletionsManager)
 def get_file_paths(self, chunk):
     """Get file paths based on chunk
     Args:
@@ -135,11 +144,13 @@ def get_file_paths(self, chunk):
     globals_re = r'\$\{?((?![0-9_])\w{1,32})\}?'
     try:
         folder = re.sub(
-            globals_re, lambda x: self.globals[x.group(1)], user_folder)
+            globals_re, 
+            lambda x: self.get_globals()[x.group(1)], 
+            user_folder
+        )
     except KeyError:
-        # If the global doesn't exist in self.globals (aka it hasn't been
-        # defined in the Stata environment yet), then there are no paths to
-        # check
+        # If the global doesn't exist (aka it hasn't been defined in 
+        # the Stata environment yet), then there are no paths to check
         return []
 
     # Use Stata's relative path
@@ -159,7 +170,7 @@ def get_file_paths(self, chunk):
 
     return sorted(results)
 
-# %% ../nbs/05_completions.ipynb 23
+# %% ../nbs/05_completions.ipynb 25
 class Env(IntEnum):
     MAGIC = -1     # magics, %x*
     GENERAL = 0    # varlist and/or file path
@@ -171,7 +182,7 @@ class Env(IntEnum):
     MATRIX_VAR = 8 # matrices and varlist, matrix .* = x* completed with x*
     MATA = 9       # inline or in mata environment
 
-# %% ../nbs/05_completions.ipynb 24
+# %% ../nbs/05_completions.ipynb 26
 @patch_to(CompletionsManager)
 def _start_of_last_chunk(self, code):
     #any word at the end of a string that is not immediately preceded by one of the characters `, $, ", {, or /
@@ -181,7 +192,7 @@ def _start_of_last_chunk(self, code):
     search = self.last_chunk(code)
     return search.start() + 1 if search else 0
 
-# %% ../nbs/05_completions.ipynb 27
+# %% ../nbs/05_completions.ipynb 29
 @patch_to(CompletionsManager)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
@@ -326,7 +337,7 @@ def get_env(self,
     out_chunk = code[pos:]
     return env, pos, out_chunk, rcomp
 
-# %% ../nbs/05_completions.ipynb 34
+# %% ../nbs/05_completions.ipynb 36
 relevant_suggestion_keys = {
     Env.GENERAL: ['varlist', 'scalars'],
     Env.LOCAL: ['locals'],
@@ -369,7 +380,7 @@ def get(self, starts, env, rcomp):
 #             var for var in self.stata_session.suggestions['mata']
 #             if var.startswith(starts)] + builtins + paths
 
-# %% ../nbs/05_completions.ipynb 35
+# %% ../nbs/05_completions.ipynb 37
 @patch_to(CompletionsManager)
 def do(self, code, cursor_pos, starting_delimiter=None):
     if self.stata_session.suggestions is None:
