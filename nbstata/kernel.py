@@ -11,21 +11,17 @@ from .magics import StataMagics
 from .completions import CompletionsManager
 from fastcore.basics import patch_to
 from ipykernel.ipkernel import IPythonKernel
-import os
-import sys
-from packaging import version
+import nbstata
 
 # %% ../nbs/06_kernel.ipynb 5
 class PyStataKernel(IPythonKernel):
     """A jupyter kernel based on pystata"""
     implementation = 'nbstata'
-    implementation_version = '0.0.1'
-    language = 'stata'
-    language_version = '17'
+    implementation_version = nbstata.__version__
     language_info = {
         'name': 'stata',
+        'version': '17',
         'mimetype': 'text/x-stata',
-        'codemirror_mode': 'stata',
         'file_extension': '.do',
     }
     banner = "nbstata: a Jupyter kernel for Stata based on pystata"
