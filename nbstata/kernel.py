@@ -25,6 +25,10 @@ class PyStataKernel(IPythonKernel):
         'file_extension': '.do',
     }
     banner = "nbstata: a Jupyter kernel for Stata based on pystata"
+    help_links = [{
+        "text": "Stata Documentation",
+        "url": "https://www.stata.com/features/documentation/",
+    },]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
