@@ -14,9 +14,11 @@ widely used. Though it is named after the three core programming
 languages it supports (Julia, Python, and R), it can be used with with a
 wide variety of languages.
 
-`nbstata` allows you to create Stata notebooks (as opposed to [using
-Stata within a Python
-notebook](https://www.stata.com/python/pystata/notebook/Example2.html)).
+`nbstata` allows you to create Stata notebooks (as opposed to using
+Stata within a *Python* notebook, which is a nice way to [embed Stata
+commands within Python
+code](https://www.stata.com/python/pystata/notebook/Example2.html) but
+is needlessly clunky if you are working primarily with Stata).
 
 ### What do Stata notebooks allow that the official Stata IDE doesn’t?
 
@@ -29,7 +31,7 @@ notebook](https://www.stata.com/python/pystata/notebook/Example2.html)).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/bbe33be0-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/67cd124c-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
