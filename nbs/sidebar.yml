@@ -9,5 +9,6 @@ website:
           - 02_helpers.ipynb
           - 03_stata_session.ipynb
           - 04_magics.ipynb
-          - 05_completions.ipynb
-          - 06_kernel.ipynb
+          - 05_completion_env.ipynb
+          - 06_completions.ipynb
+          - 07_kernel.ipynb
