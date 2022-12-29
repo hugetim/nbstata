@@ -35,7 +35,14 @@ def _last_token(code):
     return (min(tokens_to_combine, key=lambda t: t[0])[0], last_tokentype, "".join([t[2] for t in tokens_to_combine]))
 
 # %% ../nbs/05_completion_env.ipynb 8
-def _last_token_full_string(code):
+def _last_token_full_string(code, starting_delimiter=None):
+    if not code:
+        return (0, None, "")
+    prefix = ""
+    if not is_cr_delimiter(starting_delimiter):
+        prefix = "#delimit;\n"
+        orig_code = code
+        code = prefix + orig_code
     tokens = _lex_tokens(code)
     last_tokentype = tokens[-1][1]
     tokens_to_combine = []
@@ -60,9 +67,13 @@ def _last_token_full_string(code):
         tokens_to_combine = list(reversed(tokens_to_combine))
         index = min(tokens_to_combine, key=lambda t: t[0])[0]
         value = "".join([t[2] for t in tokens_to_combine])
+    index = index-len(prefix)
+    if index < 0:
+        value = value[-index:]
+        index = 0
     return (index, last_tokentype, value)
 
-# %% ../nbs/05_completion_env.ipynb 25
+# %% ../nbs/05_completion_env.ipynb 28
 class CompletionEnv():
     def __init__(self):
         """"""
@@ -128,15 +139,19 @@ class CompletionEnv():
 #             r'([^\"\']|\"(?!\')|\'(?<!\"))*' 
 #             r')*\Z').search
 
-# %% ../nbs/05_completion_env.ipynb 26
-def _ends_in_string_literal(code):
+# %% ../nbs/05_completion_env.ipynb 29
+def _ends_in_string_literal(code, starting_delimiter=None):
+    if not is_cr_delimiter(starting_delimiter):
+        code = "#delimit;\n" + code
     return _last_token(code)[1] is String
 
-# %% ../nbs/05_completion_env.ipynb 27
-def _ends_in_a_comment(code):
+# %% ../nbs/05_completion_env.ipynb 30
+def _ends_in_a_comment(code, starting_delimiter=None):
+    if not is_cr_delimiter(starting_delimiter):
+        code = "#delimit;\n" + code
     return _last_token(code)[1] in [Comment.Single, Comment.Multiline, Comment.Special]
 
-# %% ../nbs/05_completion_env.ipynb 35
+# %% ../nbs/05_completion_env.ipynb 37
 @patch_to(CompletionEnv)
 def _scalar_f_pos_rcomp(self, code, r2chars):
     scalar_f = False
@@ -152,13 +167,13 @@ def _scalar_f_pos_rcomp(self, code, r2chars):
     else:
         return False, None, None
 
-# %% ../nbs/05_completion_env.ipynb 41
+# %% ../nbs/05_completion_env.ipynb 43
 @patch_to(CompletionEnv)
 def _start_of_last_chunk(self, code):
     search = self.last_chunk(code)
     return search.start() + 1 if search else 0
 
-# %% ../nbs/05_completion_env.ipynb 44
+# %% ../nbs/05_completion_env.ipynb 46
 @patch_to(CompletionEnv)
 def _last_line_first_word(self, code, sc_delimit_mode=False):
     if sc_delimit_mode:
@@ -172,7 +187,7 @@ def _last_line_first_word(self, code, sc_delimit_mode=False):
     else:
         return None, None
 
-# %% ../nbs/05_completion_env.ipynb 50
+# %% ../nbs/05_completion_env.ipynb 52
 class Env(IntEnum):
     NONE = -9      # no suggestions
     MAGIC = -1     # magics, %x*
@@ -186,7 +201,7 @@ class Env(IntEnum):
     MATA = 9       # inline or in mata environment
     STRING = 10    # file path
 
-# %% ../nbs/05_completion_env.ipynb 51
+# %% ../nbs/05_completion_env.ipynb 53
 @patch_to(CompletionEnv)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
@@ -223,13 +238,13 @@ def get_env(self,
     # Detect last "word" delimited by white space, a double-quote, or =.
     pos = self._start_of_last_chunk(code)
 
-    if _ends_in_a_comment(code):
+    if _ends_in_a_comment(code, starting_delimiter):
         return env, pos, code[pos:], rcomp
 
-    last_token_index, last_token_type, last_token_value = _last_token_full_string(code)
+    last_token_index, last_token_type, last_token_value = _last_token_full_string(code, starting_delimiter)
     
     if last_token_type is String:
-        if (not _ends_in_string_literal(code + " ")
+        if (not _ends_in_string_literal(code + " ", starting_delimiter)
             or not (last_token_value.startswith('"')
                     or last_token_value.startswith('`"'))):
             return Env.NONE, len(code)-1, rcomp
