@@ -96,6 +96,7 @@ def get_file_paths(self, chunk):
 
 # %% ../nbs/06_completions.ipynb 13
 relevant_suggestion_keys = {
+    Env.NONE: [],
     Env.GENERAL: ['varlist', 'scalars'],
     Env.LOCAL: ['locals'],
     Env.GLOBAL: ['globals'],
@@ -103,6 +104,7 @@ relevant_suggestion_keys = {
     Env.MATRIX: ['matrices'],
     Env.SCALAR_VAR: ['scalars', 'varlist'],
     Env.MATRIX_VAR: ['matrices', 'varlist'],
+    Env.STRING: [],
 }
 
 @patch_to(CompletionsManager)
@@ -117,7 +119,7 @@ def get(self, starts, env, rcomp):
     relevant_suggestions = [candidate + rcomp 
                             for candidate in candidate_suggestions
                             if candidate.startswith(starts)]
-    if env is Env.GENERAL:
+    if env in [Env.GENERAL, Env.STRING]:
         relevant_suggestions += self.get_file_paths(starts)
     return relevant_suggestions
 
