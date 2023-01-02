@@ -33,7 +33,7 @@ class StataMagics():
     html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
 
     magic_regex = re.compile(
-        r'\A(%|\*%)(?P<magic>.+?)(?P<code>\s+(.|\s)+?)?\Z', flags=re.DOTALL + re.MULTILINE)
+        r'\A(%|\*%)(?P<magic>.+?)(?P<code>[\s,]+(.|\s)+?)?\Z', flags=re.DOTALL + re.MULTILINE)
 
     # This is the original regex that splits into magic code if in
     #magic_regex = re.compile(
@@ -109,7 +109,9 @@ class StataMagics():
         
         N_max = 200
 
-        non_option_code, option_code = code.split(',')
+        code_parts = code.split(',')
+        non_option_code = code_parts[0] if code_parts else ""
+        option_code = code_parts[1] if len(code_parts) > 1 else ""
         use_stata_formats = option_code.strip() == 'format'
         
         args = parse_code_if_in(non_option_code)
