@@ -73,14 +73,14 @@ class StataMagics():
     
         return code        
 
-    def magic_quietly(self,code,kernel,cell):
+    def magic_quietly(self, code, kernel, cell):
         """
         Supress all display for the current cell.
         """
         cell.quietly = True
         return code
 
-    def magic_noecho(self,code,kernel,cell):
+    def magic_noecho(self, code, kernel, cell):
         """
         Supress echo for the current cell.
         """
@@ -88,98 +88,88 @@ class StataMagics():
         cell.echo = False
         return code
     
-    def magic_echo(self,code,kernel,cell):
+    def magic_echo(self, code, kernel, cell):
         """
         Supress echo for the current cell.
         """
         cell.noecho = False
         cell.echo = True
         return code
-    
-    def magic_browse(self,code,kernel,cell):
-        """
-        Display data in a nicely-formatted table.
-        """
-        if kernel.perspective_enabled is None:
-            kernel.perspective_enabled = perspective_is_enabled()
-        
-        env = kernel.env
-        # Missing value display format
-        missingval = env['missing'] if env['missing'] != 'pandas' else np.NaN
-        
-        N_max = 200
 
-        code_parts = code.split(',')
-        non_option_code = code_parts[0] if code_parts else ""
-        option_code = code_parts[1] if len(code_parts) > 1 else ""
-        use_stata_formats = option_code.strip() == 'format'
+    def _browse_df_params(self, code, kernel, N_max=200):
+        missing_config = kernel.env['missing']
+        custom_missingval = missing_config != 'pandas' and kernel.perspective_enabled
+        missingval = missing_config if custom_missingval else np.NaN
         
-        args = parse_code_if_in(non_option_code)
+        option_code, args = parse_browse_magic(code)
+        sformat = option_code.strip() == 'format'
         
-        # If and in statements
-        sel_var = Selectvar(args['if'])
-        start,end = in_range(args['in'])
-            
         vargs = [c.strip() for c in args['code'].split() if c]
-
         if len(vargs) >= 1:
             if vargs[0].isnumeric():
                 # 1st argument is obs count
                 N_max = int(vargs[0])
                 del vargs[0]    
-
         # Specified variables?
         var = vargs if len(vargs) >= 1 else None
-
+        
         # Obs range
         obs_range = None
+        start, end = in_range(args['in'])
         if start != None and end != None:
             obs_range = range(start,end)
         elif count() > N_max and not kernel.perspective_enabled:
             obs_range = range(0,min(count(),N_max))
+            
+        stata_if_code = args['if']
+        return obs_range, var, stata_if_code, missingval, sformat
+    
+    def _browse_display_perspective(self, df, sformat):
+        import perspective
+        from IPython.display import display
+        if sformat:
+            # To prevent perspective from wrongly interpreting numbers as dates
+            # See: https://perspective.finos.org/docs/table/#schema-and-types
+            schema = {name: str for name in list(df.columns)}
+            table = perspective.Table(schema)
+            table.update(df)
+        else:
+            table = perspective.Table(df)
+        display(perspective.PerspectiveWidget(table))
 
+    def _browse_html(self, df, kernel):
+        html = df.convert_dtypes().to_html(notebook=True)
+        content = {
+            'data': {'text/html': html},
+            'metadata': {},
+        }
+        kernel.send_response(kernel.iopub_socket, 'display_data', content)
+        
+    def magic_browse(self, code, kernel, cell):
+        """
+        Display data in a nicely-formatted table.
+        """
+        if kernel.perspective_enabled is None:
+            kernel.perspective_enabled = perspective_is_enabled()
+        obs_range, var, stata_if_code, missingval, sformat = (
+            self._browse_df_params(code, kernel, N_max=200)
+        )
+        with Selectvar(stata_if_code) as sel_varname:
+            df = better_pdataframe_from_data(obs=obs_range,
+                                             var=var,
+                                             selectvar=sel_varname,
+                                             missingval=missingval,
+                                             sformat=sformat,
+                                            )
+            if var == None and sel_varname != None:
+                df = df.drop([sel_varname], axis=1)
         try:
             if kernel.perspective_enabled:
-                import pystata, perspective
-                from IPython.display import display
-                df = better_pdataframe_from_data(obs=obs_range,
-                                                 var=var,
-                                                 selectvar=sel_var.varname,
-                                                 missingval=np.NaN,
-                                                 sformat=use_stata_formats,
-                                                )
-                if use_stata_formats:
-                    schema = {name: str for name in list(df.columns)}
-                    table = perspective.Table(schema)
-                    table.update(df)
-                else:
-                    table = perspective.Table(df)
-                w = perspective.PerspectiveWidget(table)
-                display(w)
+                self._browse_display_perspective(df, sformat)
             else:
-                df = better_pdataframe_from_data(obs=obs_range,
-                                                 var=var,
-                                                 selectvar=sel_var.varname,
-                                                 missingval=missingval,
-                                                 sformat=use_stata_formats,
-                                                ).convert_dtypes()
-                if vars == None and sel_var.varname != None:
-                    df = df.drop([sel_var.varname],axis=1)
-                html = df.to_html(notebook=True)
-                content = {
-                    'data': {'text/html': html},
-                    'metadata': {},
-                }
-                kernel.send_response(kernel.iopub_socket, 'display_data', content)
+                self._browse_html(df, kernel)
         except Exception as e:
-            msg = "Failed to browse data.\r\n{0}"
-            print_kernel(msg.format(e), kernel)
-
-        if sel_var != None:
-            # Drop selection var in Stata. We put this outside of try to ensure 
-            # the temp variable gets deleted even when there is an error.
-            sel_var.clear()
-
+            print_kernel(f"Failed to browse data.\r\n{e}", kernel)
         return ''
 
     def magic_help(self,code,kernel,cell):
