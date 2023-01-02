@@ -41,6 +41,7 @@ class PyStataKernel(IPythonKernel):
         self.stata_ready = False
         self.shell.execution_count = 0
         self.starting_delimiter = None
+        self.perspective_enabled = None
         try:
             self.init_stata()
         except ModuleNotFoundError as err:

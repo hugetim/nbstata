@@ -48,7 +48,7 @@ class Selectvar():
     def clear(self):
         """Remove temporary selectvar from Stata dataset"""
         import pystata
-        if self.varname != None:
+        if self.varname:
             pystata.stata.run(f"capture drop {self.varname}", quietly=True)  
 
 # %% ../nbs/02_helpers.ipynb 24
@@ -106,39 +106,50 @@ def diverted_stata_output(std_code, noecho=True):
     return out #.replace("\n> ", "")
 
 # %% ../nbs/02_helpers.ipynb 48
-def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval):
+def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval, sformat):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
 
     if hdl.getObsTotal() <= 0:
-        return None
+        return pd.DataFrame()
 
-    pystata.stata.run("""tempvar indexvar
-                         generate `indexvar' = _n""", quietly=True)
-    idx_var = sfi.Macro.getLocal('indexvar')
-
-    data = hdl.getAsDict(var, obs, selectvar, valuelabel, missingval)
-    if idx_var in data:
-        idx = data.pop(idx_var)
+    if hdl == sfi.Data and obs is None and not selectvar:
+        df = pystata.stata.pdataframe_from_data(var=var, valuelabel=valuelabel, missingval=missingval)
+        df.index += 1
     else:
-        idx = hdl.getAsDict(idx_var, obs, selectvar, valuelabel, missingval).pop(idx_var)
+        pystata.stata.run("""tempvar indexvar
+                             generate `indexvar' = _n""", quietly=True)
+        idx_var = sfi.Macro.getLocal('indexvar')
 
-    idx = pd.array(idx, dtype='Int64')
+        data = hdl.getAsDict(var, obs, selectvar, valuelabel, missingval)
 
-    pystata.stata.run("drop `indexvar'", quietly=True)
+        if idx_var in data:
+            idx = data.pop(idx_var)
+        else:
+            idx = hdl.getAsDict(idx_var, obs, selectvar, valuelabel, missingval).pop(idx_var)
+        idx = pd.array(idx, dtype='int64')
+        sfi.Data.dropVar(idx_var)
 
-    return pd.DataFrame(data=data, index=idx).convert_dtypes()
+        df = pd.DataFrame(data=data, index=idx)
+        
+    if sformat:
+        for var in list(df.columns):
+            if sfi.Data.isVarTypeStr(var):
+                continue
+            v_format = sfi.Data.getVarFormat(var)
+            df[var] = df[var].apply(lambda x: sfi.SFIToolkit.formatValue(x, v_format))
+    return df
 
 # %% ../nbs/02_helpers.ipynb 49
-def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
+def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
 
-    return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval)
+    return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval, sformat)
 
 # %% ../nbs/02_helpers.ipynb 50
-def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN):
+def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
 
-    return better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval)
+    return better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval, sformat)
