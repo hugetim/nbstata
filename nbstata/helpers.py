@@ -142,10 +142,26 @@ def _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval):
     return pd.DataFrame(data=data, index=idx)
 
 # %% ../nbs/02_helpers.ipynb 52
-def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval, sformat):
+def _var_from_varlist(varlist, stfr):
+    if stfr:
+        var_code = varlist.strip()
+    else:
+        _program_name = "temp_nbstata_varlist_name"
+        var_code = diverted_stata_output(f"""\
+            program {_program_name}
+                syntax [varlist(default=none)]
+                disp "`varlist'"
+            end
+            {_program_name} {varlist}
+            program drop {_program_name}
+            """).strip()
+    return [c.strip() for c in var_code.split() if c] if var_code else None
+
+# %% ../nbs/02_helpers.ipynb 53
+def better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missingval, sformat):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
-
+    var = _var_from_varlist(varlist, stfr)
     custom_index_not_needed = obs is None and not selectvar
     if custom_index_not_needed:
         df = simple_dataframe_from_stata(stfr, var, valuelabel, missingval)
@@ -153,28 +169,30 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
         if hdl.getObsTotal() <= 0:
             return pd.DataFrame()
         df = _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval)
-        
     if sformat:
-        for var in list(df.columns):
-            if hdl.isVarTypeString(var) or (valuelabel and pd.api.types.is_string_dtype(df[var])):
+        for v in list(df.columns):
+            if hdl.isVarTypeString(v) or (valuelabel and pd.api.types.is_string_dtype(df[v])):
                 continue
-            v_format = hdl.getVarFormat(var)
+            v_format = hdl.getVarFormat(v)
             if missingval != np.NaN:
-                df[var] = df[var].apply(lambda x: sfi.SFIToolkit.formatValue(x, v_format) if type(x)!=str else x)
+                def format_value(x):
+                    return sfi.SFIToolkit.formatValue(x, v_format) if type(x)!=str else x
             else:
-                df[var] = df[var].apply(lambda x: sfi.SFIToolkit.formatValue(x, v_format))
+                def format_value(x):
+                    return sfi.SFIToolkit.formatValue(x, v_format)
+            df[v] = df[v].apply(format_value)
     return df
 
-# %% ../nbs/02_helpers.ipynb 53
-def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
-    import pystata
-    pystata.config.check_initialized()
-
-    return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval, sformat)
-
 # %% ../nbs/02_helpers.ipynb 54
-def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
+def better_pdataframe_from_data(varlist="", obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
 
-    return better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval, sformat)
+    return better_dataframe_from_stata(None, varlist, obs, selectvar, valuelabel, missingval, sformat)
+
+# %% ../nbs/02_helpers.ipynb 55
+def better_pdataframe_from_frame(stfr, varlist="", obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
+    import pystata
+    pystata.config.check_initialized()
+
+    return better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missingval, sformat)

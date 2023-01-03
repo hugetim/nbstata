@@ -115,7 +115,7 @@ class StataMagics():
                 N_max = int(vargs[0])
                 del vargs[0]    
         # Specified variables?
-        var = vargs if len(vargs) >= 1 else None
+        varlist = " ".join(vargs)
         
         # Obs range
         obs_range = None
@@ -126,7 +126,7 @@ class StataMagics():
             obs_range = range(0,min(count(),N_max))
             
         stata_if_code = args['if']
-        return obs_range, var, stata_if_code, missingval, valuelabel, sformat
+        return obs_range, varlist, stata_if_code, missingval, valuelabel, sformat
     
     def _browse_display_perspective(self, df, sformat):
         import perspective
@@ -155,18 +155,18 @@ class StataMagics():
         """
         if kernel.perspective_enabled is None:
             kernel.perspective_enabled = perspective_is_enabled()
-        obs_range, var, stata_if_code, missingval, valuelabel, sformat = (
+        obs_range, varlist, stata_if_code, missingval, valuelabel, sformat = (
             self._browse_df_params(code, kernel, N_max=200)
         )
         with Selectvar(stata_if_code) as sel_varname:
             df = better_pdataframe_from_data(obs=obs_range,
-                                             var=var,
+                                             varlist=varlist,
                                              selectvar=sel_varname,
                                              missingval=missingval,
                                              valuelabel=valuelabel,
                                              sformat=sformat,
                                             )
-            if var == None and sel_varname != None:
+            if not varlist and sel_varname is not None:
                 df = df.drop([sel_varname], axis=1)
 #         try:
         if kernel.perspective_enabled:
