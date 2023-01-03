@@ -37,7 +37,7 @@ def parse_browse_magic(code):
     non_option_code = code_parts[0] if code_parts else ""
     option_code = code_parts[1] if len(code_parts) > 1 else ""
     args = _parse_code_if_in(non_option_code)
-    return option_code, args
+    return args, option_code
 
 # %% ../nbs/01_utils.ipynb 12
 def in_range(stata_in_code):

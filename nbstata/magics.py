@@ -23,8 +23,11 @@ def print_kernel(msg, kernel):
 
 # %% ../nbs/04_magics.ipynb 5
 def perspective_is_enabled():
-    output = subprocess.getoutput('jupyter labextension list')
-    return bool(re.search(r'@finos/perspective-jupyterlab v\d\.\d\.\d enabled ok', output))
+    try:
+        output = subprocess.getoutput('jupyter labextension list')
+        return bool(re.search(r'@finos/perspective-jupyterlab v\d\.\d\.\d enabled ok', output))
+    except Exception as e:
+        return False
 
 # %% ../nbs/04_magics.ipynb 6
 class StataMagics():
@@ -101,7 +104,7 @@ class StataMagics():
         custom_missingval = missing_config != 'pandas' and not kernel.perspective_enabled
         missingval = missing_config if custom_missingval else np.NaN
         
-        option_code, args = parse_browse_magic(code)
+        args, option_code = parse_browse_magic(code)
         oargs = [c.strip() for c in option_code.split() if c]
         sformat = 'noformat' not in oargs
         valuelabel = 'nolabel' not in oargs
@@ -121,9 +124,9 @@ class StataMagics():
         obs_range = None
         start, end = in_range(args['in'])
         if start != None and end != None:
-            obs_range = range(start,end)
+            obs_range = range(start, end)
         elif count() > N_max and not kernel.perspective_enabled:
-            obs_range = range(0,min(count(),N_max))
+            obs_range = range(0, min(count(), N_max))
             
         stata_if_code = args['if']
         return obs_range, varlist, stata_if_code, missingval, valuelabel, sformat
@@ -150,31 +153,30 @@ class StataMagics():
         kernel.send_response(kernel.iopub_socket, 'display_data', content)
         
     def magic_browse(self, code, kernel, cell):
-        """
-        Display data in a nicely-formatted table.
-        """
+        """Display data in a nicely-formatted table."""
         if kernel.perspective_enabled is None:
             kernel.perspective_enabled = perspective_is_enabled()
-        obs_range, varlist, stata_if_code, missingval, valuelabel, sformat = (
-            self._browse_df_params(code, kernel, N_max=200)
-        )
-        with Selectvar(stata_if_code) as sel_varname:
-            df = better_pdataframe_from_data(obs=obs_range,
-                                             varlist=varlist,
-                                             selectvar=sel_varname,
-                                             missingval=missingval,
-                                             valuelabel=valuelabel,
-                                             sformat=sformat,
-                                            )
-            if not varlist and sel_varname is not None:
-                df = df.drop([sel_varname], axis=1)
-#         try:
-        if kernel.perspective_enabled:
-            self._browse_display_perspective(df, sformat)
-        else:
-            self._browse_html(df, kernel)
-#         except Exception as e:
-#             print_kernel(f"Failed to browse data.\r\n{e}", kernel)
+        try:
+            obs_range, varlist, stata_if_code, missingval, valuelabel, sformat = (
+                self._browse_df_params(code, kernel, N_max=200)
+            )
+            with Selectvar(stata_if_code) as sel_varname:
+                df = better_pdataframe_from_data(obs=obs_range,
+                                                 varlist=varlist,
+                                                 selectvar=sel_varname,
+                                                 missingval=missingval,
+                                                 valuelabel=valuelabel,
+                                                 sformat=sformat,
+                                                )
+                if not varlist and sel_varname is not None:
+                    df = df.drop([sel_varname], axis=1)
+
+            if kernel.perspective_enabled:
+                self._browse_display_perspective(df, sformat)
+            else:
+                self._browse_html(df, kernel)
+        except Exception as e:
+            print_kernel(f"Failed to browse data.\r\n{e}", kernel)
         return ''
 
     def magic_help(self,code,kernel,cell):
