@@ -31,7 +31,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/1af49145-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/3a61b2f6-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -145,13 +145,13 @@ be treated by Stata as a single-line comment.
 
 `nbstata` currently supports the following magics:
 
-| Magic       | Description                   | Full Syntax                                                  |
-|:------------|:------------------------------|:-------------------------------------------------------------|
-| `*%browse`  | View dataset                  | `*%browse [-h] [N] [varlist] [if] [in] [, nolabel noformat]` |
-| `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                          |
-| `*%echo`    | Ensure echo from cell         | `*%echo`                                                     |
-| `*%noecho`  | Suppress echo from cell       | `*%noecho`                                                   |
-| `*%quietly` | Suppress all output from cell | `*%quietly`                                                  |
+| Magic       | Description                   | Full Syntax                                              |
+|:------------|:------------------------------|:---------------------------------------------------------|
+| `*%browse`  | View dataset                  | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
+| `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
+| `*%echo`    | Ensure echo from cell         | `*%echo`                                                 |
+| `*%noecho`  | Suppress echo from cell       | `*%noecho`                                               |
+| `*%quietly` | Suppress all output from cell | `*%quietly`                                              |
 
 ## Stata Implementation Details
 

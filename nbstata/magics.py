@@ -110,6 +110,8 @@ class StataMagics():
         if len(vargs) >= 1:
             if vargs[0].isnumeric():
                 # 1st argument is obs count
+                print_red("Warning: '%browse [N]' syntax is deprecated "
+                          "and may be removed in v1.0.")
                 N_max = int(vargs[0])
                 del vargs[0]    
         # Specified variables?
