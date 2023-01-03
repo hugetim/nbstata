@@ -25,7 +25,9 @@ def print_kernel(msg, kernel):
 def perspective_is_enabled():
     try:
         output = subprocess.getoutput('jupyter labextension list')
-        return bool(re.search(r'@finos/perspective-jupyterlab v\d\.\d\.\d enabled ok', output))
+        enabled = bool(re.search(r'@finos/perspective-jupyterlab v\d\.\d\.\d enabled ok', output))
+        built = not re.search(r'@finos/perspective-jupyterlab needs to be included in build', output)
+        return enabled and built
     except Exception as e:
         return False
 
