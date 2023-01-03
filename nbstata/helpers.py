@@ -156,10 +156,13 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
         
     if sformat:
         for var in list(df.columns):
-            if hdl.isVarTypeString(var):
+            if hdl.isVarTypeString(var) or (valuelabel and pd.api.types.is_string_dtype(df[var])):
                 continue
             v_format = hdl.getVarFormat(var)
-            df[var] = df[var].apply(lambda x: sfi.SFIToolkit.formatValue(x, v_format))
+            if missingval != np.NaN:
+                df[var] = df[var].apply(lambda x: sfi.SFIToolkit.formatValue(x, v_format) if type(x)!=str else x)
+            else:
+                df[var] = df[var].apply(lambda x: sfi.SFIToolkit.formatValue(x, v_format))
     return df
 
 # %% ../nbs/02_helpers.ipynb 53
