@@ -7,6 +7,7 @@ __all__ = ['print_kernel', 'perspective_is_enabled', 'StataMagics']
 from .config import get_config
 from .helpers import *
 from .utils import *
+from fastcore.basics import patch_to
 import re
 import urllib
 from pkg_resources import resource_filename
@@ -38,7 +39,7 @@ class StataMagics():
     html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
 
     magic_regex = re.compile(
-        r'\A(%|\*%)(?P<magic>.+?)(?P<code>[\s,]+(.|\s)+?)?\Z', flags=re.DOTALL + re.MULTILINE)
+        r'\A(%|\*%)(?P<magic>\w+?)(?P<code>[\s,]+.*?)?\Z', flags=re.DOTALL + re.MULTILINE)
 
     # This is the original regex that splits into magic code if in
     #magic_regex = re.compile(
@@ -56,27 +57,6 @@ class StataMagics():
     csshelp_default = resource_filename(
         'nbstata', 'css/_StataKernelHelpDefault.css'
     )
-
-    def magic(self, code, kernel, cell):
-        match = self.magic_regex.match(code.strip())
-        if match:
-            v = match.groupdict()
-            for k in v:
-                v[k] = v[k] if isinstance(v[k],str) else ''                
-
-            name = v['magic'].strip()
-            code = v['code'].strip()
-
-            if name in self.available_magics:
-                if code.find('-h') >= 0:
-                    print_kernel(self.available_magics[name].format(name), kernel)
-                    code = ''
-                else:
-                    code = getattr(self, "magic_" + name)(code, kernel, cell)
-            else:
-                print_kernel("Unknown magic %{0}.".format(name), kernel)
-    
-        return code        
 
     def magic_quietly(self, code, kernel, cell):
         """
@@ -249,3 +229,45 @@ class StataMagics():
             print_kernel(msg.format(e), kernel)
 
         return ''
+
+# %% ../nbs/04_magics.ipynb 7
+def _parse_magic_name_code(match):
+    v = match.groupdict()
+    for k in v:
+        v[k] = v[k] if v[k] is not None else ''                
+    name = v['magic'].strip()
+    code = v['code'].strip()
+    return name, code
+
+# %% ../nbs/04_magics.ipynb 8
+@patch_to(StataMagics)
+def _parse_code_for_magic(self, code):
+    match = self.magic_regex.match(code.strip())
+    if match:
+        name, code = _parse_magic_name_code(match)
+        if name not in self.available_magics:
+            raise ValueError(f"Unknown magic %{name}.")
+        return name, code
+    else:
+        return None, code
+
+# %% ../nbs/04_magics.ipynb 12
+@patch_to(StataMagics)
+def _do_magic(self, name, code, kernel, cell):
+    if code.find('-h') >= 0:
+        print_kernel(self.available_magics[name].format(name), kernel)
+        return ''
+    else:
+        return getattr(self, "magic_" + name)(code, kernel, cell)
+
+# %% ../nbs/04_magics.ipynb 13
+@patch_to(StataMagics)
+def magic(self, code, kernel, cell):
+    try:
+        name, code = self._parse_code_for_magic(code)
+    except ValueError as e:
+        print_kernel(str(e), kernel)
+    else:
+        if name:
+            code = self._do_magic(name, code, kernel, cell)
+    return code        
