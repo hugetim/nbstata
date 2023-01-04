@@ -31,7 +31,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/3a61b2f6-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/2fdc666f-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -109,9 +109,9 @@ The following settings are permitted inside the configuration file:
   - ‘None’: the kernel will not echo any command.
 - `splash`: controls display of the splash message during Stata startup.
   Default is ‘False’.
-- `missing`: What should be displayed in the output of the `*%browse`
-  magic for a missing value. Default is ‘.’, following Stata. To defer
-  to pandas’ format for `NA`, specify ‘pandas’.
+- `missing`: What should be displayed in the output of the `*%head` and
+  `*%tail` magics for a missing value. Default is ‘.’, following Stata.
+  To defer to pandas’ format for `NA`, specify ‘pandas’.
 
 Settings must be under the title `[nbstata]`. Example:
 
@@ -147,7 +147,9 @@ be treated by Stata as a single-line comment.
 
 | Magic       | Description                   | Full Syntax                                              |
 |:------------|:------------------------------|:---------------------------------------------------------|
-| `*%browse`  | View dataset                  | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
+| `*%browse`  | Interactively view dataset    | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
+| `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist]`                              |
+| `*%tail`    | View last 5 (or N) rows       | `*%head [-h] [N] [varlist]`                              |
 | `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
 | `*%echo`    | Ensure echo from cell         | `*%echo`                                                 |
 | `*%noecho`  | Suppress echo from cell       | `*%noecho`                                               |

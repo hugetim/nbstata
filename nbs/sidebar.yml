@@ -7,8 +7,10 @@ website:
           - 00_config.ipynb
           - 01_utils.ipynb
           - 02_helpers.ipynb
-          - 03_stata_session.ipynb
-          - 04_magics.ipynb
-          - 05_completion_env.ipynb
-          - 06_completions.ipynb
-          - 07_kernel.ipynb
+          - 03_pandas.ipynb
+          - 04_browse.ipynb
+          - 05_stata_session.ipynb
+          - 06_magics.ipynb
+          - 07_completion_env.ipynb
+          - 08_completions.ipynb
+          - 09_kernel.ipynb
