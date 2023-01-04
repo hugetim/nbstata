@@ -163,7 +163,7 @@ def browse_df_params(code, count):
     stata_if_code = args['if']
     return obs_range, varlist, stata_if_code, missingval, valuelabel, sformat
 
-# %% ../nbs/04_browse.ipynb 41
+# %% ../nbs/04_browse.ipynb 40
 def perspective_not_found():
     try:
         import perspective
@@ -172,7 +172,7 @@ def perspective_not_found():
     else:
         return False
 
-# %% ../nbs/04_browse.ipynb 42
+# %% ../nbs/04_browse.ipynb 41
 def perspective_is_enabled():
     return not perspective_not_found()
 #     if perspective_not_found():
@@ -185,7 +185,7 @@ def perspective_is_enabled():
 #     except Exception as e:
 #         return False
 
-# %% ../nbs/04_browse.ipynb 44
+# %% ../nbs/04_browse.ipynb 43
 def browse_not_enabled(kernel):
     content = {
         'data': {'text/markdown': (
@@ -197,7 +197,7 @@ def browse_not_enabled(kernel):
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
     return ''
 
-# %% ../nbs/04_browse.ipynb 45
+# %% ../nbs/04_browse.ipynb 44
 def display_perspective(df, sformat):
     import perspective
     from IPython.display import display

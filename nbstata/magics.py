@@ -91,7 +91,7 @@ def _parse_code_for_magic(self, code):
 # %% ../nbs/06_magics.ipynb 13
 @patch_to(StataMagics)
 def _do_magic(self, name, code, kernel, cell):
-    if code.find('-h') >= 0: # This also catches `--help`
+    if code.startswith('-h') or code.startswith('--help'):
         print_kernel(self.available_magics[name].format(name), kernel)
         return ''
     else:

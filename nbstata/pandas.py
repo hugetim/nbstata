@@ -52,18 +52,23 @@ def _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval):
 
 # %% ../nbs/03_pandas.ipynb 16
 def _var_from_varlist(varlist, stfr):
+    from pystata import stata
     if stfr:
         var_code = varlist.strip()
     else:
         _program_name = "temp_nbstata_varlist_name"
-        var_code = diverted_stata_output(f"""\
-            program {_program_name}
-                syntax [varlist(default=none)]
-                disp "`varlist'"
-            end
-            {_program_name} {varlist}
-            program drop {_program_name}
-            """).strip()
+        try:
+            var_code = diverted_stata_output(f"""\
+                program {_program_name}
+                    syntax [varlist(default=none)]
+                    disp "`varlist'"
+                end
+                {_program_name} {varlist}
+                program drop {_program_name}
+                """).strip()
+        except SystemError as e:
+            stata.run(f"capture program drop {_program_name}", quietly=True)
+            raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
 # %% ../nbs/03_pandas.ipynb 17
