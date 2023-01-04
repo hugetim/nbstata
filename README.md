@@ -31,7 +31,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/2fdc666f-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5ec08f03-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -140,20 +140,29 @@ Both `pystata` and `stata_kernel` default to the SVG image format.
 Magics are commands that only work in `nbstata` and are not part of
 Stata’s syntax. Magics normally start with `%`, but this will cause
 errors when the notebook is exported and run as a Stata script. As an
-alternative, you can prefix the magic name with `*%`, which will simply
-be treated by Stata as a single-line comment.
+alternative, you may prefix the magic name with `*%`, which will then be
+treated by Stata as a single-line comment.
 
 `nbstata` currently supports the following magics:
 
 | Magic       | Description                   | Full Syntax                                              |
 |:------------|:------------------------------|:---------------------------------------------------------|
 | `*%browse`  | Interactively view dataset    | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
-| `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist]`                              |
-| `*%tail`    | View last 5 (or N) rows       | `*%head [-h] [N] [varlist]`                              |
+| `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist] [, nolabel noformat]`         |
+| `*%tail`    | View last 5 (or N) rows       | `*%tail [-h] [N] [varlist] [, nolabel noformat]`         |
 | `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
 | `*%echo`    | Ensure echo from cell         | `*%echo`                                                 |
 | `*%noecho`  | Suppress echo from cell       | `*%noecho`                                               |
 | `*%quietly` | Suppress all output from cell | `*%quietly`                                              |
+
+The `%browse` magic requires JupyterLab with the
+`@finos/perspective-jupyterlab` extension [correctly
+installed](https://perspective.finos.org/docs/python/#jupyterlab).
+
+By default, the `%browse`, `%head`, and `%tail` magics convert numeric
+Stata values to strings using either their Stata format or their value
+labels. To prevent this behavior, specify the `nolabel` and/or
+`noformat` options.
 
 ## Stata Implementation Details
 
