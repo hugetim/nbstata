@@ -31,7 +31,21 @@ class StataSession():
         # Clean line-breaks.
         self.varclean = re.compile(
             r"(?=\s*)[\r\n]{1,2}?^>\s", flags=re.MULTILINE).sub
+        
+        pre = (
+            r'(cap(t|tu|tur|ture)?'
+            r'|qui(e|et|etl|etly)?'
+            r'|n(o|oi|ois|oisi|oisil|oisily)?)')
+        kwargs = {'flags': re.MULTILINE}
+        self.local_def_in = re.compile(
+            r"^({0} )*(loc|loca|local)\s".format(pre),
+            **kwargs,
+        ).search
 
+        self.parse_sreturn = re.compile(
+            r'^\s*?(?:\ss\((?P<name>\w+)\) : \"(?P<value>.+)\"\s)', flags=re.MULTILINE
+        ).findall
+        
         #         # Match output from mata mata desc
 #         self.matadesc = re.compile(
 #             r"(\A.*?---+|---+[\r\n]*\Z)", flags=re.MULTILINE + re.DOTALL)
@@ -50,19 +64,19 @@ class StataSession():
     def clear_suggestions(self):
         self.suggestions = None
 
-# %% ../nbs/05_stata_session.ipynb 6
+# %% ../nbs/05_stata_session.ipynb 8
 @patch_to(StataSession)
 def refresh_suggestions(self):
     self.suggestions = self.get_suggestions()
 #     self.suggestions['magics_set'] = config.all_settings
 #     self.globals = self.get_globals(kernel)
 
-# %% ../nbs/05_stata_session.ipynb 7
+# %% ../nbs/05_stata_session.ipynb 9
 def variable_names():
     from sfi import Data
     return [Data.getVarName(i) for i in range(Data.getVarCount())]
 
-# %% ../nbs/05_stata_session.ipynb 12
+# %% ../nbs/05_stata_session.ipynb 14
 @patch_to(StataSession)
 def _completions(self):
 #     return dedent(f"""\
@@ -101,7 +115,7 @@ def _completions(self):
         macro drop _temp_completions_while_local_
     """), noecho=False)
 
-# %% ../nbs/05_stata_session.ipynb 16
+# %% ../nbs/05_stata_session.ipynb 18
 @patch_to(StataSession)
 def get_suggestions(self):
     match = self.matchall(self._completions())
@@ -120,7 +134,7 @@ def get_suggestions(self):
     #suggestions['locals'] = self.get_locals()
     return suggestions
 
-# %% ../nbs/05_stata_session.ipynb 18
+# %% ../nbs/05_stata_session.ipynb 20
 @patch_to(StataSession)
 def get_locals(self):
     suggestions = self.get_suggestions() if self.suggestions is None else self.suggestions
@@ -133,12 +147,57 @@ def get_locals(self):
 #     else:
 #         return []
 
-# %% ../nbs/05_stata_session.ipynb 22
+# %% ../nbs/05_stata_session.ipynb 23
+@patch_to(StataSession)
+def get_local_dict(self):
+    from sfi import Macro
+    local_names = self.get_locals()
+    return {n: Macro.getLocal(n) for n in local_names}
+
+# %% ../nbs/05_stata_session.ipynb 29
+@patch_to(StataSession)
+def _local_dict_from_sreturn(self, sreturn_output):
+    matches = self.parse_sreturn(sreturn_output)
+    return {m[0]: m[1] for m in matches}
+
+# %% ../nbs/05_stata_session.ipynb 31
+def _run_as_program_w_locals_sreturned(std_code):
+    sreturn_code = dedent("""\
+        mata : st_local("all_locals", invtokens(st_dir("local", "macro", "*")'))
+        foreach lname in `all_locals' {
+            sreturn local `lname' "``lname''"
+        }""")
+    store_new_locals_code = ("sreturn clear\n" 
+                             + std_code
+                             + sreturn_code)                          
+    run_as_program(store_new_locals_code, "sclass")
+
+# %% ../nbs/05_stata_session.ipynb 32
+def _locals_code_from_dict(preexisting_local_dict):
+    local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
+                  for name in preexisting_local_dict)
+    return "\n".join(local_defs)
+
+# %% ../nbs/05_stata_session.ipynb 35
+@patch_to(StataSession)
+def _restore_locals_and_clear_sreturn(self):
+    sreturn_output = diverted_stata_output("sreturn list") # one line to avoid clearing locals
+    after_local_dict = self._local_dict_from_sreturn(sreturn_output)
+    after_locals_code = _locals_code_from_dict(after_local_dict)
+    if after_local_dict:
+        after_locals_code += "\n" + "sreturn clear"
+    run(after_locals_code, quietly=True)
+
+# %% ../nbs/05_stata_session.ipynb 36
 @patch_to(StataSession)
 def run_as_prog_with_locals(self, std_code):
     """After `break_out_prog_blocks`, run noecho, inserting locals when needed"""
     from sfi import Macro
-    local_defs = (f"""local {name} `"{Macro.getLocal(name)}"'"""
-                  for name in self.get_locals())
-    locals_code = "\n".join(local_defs)
-    run_as_program(f"""{locals_code}\n{std_code}""")
+    from pystata.stata import run
+    preexisting_local_dict = self.get_local_dict()
+    locals_code = _locals_code_from_dict(preexisting_local_dict)
+    if not self.local_def_in(std_code):
+        run_as_program(f"""{locals_code}\n{std_code}""")
+    else:
+        _run_as_program_w_locals_sreturned(f"""{locals_code}\n{std_code}""")
+        self._restore_locals_and_clear_sreturn()

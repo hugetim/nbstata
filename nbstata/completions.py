@@ -150,12 +150,3 @@ def do(self, code, cursor_pos, starting_delimiter=None):
         starting_delimiter,
     )
     return pos, cursor_pos, self.get(chunk, env, rcomp)
-
-# %% ../nbs/08_completions.ipynb 30
-@patch_to(CompletionsManager)
-def get_locals(self):
-    from sfi import Macro
-    if self.stata_session.suggestions is None:
-        self.stata_session.refresh_suggestions()
-    local_names = self.get('', Env.LOCAL, '')
-    return {n: Macro.getLocal(n) for n in local_names}

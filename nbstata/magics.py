@@ -124,7 +124,7 @@ def _formatted_local_list(local_dict):
 # %% ../nbs/06_magics.ipynb 17
 @patch_to(StataMagics)
 def magic_locals(self, code, kernel, cell):
-    local_dict = kernel.completions.get_locals()
+    local_dict = kernel.stata_session.get_local_dict()
     print_kernel(_formatted_local_list(local_dict), kernel)
     return ''
 
