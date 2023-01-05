@@ -164,7 +164,8 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
         code_cell.run()
     except SystemError as err:
         return _handle_stata_error(err, silent, self.execution_count)
-    if _ending_delimiter == ';' and code.strip()[-1] != ';':
+    post_magic_code = code_cell.code.strip()
+    if _ending_delimiter == ';' and post_magic_code and post_magic_code[-1] != ';':
         print_red("Warning: Code cell (with #delimit; in effect) does not end in ';'. "
                   "Exported .do script may behave differently from notebook.")
     self.starting_delimiter = _ending_delimiter
