@@ -93,7 +93,7 @@ class Cell:
                 from pystata.stata import run
                 if not is_cr_delimiter(self.starting_delimiter):
                     self.code = "#delimit;\n" + self.code
-                run(self.code, quietly=self.quietly, inline=True, echo=self.echo)
+                run(self.code, quietly=self.quietly, inline=not self.quietly, echo=self.echo)
 
 # %% ../nbs/09_kernel.ipynb 19
 _missing_stata_message = (
