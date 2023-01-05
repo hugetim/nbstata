@@ -25,11 +25,13 @@ def resolve_macro(macro):
         macro = sfi.Macro.getLocal(macro[1:-1])
     elif macro.startswith("$_"):
         macro = sfi.Macro.getLocal(macro[2:])
+    elif macro.startswith("${") and macro.endswith("}"):
+        macro = sfi.Macro.getGlobal(macro[2:-1])
     elif macro.startswith("$"):
         macro = sfi.Macro.getGlobal(macro[1:])
     return macro
 
-# %% ../nbs/02_helpers.ipynb 10
+# %% ../nbs/02_helpers.ipynb 11
 class Selectvar():
     """Class for generating Stata selectvar for getAsDict"""
     varname = None
@@ -57,7 +59,7 @@ class Selectvar():
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.clear()
 
-# %% ../nbs/02_helpers.ipynb 24
+# %% ../nbs/02_helpers.ipynb 25
 def run_as_program(std_non_prog_code):
     from pystata.stata import run
     _program_name = "temp_nbstata_program_name"
@@ -69,7 +71,7 @@ def run_as_program(std_non_prog_code):
     finally:
         run(f"program drop {_program_name}", quietly=True)
 
-# %% ../nbs/02_helpers.ipynb 30
+# %% ../nbs/02_helpers.ipynb 31
 def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program):
     from pystata.stata import run
     if len(std_non_prog_code.splitlines()) == 1:  # to keep it simple when we can
@@ -77,7 +79,7 @@ def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program):
     else:
         run_as_prog(std_non_prog_code)
 
-# %% ../nbs/02_helpers.ipynb 32
+# %% ../nbs/02_helpers.ipynb 33
 def run_prog_noecho(std_prog_code):
     from pystata.stata import run
     if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
@@ -85,7 +87,7 @@ def run_prog_noecho(std_prog_code):
     else:
         run(std_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/02_helpers.ipynb 38
+# %% ../nbs/02_helpers.ipynb 39
 def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
     for block in break_out_prog_blocks(code, starting_delimiter):
@@ -94,7 +96,7 @@ def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
         else:
             run_non_prog_noecho(block['std_code'], run_as_prog=run_as_prog)
 
-# %% ../nbs/02_helpers.ipynb 41
+# %% ../nbs/02_helpers.ipynb 42
 def diverted_stata_output(std_code, noecho=True):
     import pystata
     old_stdout = sys.stdout
