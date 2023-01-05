@@ -33,8 +33,9 @@ class IndexVar:
     def __exit__(self, exc_type, exc_value, exc_tb):
         import sfi
         sfi.Data.dropVar(self.idx_var)
+        sfi.Macro.setLocal('indexvar', "")
 
-# %% ../nbs/03_pandas.ipynb 8
+# %% ../nbs/03_pandas.ipynb 11
 def _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval):
     with IndexVar() as idx_var:
         data = hdl.getAsDict(var, obs, selectvar, valuelabel, missingval)
@@ -50,7 +51,7 @@ def _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval):
 
         return pd.DataFrame(data=data, index=idx)
 
-# %% ../nbs/03_pandas.ipynb 16
+# %% ../nbs/03_pandas.ipynb 18
 def _var_from_varlist(varlist, stfr):
     from pystata import stata
     if stfr:
@@ -71,7 +72,7 @@ def _var_from_varlist(varlist, stfr):
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_pandas.ipynb 17
+# %% ../nbs/03_pandas.ipynb 19
 def better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missingval, sformat):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -98,14 +99,14 @@ def better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missi
             df[v] = df[v].apply(format_value)
     return df
 
-# %% ../nbs/03_pandas.ipynb 18
+# %% ../nbs/03_pandas.ipynb 20
 def better_pdataframe_from_data(varlist="", obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
 
     return better_dataframe_from_stata(None, varlist, obs, selectvar, valuelabel, missingval, sformat)
 
-# %% ../nbs/03_pandas.ipynb 19
+# %% ../nbs/03_pandas.ipynb 21
 def better_pdataframe_from_frame(stfr, varlist="", obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
