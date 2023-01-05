@@ -31,15 +31,9 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5ebfb122-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/d4134138-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
-
-#### For now, though, only the Stata IDE has:
-
-- Stata side panels: Variables and Properties
-- Stata data editor (browse)
-- Stata drop-down menus
 
 ## Install
 

@@ -5,6 +5,7 @@ __all__ = ['PyStataKernel', 'Cell', 'print_stata_error']
 
 # %% ../nbs/09_kernel.ipynb 4
 from .config import get_config, launch_stata
+from .helpers import diverted_stata_output
 from .utils import print_red, ending_delimiter, is_cr_delimiter
 from .stata_session import StataSession
 from .magics import StataMagics
@@ -42,6 +43,7 @@ class PyStataKernel(IPythonKernel):
         self.shell.execution_count = 0
         self.starting_delimiter = None
         self.perspective_enabled = None
+        self.inspect_output = "Stata not yet initialized."
         try:
             self.init_stata()
         except ModuleNotFoundError as err:
@@ -63,6 +65,7 @@ def init_stata(self):
     self.stata_session = StataSession()
     self.magic_handler = StataMagics()
     self.completions = CompletionsManager(self.stata_session, list(self.magic_handler.available_magics.keys()))
+    self.inspect_output = ""
     self.stata_ready = True
 
 # %% ../nbs/09_kernel.ipynb 8
@@ -146,6 +149,7 @@ def _handle_stata_error(err, silent, execution_count):
 @patch_to(PyStataKernel)
 def post_do_hook(self):
     self.stata_session.clear_suggestions()
+    self.inspect_output = ""
 
 # %% ../nbs/09_kernel.ipynb 26
 @patch_to(PyStataKernel)
@@ -212,8 +216,11 @@ def do_is_complete(self, code):
 # %% ../nbs/09_kernel.ipynb 29
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
-    """Overrides IPythonKernel with kernelbase default"""
-    return {"status": "ok", "data": {}, "metadata": {}, "found": False}
+    """Display Stata 'describe' output regardless of cursor position"""
+    if not self.inspect_output:
+        self.inspect_output = diverted_stata_output('describe, fullnames')
+    data = {'text/plain': self.inspect_output}
+    return {"status": "ok", "data": data, "metadata": {}, "found": True}
 
 # %% ../nbs/09_kernel.ipynb 30
 @patch_to(PyStataKernel)
