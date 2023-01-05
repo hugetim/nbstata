@@ -112,7 +112,7 @@ def magic(self, code, kernel, cell):
 
 # %% ../nbs/06_magics.ipynb 15
 def _formatted_local_list(local_dict):
-    std_len = max((len(n) for n in local_dict if len(n) <= 15))
+    std_len = max((len(n) for n in local_dict if len(n) <= 15)) if local_dict else 0
     str_reps = []
     for n in local_dict:
         if len(n) > 15:
@@ -121,14 +121,14 @@ def _formatted_local_list(local_dict):
             str_reps.append(f"{n}:{' '*(std_len-len(n))} {local_dict[n]}")
     return "\n".join(str_reps)
 
-# %% ../nbs/06_magics.ipynb 17
+# %% ../nbs/06_magics.ipynb 18
 @patch_to(StataMagics)
 def magic_locals(self, code, kernel, cell):
     local_dict = kernel.stata_session.get_local_dict()
     print_kernel(_formatted_local_list(local_dict), kernel)
     return ''
 
-# %% ../nbs/06_magics.ipynb 19
+# %% ../nbs/06_magics.ipynb 20
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
@@ -145,12 +145,12 @@ def magic_browse(self, code, kernel, cell):
         print_kernel(f"Browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/06_magics.ipynb 22
+# %% ../nbs/06_magics.ipynb 23
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/06_magics.ipynb 23
+# %% ../nbs/06_magics.ipynb 24
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -159,7 +159,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/06_magics.ipynb 24
+# %% ../nbs/06_magics.ipynb 25
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -171,19 +171,19 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'Tail' if tail else 'Head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/06_magics.ipynb 25
+# %% ../nbs/06_magics.ipynb 26
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/06_magics.ipynb 26
+# %% ../nbs/06_magics.ipynb 27
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/06_magics.ipynb 28
+# %% ../nbs/06_magics.ipynb 29
 @patch_to(StataMagics)
 def magic_help(self,code,kernel,cell):
     """Show help file from stata.com."""
