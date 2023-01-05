@@ -32,8 +32,8 @@ class StataMagics():
     # Format: magic_name: help_content
     available_magics = {
         'browse': '{} [-h] [varlist] [if] [in] [, nolabel noformat]',
-        'head': '{} [-h] [N] [varlist] [, nolabel noformat]',
-        'tail': '{} [-h] [N] [varlist] [, nolabel noformat]',
+        'head': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
+        'tail': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
         'help': '{} [-h] command_or_topic_name',
         'quietly': '',
         'noecho': '',

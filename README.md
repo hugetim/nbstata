@@ -31,7 +31,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5ec08f03-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/b04c56c1-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -148,8 +148,8 @@ treated by Stata as a single-line comment.
 | Magic       | Description                   | Full Syntax                                              |
 |:------------|:------------------------------|:---------------------------------------------------------|
 | `*%browse`  | Interactively view dataset    | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
-| `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist] [, nolabel noformat]`         |
-| `*%tail`    | View last 5 (or N) rows       | `*%tail [-h] [N] [varlist] [, nolabel noformat]`         |
+| `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist] [if] [, nolabel noformat]`    |
+| `*%tail`    | View last 5 (or N) rows       | `*%tail [-h] [N] [varlist] [if] [, nolabel noformat]`    |
 | `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
 | `*%echo`    | Ensure echo from cell         | `*%echo`                                                 |
 | `*%noecho`  | Suppress echo from cell       | `*%noecho`                                               |
