@@ -20,6 +20,8 @@ commands within Python
 code](https://www.stata.com/python/pystata/notebook/Example2.html) but
 is needlessly clunky if you are working primarily with Stata).
 
+<img align="center" width="650" src="jupyter_notebook_example.gif">
+
 ### What do Stata notebooks allow that the official Stata IDE doesn’t?
 
 - Exploratory analysis that is both:
@@ -31,9 +33,23 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/d4134138-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/f6999842-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
+
+### `nbstata` Features
+
+- [x] Display graphs.
+- [x] Tab autocompletions based on the variables, macros, scalars, and
+  matrices currently in memory, as well as suggesting file paths for
+  autocompletion.
+- [x] Browse data interactively.
+- [x] Variable and data properties (i.e. `describe` output) shown as
+  auto-updating contextual help.
+- [x] Pull up interactive help files within the kernel.
+- [x] Use any type of comments in your code, not just `*`.
+- [x] `#delimit ;` interactive support
+- [ ] Mata interactive support
 
 ## Install
 
