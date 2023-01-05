@@ -35,6 +35,7 @@ class StataMagics():
         'head': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
         'tail': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
         'locals': '',
+        'delimit': '',
         'help': '{} [-h] command_or_topic_name',
         'quietly': '',
         'noecho': '',
@@ -46,27 +47,26 @@ class StataMagics():
     )
 
     def magic_quietly(self, code, kernel, cell):
-        """
-        Supress all display for the current cell.
-        """
+        """Suppress all display for the current cell."""
         cell.quietly = True
         return code
 
     def magic_noecho(self, code, kernel, cell):
-        """
-        Supress echo for the current cell.
-        """
+        """Suppress echo for the current cell."""
         cell.noecho = True
         cell.echo = False
         return code
     
     def magic_echo(self, code, kernel, cell):
-        """
-        Supress echo for the current cell.
-        """
+        """Suppress echo for the current cell."""
         cell.noecho = False
         cell.echo = True
         return code
+    
+    def magic_delimit(self, code, kernel, cell):
+        delim = 'cr' if is_cr_delimiter(kernel.starting_delimiter) else ';'
+        print_kernel(f'The delimiter is currently: {delim}', kernel)
+        return ''
 
 # %% ../nbs/06_magics.ipynb 7
 def _parse_magic_name_code(match):

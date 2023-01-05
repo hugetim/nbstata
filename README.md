@@ -31,7 +31,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/a4fe8504-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5ebfb122-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -151,6 +151,7 @@ treated by Stata as a single-line comment.
 | `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist] [if] [, nolabel noformat]`    |
 | `*%tail`    | View last 5 (or N) rows       | `*%tail [-h] [N] [varlist] [if] [, nolabel noformat]`    |
 | `*%locals`  | List locals with their values | `*%locals`                                               |
+| `*%delimit` | Print the current delimiter   | `*%delimit`                                              |
 | `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
 | `*%echo`    | Ensure echo from cell         | `*%echo`                                                 |
 | `*%noecho`  | Suppress echo from cell       | `*%noecho`                                               |

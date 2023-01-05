@@ -4,6 +4,7 @@
 __all__ = ['StataSession', 'variable_names']
 
 # %% ../nbs/05_stata_session.ipynb 4
+from .utils import HiddenPrints
 from .helpers import diverted_stata_output, run_as_program
 from fastcore.basics import patch_to
 from textwrap import dedent
@@ -163,10 +164,12 @@ def _local_dict_from_sreturn(self, sreturn_output):
 # %% ../nbs/05_stata_session.ipynb 31
 def _run_as_program_w_locals_sreturned(std_code):
     sreturn_code = dedent("""\
-        mata : st_local("all_locals", invtokens(st_dir("local", "macro", "*")'))
-        foreach lname in `all_locals' {
+        
+        mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))
+        foreach lname in `temp_nbstata_all_locals' {
             sreturn local `lname' "``lname''"
-        }""")
+        }
+        """)
     store_new_locals_code = ("sreturn clear\n" 
                              + std_code
                              + sreturn_code)                          
@@ -181,6 +184,7 @@ def _locals_code_from_dict(preexisting_local_dict):
 # %% ../nbs/05_stata_session.ipynb 35
 @patch_to(StataSession)
 def _restore_locals_and_clear_sreturn(self):
+    from pystata.stata import run
     sreturn_output = diverted_stata_output("sreturn list") # one line to avoid clearing locals
     after_local_dict = self._local_dict_from_sreturn(sreturn_output)
     after_locals_code = _locals_code_from_dict(after_local_dict)
@@ -192,10 +196,7 @@ def _restore_locals_and_clear_sreturn(self):
 @patch_to(StataSession)
 def run_as_prog_with_locals(self, std_code):
     """After `break_out_prog_blocks`, run noecho, inserting locals when needed"""
-    from sfi import Macro
-    from pystata.stata import run
-    preexisting_local_dict = self.get_local_dict()
-    locals_code = _locals_code_from_dict(preexisting_local_dict)
+    locals_code = _locals_code_from_dict(self.get_local_dict())
     if not self.local_def_in(std_code):
         run_as_program(f"""{locals_code}\n{std_code}""")
     else:
