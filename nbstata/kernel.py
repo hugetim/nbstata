@@ -56,49 +56,82 @@ def _set_graph_format(graph_format):
         set_graph_format(graph_format)
 
 # %% ../nbs/09_kernel.ipynb 7
+def _config_stata(env):
+    launch_stata(env['stata_dir'], env['edition'],
+                 False if env['splash']=='False' else True)
+    _set_graph_format(env['graph_format'])
+
+# %% ../nbs/09_kernel.ipynb 8
 @patch_to(PyStataKernel)
 def init_stata(self):
     self.env = get_config()
-    launch_stata(self.env['stata_dir'], self.env['edition'],
-                 False if self.env['splash']=='False' else True)
-    _set_graph_format(self.env['graph_format'])
+    _config_stata(self.env)
     self.stata_session = StataSession()
     self.magic_handler = StataMagics()
     self.completions = CompletionsManager(self.stata_session, list(self.magic_handler.available_magics.keys()))
     self.inspect_output = ""
     self.stata_ready = True
 
-# %% ../nbs/09_kernel.ipynb 8
+# %% ../nbs/09_kernel.ipynb 9
 class Cell:
-    """A class for managing execution of a single code cell"""
-    def __init__(self, kernel, code_w_magics, silent=False):
-        if kernel.env['echo'] == 'None':
+    """A class for managing execution of a single code cell"""                
+    def _set_echo(self, echo_config):
+        if echo_config == 'None':
             self.noecho = True
             self.echo = False
-        elif kernel.env['echo'] == 'True':
+        elif echo_config == 'True':
             self.noecho = False
             self.echo = True
         else:
             self.noecho = False
             self.echo = False
+    
+    def __init__(self, kernel, code_w_magics, silent=False):
+        self._set_echo(kernel.env['echo'])
         self.quietly = silent
-        self.starting_delimiter = kernel.starting_delimiter
+        self.delimiter = kernel.starting_delimiter
         self.stata_session = kernel.stata_session
         self.code = kernel.magic_handler.magic(code_w_magics, kernel, self)
-    
-    def run(self):
-        if self.code != '':
-            if self.noecho and not self.quietly:
-                from nbstata.helpers import run_noecho
-                run_noecho(self.code, self.starting_delimiter,
-                           run_as_prog=self.stata_session.run_as_prog_with_locals)
-            else:
-                from pystata.stata import run
-                if not is_cr_delimiter(self.starting_delimiter):
-                    self.code = "#delimit;\n" + self.code
-                run(self.code, quietly=self.quietly, inline=not self.quietly, echo=self.echo)
+ 
+    def _run_noecho(self):
+        from nbstata.helpers import run_noecho
+        run_noecho(self.code, self.delimiter,
+                   run_as_prog=self.stata_session.run_as_prog_with_locals)
 
-# %% ../nbs/09_kernel.ipynb 19
+    def _run_simple(self):
+        from pystata.stata import run
+        if not is_cr_delimiter(self.delimiter):
+            self.code = "#delimit;\n" + self.code
+        run(self.code, quietly=self.quietly, inline=not self.quietly, echo=self.echo)
+        
+    def run(self):
+        if not self.code:
+            return
+        if self.noecho and not self.quietly:
+            self._run_noecho()
+        else:
+            self._run_simple()
+        self.delimiter = self._check_ending_delimiter()
+
+    def _check_ending_delimiter(self):
+        _ending_delimiter = ending_delimiter(self.code, self.delimiter)
+        _final_character = self.code.strip()[-1]
+        _code_missing_final_delimiter = (_ending_delimiter == ';' 
+                                         and _final_character != ';')
+        if _code_missing_final_delimiter:
+            print_red(
+                self._final_delimiter_warning()
+            )
+        return _ending_delimiter
+    
+    def _final_delimiter_warning(self):
+        return (
+            "Warning: Code cell (with #delimit; in effect) does not end in ';'. "
+            "Exported .do script may behave differently from notebook. "
+            "In v1.0, nbstata may trigger an error instead of just a warning."
+        )
+
+# %% ../nbs/09_kernel.ipynb 21
 _missing_stata_message = (
     "pystata path not found\n"
     "A Stata 17 installation is required to use the nbstata Stata kernel. "
@@ -106,7 +139,7 @@ _missing_stata_message = (
     "please specify its path in your configuration file."
 )
 
-# %% ../nbs/09_kernel.ipynb 21
+# %% ../nbs/09_kernel.ipynb 23
 def _handle_stata_import_error(err, silent, execution_count):
     if not silent:
         print_red(f"ModuleNotFoundError: {_missing_stata_message}")
@@ -118,14 +151,14 @@ def _handle_stata_import_error(err, silent, execution_count):
         'execution_count': execution_count,
     }
 
-# %% ../nbs/09_kernel.ipynb 22
+# %% ../nbs/09_kernel.ipynb 24
 def print_stata_error(text):
     lines = text.splitlines()
     if len(lines) > 2:
         print("\n".join(lines[:-2]))
     print_red("\n".join(lines[-2:]))
 
-# %% ../nbs/09_kernel.ipynb 24
+# %% ../nbs/09_kernel.ipynb 26
 def _handle_stata_error(err, silent, execution_count):
     reply_content = {
         "traceback": [],
@@ -145,34 +178,39 @@ def _handle_stata_error(err, silent, execution_count):
     })
     return reply_content
 
-# %% ../nbs/09_kernel.ipynb 25
+# %% ../nbs/09_kernel.ipynb 27
 @patch_to(PyStataKernel)
 def post_do_hook(self):
     self.stata_session.clear_suggestions()
     self.inspect_output = ""
 
-# %% ../nbs/09_kernel.ipynb 26
+# %% ../nbs/09_kernel.ipynb 28
 @patch_to(PyStataKernel)
-def do_execute(self, code, silent, store_history=True, user_expressions=None,
-               allow_stdin=False):
-    """Execute Stata code cell"""
+def _execute_init(self, silent):
     if not self.stata_ready:
         try:
             self.init_stata()
         except ModuleNotFoundError as err:
             return _handle_stata_import_error(err, silent, self.execution_count)
     self.shell.execution_count += 1
-    _ending_delimiter = ending_delimiter(code, self.starting_delimiter)
+
+# %% ../nbs/09_kernel.ipynb 29
+@patch_to(PyStataKernel)
+def _execute_run(self, silent):
     code_cell = Cell(self, code, silent)
     try:
         code_cell.run()
     except SystemError as err:
         return _handle_stata_error(err, silent, self.execution_count)
-    post_magic_code = code_cell.code.strip()
-    if _ending_delimiter == ';' and post_magic_code and post_magic_code[-1] != ';':
-        print_red("Warning: Code cell (with #delimit; in effect) does not end in ';'. "
-                  "Exported .do script may behave differently from notebook.")
-    self.starting_delimiter = _ending_delimiter
+    self.starting_delimiter = code_cell.delimiter
+
+# %% ../nbs/09_kernel.ipynb 30
+@patch_to(PyStataKernel)
+def do_execute(self, code, silent,
+               store_history=True, user_expressions=None, allow_stdin=False):
+    """Execute Stata code cell"""
+    self._execute_init(silent)
+    self._execute_run(code, silent)
     self.post_do_hook()
     return {
         'status': "ok",
@@ -181,7 +219,7 @@ def do_execute(self, code, silent, store_history=True, user_expressions=None,
         'user_expressions': {},
     }
 
-# %% ../nbs/09_kernel.ipynb 27
+# %% ../nbs/09_kernel.ipynb 31
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
     """Provide context-aware suggestions"""
@@ -191,29 +229,24 @@ def do_complete(self, code, cursor_pos):
             cursor_pos,
             self.starting_delimiter,
         )
-        return {
-            'status': "ok",
-            'cursor_start': cursor_start,
-            'cursor_end': cursor_end,
-            'metadata': {},
-            'matches': matches,
-        }
     else:
-        return {
-            'status': "ok",
-            'cursor_start': cursor_pos,
-            'cursor_end': cursor_pos,
-            'metadata': {},
-            'matches': [],
-        }
+        cursor_start = cursor_end = cursor_pos
+        matches = []
+    return {
+        'status': "ok",
+        'cursor_start': cursor_start,
+        'cursor_end': cursor_end,
+        'metadata': {},
+        'matches': matches,
+    }
 
-# %% ../nbs/09_kernel.ipynb 28
+# %% ../nbs/09_kernel.ipynb 32
 @patch_to(PyStataKernel)
 def do_is_complete(self, code):
     """Overrides IPythonKernel with kernelbase default"""
     return {"status": "unknown"}
 
-# %% ../nbs/09_kernel.ipynb 29
+# %% ../nbs/09_kernel.ipynb 33
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     """Display Stata 'describe' output regardless of cursor position"""
@@ -222,7 +255,7 @@ def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     data = {'text/plain': self.inspect_output}
     return {"status": "ok", "data": data, "metadata": {}, "found": True}
 
-# %% ../nbs/09_kernel.ipynb 30
+# %% ../nbs/09_kernel.ipynb 34
 @patch_to(PyStataKernel)
 def do_history(
     self,
