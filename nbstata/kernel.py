@@ -186,31 +186,21 @@ def post_do_hook(self):
 
 # %% ../nbs/09_kernel.ipynb 28
 @patch_to(PyStataKernel)
-def _execute_init(self, silent):
+def do_execute(self, code, silent,
+               store_history=True, user_expressions=None, allow_stdin=False):
+    """Execute Stata code cell"""
     if not self.stata_ready:
         try:
             self.init_stata()
         except ModuleNotFoundError as err:
             return _handle_stata_import_error(err, silent, self.execution_count)
     self.shell.execution_count += 1
-
-# %% ../nbs/09_kernel.ipynb 29
-@patch_to(PyStataKernel)
-def _execute_run(self, silent):
     code_cell = Cell(self, code, silent)
     try:
         code_cell.run()
     except SystemError as err:
         return _handle_stata_error(err, silent, self.execution_count)
     self.starting_delimiter = code_cell.delimiter
-
-# %% ../nbs/09_kernel.ipynb 30
-@patch_to(PyStataKernel)
-def do_execute(self, code, silent,
-               store_history=True, user_expressions=None, allow_stdin=False):
-    """Execute Stata code cell"""
-    self._execute_init(silent)
-    self._execute_run(code, silent)
     self.post_do_hook()
     return {
         'status': "ok",
@@ -219,7 +209,7 @@ def do_execute(self, code, silent,
         'user_expressions': {},
     }
 
-# %% ../nbs/09_kernel.ipynb 31
+# %% ../nbs/09_kernel.ipynb 29
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
     """Provide context-aware suggestions"""
@@ -240,13 +230,13 @@ def do_complete(self, code, cursor_pos):
         'matches': matches,
     }
 
-# %% ../nbs/09_kernel.ipynb 32
+# %% ../nbs/09_kernel.ipynb 30
 @patch_to(PyStataKernel)
 def do_is_complete(self, code):
     """Overrides IPythonKernel with kernelbase default"""
     return {"status": "unknown"}
 
-# %% ../nbs/09_kernel.ipynb 33
+# %% ../nbs/09_kernel.ipynb 31
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     """Display Stata 'describe' output regardless of cursor position"""
@@ -255,7 +245,7 @@ def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     data = {'text/plain': self.inspect_output}
     return {"status": "ok", "data": data, "metadata": {}, "found": True}
 
-# %% ../nbs/09_kernel.ipynb 34
+# %% ../nbs/09_kernel.ipynb 32
 @patch_to(PyStataKernel)
 def do_history(
     self,

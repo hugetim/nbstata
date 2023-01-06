@@ -118,7 +118,7 @@ def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
 def diverted_stata_output(std_code, ok_to_run_as_prog=True, accesses_r_values=False):
     """Returns output of std_code, with multiline echo if not `ok_to_run_as_prog`
     
-    Side-effect: multi-line code run noecho clears locals
+    Side-effects: multi-line code run noecho clears locals; some code may change `return list`
     """
     import pystata
     run_as_rclass_prog = functools.partial(run_as_program, prog_def_option_code="rclass")
@@ -153,8 +153,9 @@ def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
         return list
         ereturn list
         return add
+        display "*** Last updated `c(current_time)' `c(current_date)' ***"
         describe, fullnames
         """
     raw_output = diverted_stata_output(inspect_code, accesses_r_values=True)
-    desc_start = raw_output.find('Contains data')
+    desc_start = raw_output.find('*** Last updated ')
     return raw_output[desc_start:] + raw_output[:desc_start]
