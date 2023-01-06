@@ -112,13 +112,13 @@ def magic(self, code, kernel, cell):
 
 # %% ../nbs/06_magics.ipynb 15
 def _formatted_local_list(local_dict):
-    std_len = max((len(n) for n in local_dict if len(n) <= 15)) if local_dict else 0
+    std_len = 14
     str_reps = []
     for n in local_dict:
-        if len(n) > 15:
-            str_reps.append(f"{n}:\n{' '*std_len}  {local_dict[n]}")
-        else:
+        if len(n) <= std_len:
             str_reps.append(f"{n}:{' '*(std_len-len(n))} {local_dict[n]}")
+        else:
+            str_reps.append(f"{n}:\n{' '*std_len}  {local_dict[n]}")
     return "\n".join(str_reps)
 
 # %% ../nbs/06_magics.ipynb 18
