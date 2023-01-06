@@ -22,6 +22,19 @@ is needlessly clunky if you are working primarily with Stata).
 
 <img align="center" width="650" src="https://github.com/hugetim/nbstata/raw/master/nbs/jupyter_notebook_example.gif">
 
+### `nbstata` features
+
+- [x] Works with Stata 17 (only).
+- [x] Autocompletion for variables, macros, matrices, and file paths.
+- [x] DataGrid widget with `browse`-like capabilities (e.g., interactive
+  filtering).
+- [x] Variable and data properties (`describe` and
+  `return`/`ereturn list`) available in a side panel.
+- [x] Interactive help files available within notebook.
+- [x] `#delimit ;` interactive support (along with all types of
+  comments).
+- [ ] Mata interactive support.
+
 ### What do Stata notebooks allow that the official Stata IDE doesn’t?
 
 - Exploratory analysis that is both:
@@ -29,28 +42,13 @@ is needlessly clunky if you are working primarily with Stata).
   - preserved for future reference/editing
 - Presenting results in a way that interweaves:
   - code
-  - results (including figures)
+  - results (including graphs)
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/260bfcfb-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/a9de78ea-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
-
-### `nbstata` Features
-
-- [x] Supports Stata 17 (only).
-- [x] Display graphs.
-- [x] Tab autocompletions based on the variables, macros, scalars, and
-  matrices currently in memory, as well as suggesting file paths for
-  autocompletion.
-- [x] Browse data interactively.
-- [x] Variable and data properties (i.e. `describe` output) shown as
-  auto-updating contextual help.
-- [x] Pull up interactive help files within the kernel.
-- [x] Use any type of comments in your code, not just `*`.
-- [x] `#delimit ;` interactive support
-- [ ] Mata interactive support
 
 ## Install
 
@@ -156,26 +154,25 @@ treated by Stata as a single-line comment.
 
 `nbstata` currently supports the following magics:
 
-| Magic       | Description                   | Full Syntax                                              |
-|:------------|:------------------------------|:---------------------------------------------------------|
-| `*%browse`  | Interactively view dataset    | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
-| `*%head`    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist] [if] [, nolabel noformat]`    |
-| `*%tail`    | View last 5 (or N) rows       | `*%tail [-h] [N] [varlist] [if] [, nolabel noformat]`    |
-| `*%locals`  | List locals with their values | `*%locals`                                               |
-| `*%delimit` | Print the current delimiter   | `*%delimit`                                              |
-| `*%help`    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
-| `*%echo`    | Ensure echo from cell         | `*%echo`                                                 |
-| `*%noecho`  | Suppress echo from cell       | `*%noecho`                                               |
-| `*%quietly` | Suppress all output from cell | `*%quietly`                                              |
+| Magic      | Description                   | Full Syntax                                              |
+|:-----------|:------------------------------|:---------------------------------------------------------|
+| \*%browse  | Interactively view dataset    | `*%browse [-h] [varlist] [if] [in] [, nolabel noformat]` |
+| \*%head    | View first 5 (or N) rows      | `*%head [-h] [N] [varlist] [if] [, nolabel noformat]`    |
+| \*%tail    | View last 5 (or N) rows       | `*%tail [-h] [N] [varlist] [if] [, nolabel noformat]`    |
+| \*%locals  | List locals with their values | `*%locals`                                               |
+| \*%delimit | Print the current delimiter   | `*%delimit`                                              |
+| \*%help    | Display Stata help            | `*%help [-h] command_or_topic_name`                      |
+| \*%echo    | Ensure echo from cell         | `*%echo`                                                 |
+| \*%noecho  | Suppress echo from cell       | `*%noecho`                                               |
+| \*%quietly | Suppress all output from cell | `*%quietly`                                              |
 
 The `%browse` magic requires JupyterLab with the
 `@finos/perspective-jupyterlab` extension [correctly
 installed](https://perspective.finos.org/docs/python/#jupyterlab).
 
 By default, the `%browse`, `%head`, and `%tail` magics convert numeric
-Stata values to strings using either their Stata format or their value
-labels. To prevent this behavior, specify the `nolabel` and/or
-`noformat` options.
+Stata values to strings using their Stata format (or value labels). To
+prevent this behavior, specify the `noformat` and/or `nolabel` options.
 
 ## Stata Implementation Details
 
@@ -185,9 +182,6 @@ A [`#delimit;`](https://www.stata.com/manuals/pdelimit.pdf) command in
 one cell will persist into other cells, until `#delimit cr` is called.
 For example, see [delimit
 tests.ipynb](https://github.com/hugetim/nbstata/blob/master/manual_test_nbs/delimit%20tests.ipynb).
-(If anyone desires each cell to instead be treated as a separate .do
-file, so that every cell defaults to `#delimit cr` at the start, please
-raise an Issue to request this as a configuration option.)
 
 ## Contributing
 

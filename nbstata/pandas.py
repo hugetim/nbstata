@@ -46,10 +46,11 @@ def _var_from_varlist(varlist, stfr):
         _program_name = "temp_nbstata_varlist_name"
         try:
             var_code = diverted_stata_output(f"""\
-                program {_program_name}
+                program define {_program_name}
                     syntax [varlist(default=none)]
                     disp "`varlist'"
                 end
+                return add
                 {_program_name} {varlist}
                 program drop {_program_name}
                 """).strip()
@@ -58,7 +59,7 @@ def _var_from_varlist(varlist, stfr):
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_pandas.ipynb 17
+# %% ../nbs/03_pandas.ipynb 20
 def better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missingval, sformat):
     import sfi, pystata
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -85,16 +86,14 @@ def better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missi
             df[v] = df[v].apply(format_value)
     return df
 
-# %% ../nbs/03_pandas.ipynb 18
+# %% ../nbs/03_pandas.ipynb 21
 def better_pdataframe_from_data(varlist="", obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
-
     return better_dataframe_from_stata(None, varlist, obs, selectvar, valuelabel, missingval, sformat)
 
-# %% ../nbs/03_pandas.ipynb 19
+# %% ../nbs/03_pandas.ipynb 22
 def better_pdataframe_from_frame(stfr, varlist="", obs=None, selectvar=None, valuelabel=False, missingval=np.NaN, sformat=False):
     import pystata
     pystata.config.check_initialized()
-
     return better_dataframe_from_stata(stfr, varlist, obs, selectvar, valuelabel, missingval, sformat)

@@ -2,12 +2,13 @@
 
 # %% auto 0
 __all__ = ['comment_regex', 'delimit_regex', 'multi_regex', 'is_cr_delimiter', 'ending_delimiter', 'standardize_code',
-           'is_start_of_program_block', 'break_out_prog_blocks', 'HiddenPrints', 'print_red']
+           'is_start_of_program_block', 'break_out_prog_blocks', 'HiddenPrints', 'DivertedPrints', 'print_red']
 
 # %% ../nbs/01_utils.ipynb 3
 import re
 import sys
 import os
+from io import StringIO
 
 # %% ../nbs/01_utils.ipynb 5
 # Detect comments spanning multiple lines
@@ -142,5 +143,17 @@ class HiddenPrints:
         sys.stdout = self._original_stdout
 
 # %% ../nbs/01_utils.ipynb 44
+class DivertedPrints:
+    """A context manager for suppressing `print` output"""
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        self.diverted = StringIO()
+        sys.stdout = self.diverted
+        return self.diverted
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout = self._original_stdout
+        self.diverted.close()
+
+# %% ../nbs/01_utils.ipynb 46
 def print_red(text):
     print(f"\x1b[31m{text}\x1b[0m")

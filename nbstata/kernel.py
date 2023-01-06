@@ -5,14 +5,14 @@ __all__ = ['PyStataKernel', 'Cell', 'print_stata_error']
 
 # %% ../nbs/09_kernel.ipynb 4
 from .config import get_config, launch_stata
-from .helpers import diverted_stata_output
+from .helpers import get_inspect
 from .utils import print_red, ending_delimiter, is_cr_delimiter
 from .stata_session import StataSession
 from .magics import StataMagics
 from .completions import CompletionsManager
+import nbstata # for __version__
 from fastcore.basics import patch_to
 from ipykernel.ipkernel import IPythonKernel
-import nbstata
 
 # %% ../nbs/09_kernel.ipynb 5
 class PyStataKernel(IPythonKernel):
@@ -218,7 +218,7 @@ def do_is_complete(self, code):
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     """Display Stata 'describe' output regardless of cursor position"""
     if not self.inspect_output:
-        self.inspect_output = diverted_stata_output('describe, fullnames')
+        self.inspect_output = get_inspect(code, cursor_pos, detail_level, omit_sections)
     data = {'text/plain': self.inspect_output}
     return {"status": "ok", "data": data, "metadata": {}, "found": True}
 

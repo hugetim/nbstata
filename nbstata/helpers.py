@@ -2,14 +2,13 @@
 
 # %% auto 0
 __all__ = ['obs_count', 'resolve_macro', 'Selectvar', 'IndexVar', 'run_as_program', 'run_non_prog_noecho', 'run_prog_noecho',
-           'run_noecho', 'diverted_stata_output']
+           'run_noecho', 'diverted_stata_output', 'get_inspect']
 
 # %% ../nbs/02_helpers.ipynb 4
 from .config import launch_stata
-from .utils import break_out_prog_blocks, HiddenPrints
-import sys
-from io import StringIO
+from .utils import break_out_prog_blocks, HiddenPrints, DivertedPrints
 from textwrap import dedent
+import functools
 
 # %% ../nbs/02_helpers.ipynb 6
 def obs_count():
@@ -116,32 +115,46 @@ def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program):
             run_non_prog_noecho(block['std_code'], run_as_prog=run_as_prog)
 
 # %% ../nbs/02_helpers.ipynb 45
-def diverted_stata_output(std_code, noecho=True):
+def diverted_stata_output(std_code, ok_to_run_as_prog=True, accesses_r_values=False):
+    """Returns output of std_code, with multiline echo if not `ok_to_run_as_prog`
+    
+    Side-effect: multi-line code run noecho clears locals
+    """
     import pystata
-    old_stdout = sys.stdout
-    diverted = StringIO()
-    sys.stdout = diverted
-    if noecho and len(std_code.splitlines()) > 1:
-        code = f"capture log off\n{std_code}\ncapture log on"""
-        try:
-            run_noecho(code) # multi-line code run as a program, which clears locals
-        except SystemError as e:
-            pystata.stata.run("capture log on", quietly=True)
-            raise(e)
-    elif noecho:
-        pystata.stata.run("capture log off", quietly=True)
-        try:
-            pystata.stata.run(std_code, quietly=False, inline=True, echo=False)
-        finally:
-            pystata.stata.run("capture log on", quietly=True)
-    else:
-        pystata.stata.run("capture log off", quietly=True)
-        code = f"{std_code}\ncapture log on"""
-        try:
-            pystata.stata.run(code, quietly=False, inline=True, echo=True)
-        except SystemError as e:
-            pystata.stata.run("capture log on", quietly=True)
-            raise(e)
-    sys.stdout = old_stdout
-    out = diverted.getvalue()
+    run_as_rclass_prog = functools.partial(run_as_program, prog_def_option_code="rclass")
+    with DivertedPrints() as diverted:
+        if ok_to_run_as_prog and not accesses_r_values:
+            code = f"return add\ncapture log off\n{std_code}\ncapture log on"""
+            try:
+                run_noecho(code, run_as_prog=run_as_rclass_prog)
+            except SystemError as e:
+                run_noecho("return add\ncapture log on", run_as_prog=run_as_rclass_prog)
+                raise(e)
+        elif ok_to_run_as_prog:
+            run_noecho("return add\ncapture log off", run_as_prog=run_as_rclass_prog)
+            code = f"{std_code}\ncapture log on"""
+            try:
+                run_noecho(code, run_as_prog=run_as_rclass_prog)
+            except SystemError as e:
+                run_noecho("return add\ncapture log on", run_as_prog=run_as_rclass_prog)
+                raise(e)
+        else:
+            run_noecho("return add\ncapture log off", run_as_prog=run_as_rclass_prog)
+            try:
+                pystata.stata.run(std_code, quietly=False, inline=True, echo=False)
+            finally:
+                run_noecho("return add\ncapture log on", run_as_prog=run_as_rclass_prog)
+        out = diverted.getvalue()
     return out #.replace("\n> ", "")
+
+# %% ../nbs/02_helpers.ipynb 52
+def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
+    inspect_code = """\
+        return list
+        ereturn list
+        return add
+        describe, fullnames
+        """
+    raw_output = diverted_stata_output(inspect_code, accesses_r_values=True)
+    desc_start = raw_output.find('Contains data')
+    return raw_output[desc_start:] + raw_output[:desc_start]

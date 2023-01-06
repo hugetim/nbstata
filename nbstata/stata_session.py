@@ -114,7 +114,7 @@ def _completions(self):
         local _temp_completions_while_local_ = 0
         }
         macro drop _temp_completions_while_local_
-    """), noecho=False)
+    """), ok_to_run_as_prog=False)
 
 # %% ../nbs/05_stata_session.ipynb 18
 @patch_to(StataSession)
@@ -185,7 +185,8 @@ def _locals_code_from_dict(preexisting_local_dict):
 @patch_to(StataSession)
 def _restore_locals_and_clear_sreturn(self):
     from pystata.stata import run
-    sreturn_output = diverted_stata_output("sreturn list") # one line to avoid clearing locals
+    # run non-prog to avoid clearing locals
+    sreturn_output = diverted_stata_output("sreturn list", ok_to_run_as_prog=False)
     after_local_dict = self._local_dict_from_sreturn(sreturn_output)
     after_locals_code = _locals_code_from_dict(after_local_dict)
     if after_local_dict:
