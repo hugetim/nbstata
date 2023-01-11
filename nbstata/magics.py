@@ -4,7 +4,6 @@
 __all__ = ['print_kernel', 'StataMagics']
 
 # %% ../nbs/07_magics.ipynb 3
-from .utils import is_cr_delimiter
 import nbstata.browse as browse
 from fastcore.basics import patch_to
 import re
@@ -63,7 +62,7 @@ class StataMagics():
         return code
     
     def magic_delimit(self, code, kernel, cell):
-        delim = 'cr' if is_cr_delimiter(kernel.starting_delimiter) else ';'
+        delim = ';' if kernel.sc_delimiter else 'cr'
         print_kernel(f'The delimiter is currently: {delim}', kernel)
         return ''
 

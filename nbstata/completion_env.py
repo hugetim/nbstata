@@ -4,7 +4,7 @@
 __all__ = ['stata_lexer', 'CompletionEnv', 'Env']
 
 # %% ../nbs/08_completion_env.ipynb 4
-from .utils import ending_delimiter, is_cr_delimiter
+from .utils import ending_sc_delimiter
 from fastcore.basics import patch_to
 from enum import IntEnum
 from typing import Tuple
@@ -35,11 +35,11 @@ def _last_token(code):
     return (min(tokens_to_combine, key=lambda t: t[0])[0], last_tokentype, "".join([t[2] for t in tokens_to_combine]))
 
 # %% ../nbs/08_completion_env.ipynb 8
-def _last_token_full_string(code, starting_delimiter=None):
+def _last_token_full_string(code, sc_delimiter=False):
     if not code:
         return (0, None, "")
     prefix = ""
-    if not is_cr_delimiter(starting_delimiter):
+    if sc_delimiter:
         prefix = "#delimit;\n"
         orig_code = code
         code = prefix + orig_code
@@ -140,14 +140,14 @@ class CompletionEnv():
 #             r')*\Z').search
 
 # %% ../nbs/08_completion_env.ipynb 29
-def _ends_in_string_literal(code, starting_delimiter=None):
-    if not is_cr_delimiter(starting_delimiter):
+def _ends_in_string_literal(code, sc_delimiter=False):
+    if sc_delimiter:
         code = "#delimit;\n" + code
     return _last_token(code)[1] is String
 
 # %% ../nbs/08_completion_env.ipynb 30
-def _ends_in_a_comment(code, starting_delimiter=None):
-    if not is_cr_delimiter(starting_delimiter):
+def _ends_in_a_comment(code, sc_delimiter=False):
+    if sc_delimiter:
         code = "#delimit;\n" + code
     return _last_token(code)[1] in [Comment.Single, Comment.Multiline, Comment.Special]
 
@@ -175,8 +175,8 @@ def _start_of_last_chunk(self, code):
 
 # %% ../nbs/08_completion_env.ipynb 46
 @patch_to(CompletionEnv)
-def _last_line_first_word(self, code, sc_delimit_mode=False):
-    if sc_delimit_mode:
+def _last_line_first_word(self, code, sc_delimiter=False):
+    if sc_delimiter:
         linecontext = self.context['delimit_line'](code)
     else:
         linecontext = self.context['line'](code)
@@ -206,7 +206,7 @@ class Env(IntEnum):
 def get_env(self, 
             code: str, # Right-truncated to cursor position
             r2chars: str, # The two characters immediately after `code`, used to accurately determine rcomp
-            starting_delimiter,
+            sc_delimiter,
            ) -> Tuple[Env, int, str, str]:
     """Returns completions environment
     
@@ -232,19 +232,19 @@ def get_env(self,
         env = Env.MAGIC
         return env, pos, code[pos:], rcomp
     
-    delimiter = ending_delimiter(code, starting_delimiter)
+    sc_delimiter = ending_sc_delimiter(code, sc_delimiter)
     env = Env.GENERAL   
     
     # Detect last "word" delimited by white space, a double-quote, or =.
     pos = self._start_of_last_chunk(code)
 
-    if _ends_in_a_comment(code, starting_delimiter):
+    if _ends_in_a_comment(code, sc_delimiter):
         return env, pos, code[pos:], rcomp
 
-    last_token_index, last_token_type, last_token_value = _last_token_full_string(code, starting_delimiter)
+    last_token_index, last_token_type, last_token_value = _last_token_full_string(code, sc_delimiter)
     
     if last_token_type is String:
-        if (not _ends_in_string_literal(code + " ", starting_delimiter)
+        if (not _ends_in_string_literal(code + " ", sc_delimiter)
             or not (last_token_value.startswith('"')
                     or last_token_value.startswith('`"'))):
             return Env.NONE, len(code)-1, rcomp
@@ -283,7 +283,7 @@ def get_env(self,
     else:
         # Figure out if current statement is a matrix or scalar
         # statement. If so, will add them to completions list.
-        last_line, first_word = self._last_line_first_word(code, not is_cr_delimiter(delimiter))
+        last_line, first_word = self._last_line_first_word(code, sc_delimiter)
         if first_word:
             equals_present = (last_line.find('=') > 0)
             if re.match(r'^sca(lar|la|l)?$', first_word): #.strip()

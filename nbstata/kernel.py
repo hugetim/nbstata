@@ -6,7 +6,7 @@ __all__ = ['PyStataKernel', 'Cell', 'print_stata_error']
 # %% ../nbs/10_kernel.ipynb 4
 from .config import get_config, launch_stata
 from .helpers import get_inspect
-from .utils import print_red, ending_delimiter, is_cr_delimiter
+from .utils import print_red, ending_sc_delimiter
 from .stata_session import StataSession
 from .magics import StataMagics
 from .completions import CompletionsManager
@@ -41,7 +41,7 @@ class PyStataKernel(IPythonKernel):
         super().__init__(**kwargs)
         self.stata_ready = False
         self.shell.execution_count = 0
-        self.starting_delimiter = None
+        self.sc_delimiter = False
         self.perspective_enabled = None
         self.inspect_output = "Stata not yet initialized."
         try:
@@ -89,7 +89,7 @@ class Cell:
     def __init__(self, kernel, code_w_magics, silent=False):
         self._set_echo(kernel.env['echo'])
         self.quietly = silent
-        self.delimiter = kernel.starting_delimiter
+        self.sc_delimiter = kernel.sc_delimiter
         self.stata_session = kernel.stata_session
         self.code = kernel.magic_handler.magic(code_w_magics, kernel, self)
        
@@ -98,20 +98,20 @@ class Cell:
         if not self.code:
             return
         dispatch_run(self.code, 
-            quietly=self.quietly, echo=self.echo, delimiter=self.delimiter,
+            quietly=self.quietly, echo=self.echo, sc_delimiter=self.sc_delimiter,
             noecho=self.noecho, run_as_prog=self.stata_session.run_as_program_w_locals)
-        self.delimiter = self._check_ending_delimiter()
+        self.sc_delimiter = self._check_ending_delimiter()
 
     def _check_ending_delimiter(self):
-        _ending_delimiter = ending_delimiter(self.code, self.delimiter)
+        _ending_sc_delimiter = ending_sc_delimiter(self.code, self.sc_delimiter)
         _final_character = self.code.strip()[-1]
-        _code_missing_final_delimiter = (_ending_delimiter == ';' 
+        _code_missing_final_delimiter = (_ending_sc_delimiter
                                          and _final_character != ';')
         if _code_missing_final_delimiter:
             print_red(
                 self._final_delimiter_warning()
             )
-        return _ending_delimiter
+        return _ending_sc_delimiter
     
     def _final_delimiter_warning(self):
         return (
@@ -189,7 +189,7 @@ def do_execute(self, code, silent,
         code_cell.run()
     except SystemError as err:
         return _handle_stata_error(err, silent, self.execution_count)
-    self.starting_delimiter = code_cell.delimiter
+    self.sc_delimiter = code_cell.sc_delimiter
     self.post_do_hook()
     return {
         'status': "ok",
@@ -206,7 +206,7 @@ def do_complete(self, code, cursor_pos):
         cursor_start, cursor_end, matches = self.completions.do(
             code,
             cursor_pos,
-            self.starting_delimiter,
+            self.sc_delimiter,
         )
     else:
         cursor_start = cursor_end = cursor_pos

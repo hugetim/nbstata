@@ -140,12 +140,12 @@ def get(self, starts, env, rcomp):
 
 # %% ../nbs/09_completions.ipynb 14
 @patch_to(CompletionsManager)
-def do(self, code, cursor_pos, starting_delimiter=None):
+def do(self, code, cursor_pos, sc_delimiter=False):
     if self.stata_session.suggestions is None:
         self.stata_session.refresh_suggestions()
     env, pos, chunk, rcomp = self.env_helper.get_env(
         code[:cursor_pos], 
         code[cursor_pos:(cursor_pos + 2)],
-        starting_delimiter,
+        sc_delimiter,
     )
     return pos, cursor_pos, self.get(chunk, env, rcomp)

@@ -6,7 +6,7 @@ __all__ = ['parse_sreturn', 'pre', 'kwargs', 'local_def_in', 'SelectVar', 'Index
            'run_simple', 'dispatch_run', 'get_inspect']
 
 # %% ../nbs/03_helpers.ipynb 3
-from .utils import DivertedPrints, break_out_prog_blocks, is_cr_delimiter
+from .utils import DivertedPrints, break_out_prog_blocks
 from .stata import run_direct, run_as_program, get_local, run_prog_noecho, run_non_prog_noecho
 from textwrap import dedent
 import functools
@@ -156,26 +156,26 @@ def run_as_program_w_locals(std_code, local_dict=None):
         _restore_locals_and_clear_sreturn()
 
 # %% ../nbs/03_helpers.ipynb 54
-def run_noecho(code, starting_delimiter=None, run_as_prog=run_as_program_w_locals):
+def run_noecho(code, sc_delimiter=False, run_as_prog=run_as_program_w_locals):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
-    for block in break_out_prog_blocks(code, starting_delimiter):
+    for block in break_out_prog_blocks(code, sc_delimiter):
         if block['is_prog']:
             run_prog_noecho(block['std_code'])
         else:
             run_non_prog_noecho(block['std_code'], run_as_prog=run_as_prog)
 
 # %% ../nbs/03_helpers.ipynb 58
-def run_simple(code, quietly=False, echo=False, delimiter=None):
-    if not is_cr_delimiter(delimiter):
+def run_simple(code, quietly=False, echo=False, sc_delimiter=False):
+    if sc_delimiter:
         code = "#delimit;\n" + code
     run_direct(code, quietly=quietly, inline=not quietly, echo=echo)
 
 # %% ../nbs/03_helpers.ipynb 60
-def dispatch_run(code, quietly=False, echo=False, delimiter=None, noecho=False, run_as_prog=run_as_program_w_locals):
+def dispatch_run(code, quietly=False, echo=False, sc_delimiter=False, noecho=False, run_as_prog=run_as_program_w_locals):
     if noecho and not quietly:
-        run_noecho(code, delimiter, run_as_prog=run_as_prog)
+        run_noecho(code, sc_delimiter, run_as_prog=run_as_prog)
     else:
-        run_simple(code, quietly, echo, delimiter)   
+        run_simple(code, quietly, echo, sc_delimiter)   
 
 # %% ../nbs/03_helpers.ipynb 64
 def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
