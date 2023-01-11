@@ -6,11 +6,12 @@ website:
         contents:
           - 00_config.ipynb
           - 01_utils.ipynb
-          - 02_helpers.ipynb
-          - 03_pandas.ipynb
-          - 04_browse.ipynb
-          - 05_stata_session.ipynb
-          - 06_magics.ipynb
-          - 07_completion_env.ipynb
-          - 08_completions.ipynb
-          - 09_kernel.ipynb
+          - 02_stata.ipynb
+          - 03_helpers.ipynb
+          - 04_pandas.ipynb
+          - 05_browse.ipynb
+          - 06_stata_session.ipynb
+          - 07_magics.ipynb
+          - 08_completion_env.ipynb
+          - 09_completions.ipynb
+          - 10_kernel.ipynb
