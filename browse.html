@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Helpers for browse, head, and tail magics">
+
+<title>nbstata - browse</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1XLFCC9FMF"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+ 
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'analytics_storage': 'denied'
+  });
+gtag('config', 'G-1XLFCC9FMF', { 'anonymize_ip': true});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="nbstata - browse">
+<meta property="og:description" content="Helpers for browse, head, and tail magics">
+<meta property="og:site-name" content="nbstata">
+<meta name="twitter:title" content="nbstata - browse">
+<meta name="twitter:description" content="Helpers for browse, head, and tail magics">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">nbstata</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hugetim/nbstata"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">browse</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">nbstata</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Developer Docs</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./config.html" class="sidebar-item-text sidebar-link">config</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utils.html" class="sidebar-item-text sidebar-link">utils</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stata.html" class="sidebar-item-text sidebar-link">stata</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./helpers.html" class="sidebar-item-text sidebar-link">helpers</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pandas.html" class="sidebar-item-text sidebar-link">pandas</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./browse.html" class="sidebar-item-text sidebar-link active">browse</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stata_session.html" class="sidebar-item-text sidebar-link">stata_session</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./magics.html" class="sidebar-item-text sidebar-link">magics</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./completion_env.html" class="sidebar-item-text sidebar-link">completion_env</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./completions.html" class="sidebar-item-text sidebar-link">completions</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./kernel.html" class="sidebar-item-text sidebar-link">kernel</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#parsing-stata-code-for-browse-magic" id="toc-parsing-stata-code-for-browse-magic" class="nav-link active" data-scroll-target="#parsing-stata-code-for-browse-magic">Parsing Stata code for browse magic</a>
+  <ul class="collapse">
+  <li><a href="#parse_code_if_in" id="toc-parse_code_if_in" class="nav-link" data-scroll-target="#parse_code_if_in">parse_code_if_in</a></li>
+  <li><a href="#in_range" id="toc-in_range" class="nav-link" data-scroll-target="#in_range">in_range</a></li>
+  </ul></li>
+  <li><a href="#headtailbrowse-magic-helpers" id="toc-headtailbrowse-magic-helpers" class="nav-link" data-scroll-target="#headtailbrowse-magic-helpers">Head/tail/browse magic helpers</a>
+  <ul class="collapse">
+  <li><a href="#parse_browse_magic" id="toc-parse_browse_magic" class="nav-link" data-scroll-target="#parse_browse_magic">parse_browse_magic</a></li>
+  <li><a href="#get_df" id="toc-get_df" class="nav-link" data-scroll-target="#get_df">get_df</a></li>
+  </ul></li>
+  <li><a href="#headtail-magic-helpers" id="toc-headtail-magic-helpers" class="nav-link" data-scroll-target="#headtail-magic-helpers">Head/tail magic helpers</a>
+  <ul class="collapse">
+  <li><a href="#headtail_df_params" id="toc-headtail_df_params" class="nav-link" data-scroll-target="#headtail_df_params">headtail_df_params</a></li>
+  <li><a href="#headtail_get_df" id="toc-headtail_get_df" class="nav-link" data-scroll-target="#headtail_get_df">headtail_get_df</a></li>
+  </ul></li>
+  <li><a href="#browse-magic-helpers" id="toc-browse-magic-helpers" class="nav-link" data-scroll-target="#browse-magic-helpers">Browse magic helpers</a>
+  <ul class="collapse">
+  <li><a href="#browse_df_params" id="toc-browse_df_params" class="nav-link" data-scroll-target="#browse_df_params">browse_df_params</a></li>
+  </ul></li>
+  <li><a href="#browse-magic-perspectivewidget" id="toc-browse-magic-perspectivewidget" class="nav-link" data-scroll-target="#browse-magic-perspectivewidget">Browse magic: PerspectiveWidget</a>
+  <ul class="collapse">
+  <li><a href="#perspective_not_found" id="toc-perspective_not_found" class="nav-link" data-scroll-target="#perspective_not_found">perspective_not_found</a></li>
+  <li><a href="#perspective_is_enabled" id="toc-perspective_is_enabled" class="nav-link" data-scroll-target="#perspective_is_enabled">perspective_is_enabled</a></li>
+  <li><a href="#browse_not_enabled" id="toc-browse_not_enabled" class="nav-link" data-scroll-target="#browse_not_enabled">browse_not_enabled</a></li>
+  <li><a href="#display_perspective" id="toc-display_perspective" class="nav-link" data-scroll-target="#display_perspective">display_perspective</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/hugetim/nbstata/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">browse</h1>
+</div>
+
+<div>
+  <div class="description">
+    Helpers for browse, head, and tail magics
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="parsing-stata-code-for-browse-magic" class="level2">
+<h2 class="anchored" data-anchor-id="parsing-stata-code-for-browse-magic">Parsing Stata code for browse magic</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L24" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="parse_code_if_in" class="level3">
+<h3 class="anchored" data-anchor-id="parse_code_if_in">parse_code_if_in</h3>
+<blockquote class="blockquote">
+<pre><code> parse_code_if_in (code)</code></pre>
+</blockquote>
+<p>Parse line of Stata code into code, if, in</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.test <span class="im">import</span> test_eq, test_fail</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> textwrap <span class="im">import</span> dedent</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>code <span class="op">=</span> <span class="st">"list var1 if var1==0 in 1/10"</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>test_eq(parse_code_if_in(code), {<span class="st">'code'</span>: <span class="st">'list var1'</span>, <span class="st">'if'</span>: <span class="st">'if var1==0'</span>, <span class="st">'in'</span>: <span class="st">'in 1/10'</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>parse_code_if_in(<span class="st">'x in 1/10'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>{'code': 'x', 'if': '', 'in': 'in 1/10'}</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L67" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="in_range" class="level3">
+<h3 class="anchored" data-anchor-id="in_range">in_range</h3>
+<blockquote class="blockquote">
+<pre><code> in_range (stata_in_code, count)</code></pre>
+</blockquote>
+<p>Return in-statement range</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>test_eq(in_range(<span class="st">""</span>, <span class="dv">100</span>), (<span class="va">None</span>, <span class="va">None</span>))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>test_eq(in_range(<span class="st">"in 10"</span>, <span class="dv">100</span>), (<span class="dv">0</span>, <span class="dv">10</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>test_eq(in_range(<span class="st">"in 1/10"</span>, <span class="dv">100</span>), (<span class="dv">0</span>, <span class="dv">10</span>))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>test_eq(in_range(<span class="st">"in F/10"</span>, <span class="dv">100</span>), (<span class="dv">0</span>, <span class="dv">10</span>))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>test_eq(in_range(<span class="st">"in 3/10"</span>, <span class="dv">100</span>), (<span class="dv">2</span>, <span class="dv">10</span>))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>test_fail(in_range, args<span class="op">=</span>(<span class="st">"in 10"</span>, <span class="dv">5</span>))</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>test_fail(in_range, args<span class="op">=</span>(<span class="st">"in 10/1"</span>, <span class="dv">100</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Negative indices are converted to positive, following Stata syntax:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>test_eq(in_range(<span class="st">"in -10/-1"</span>, <span class="dv">41</span>), (<span class="dv">31</span>, <span class="dv">41</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="headtailbrowse-magic-helpers" class="level2">
+<h2 class="anchored" data-anchor-id="headtailbrowse-magic-helpers">Head/tail/browse magic helpers</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L85" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="parse_browse_magic" class="level3">
+<h3 class="anchored" data-anchor-id="parse_browse_magic">parse_browse_magic</h3>
+<blockquote class="blockquote">
+<pre><code> parse_browse_magic (code)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>code <span class="op">=</span> <span class="st">"le if year==1920 in 1/10, noformat"</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>test_eq(parse_browse_magic(code), </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>        ([<span class="st">'le'</span>], <span class="st">'in 1/10'</span>, <span class="st">'if year==1920'</span>, [<span class="st">'noformat'</span>])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>       )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L131" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_df" class="level3">
+<h3 class="anchored" data-anchor-id="get_df">get_df</h3>
+<blockquote class="blockquote">
+<pre><code> get_df (obs_range, varlist, stata_if_code, missingval, valuelabel,
+         sformat)</code></pre>
+</blockquote>
+</section>
+</section>
+<section id="headtail-magic-helpers" class="level2">
+<h2 class="anchored" data-anchor-id="headtail-magic-helpers">Head/tail magic helpers</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L145" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="headtail_df_params" class="level3">
+<h3 class="anchored" data-anchor-id="headtail_df_params">headtail_df_params</h3>
+<blockquote class="blockquote">
+<pre><code> headtail_df_params (code, count, missing_config, tail=False)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>test_eq(headtail_df_params(<span class="st">""</span>, <span class="dv">50</span>, <span class="st">"."</span>),</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>        ((<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">5</span>), <span class="st">''</span>, <span class="st">''</span>, <span class="st">"."</span>, <span class="va">True</span>, <span class="va">True</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>test_eq(headtail_df_params(<span class="st">"10 y s*, noformat"</span>, <span class="dv">50</span>, <span class="st">"."</span>),</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>        ((<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">10</span>), <span class="st">'y s*'</span>, <span class="st">''</span>, <span class="st">"."</span>, <span class="va">True</span>, <span class="va">False</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>test_eq(headtail_df_params(<span class="st">"10 y s*, noformat"</span>, <span class="dv">50</span>, <span class="st">"."</span>, tail<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>        ((<span class="bu">range</span>(<span class="dv">40</span>, <span class="dv">50</span>), <span class="st">'y s*'</span>, <span class="st">''</span>, <span class="st">"."</span>, <span class="va">True</span>, <span class="va">False</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L154" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="headtail_get_df" class="level3">
+<h3 class="anchored" data-anchor-id="headtail_get_df">headtail_get_df</h3>
+<blockquote class="blockquote">
+<pre><code> headtail_get_df (obs_range, varlist, stata_if_code, missingval,
+                  valuelabel, sformat)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbstata.config <span class="im">import</span> launch_stata</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbstata.stata <span class="im">import</span> obs_count</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbstata.helpers <span class="im">import</span> run_noecho</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>launch_stata(splash<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>run_noecho(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="st">sysuse uslifeexp2, clear</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(U.S. life expectancy, 1900-1940)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>get_df(<span class="op">*</span>headtail_df_params(<span class="st">''</span>, obs_count(), <span class="st">"."</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>year</th>
+      <th>le</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>1900</td>
+      <td>47.3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1901</td>
+      <td>49.1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1902</td>
+      <td>51.5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1903</td>
+      <td>50.5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1904</td>
+      <td>47.6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>headtail_get_df(<span class="op">*</span>headtail_df_params(<span class="st">'if year&lt;1903'</span>, obs_count(), <span class="st">"."</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>year</th>
+      <th>le</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>1900</td>
+      <td>47.3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1901</td>
+      <td>49.1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1902</td>
+      <td>51.5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>test_eq(headtail_get_df(<span class="op">*</span>headtail_df_params(<span class="st">'if year&lt;1903'</span>, obs_count(), <span class="st">"."</span>)),</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>        headtail_get_df(<span class="op">*</span>headtail_df_params(<span class="st">'if year&lt;1903'</span>, obs_count(), <span class="st">"."</span>, tail<span class="op">=</span><span class="va">True</span>)),)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+
+
+
+</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>headtail_get_df(<span class="op">*</span>headtail_df_params(<span class="st">'if year&gt;1910'</span>, obs_count(), <span class="st">"."</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>year</th>
+      <th>le</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>12</th>
+      <td>1911</td>
+      <td>52.6</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>1912</td>
+      <td>53.5</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>1913</td>
+      <td>52.5</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>1914</td>
+      <td>54.2</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>1915</td>
+      <td>54.5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="browse-magic-helpers" class="level2">
+<h2 class="anchored" data-anchor-id="browse-magic-helpers">Browse magic helpers</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L172" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="browse_df_params" class="level3">
+<h3 class="anchored" data-anchor-id="browse_df_params">browse_df_params</h3>
+<blockquote class="blockquote">
+<pre><code> browse_df_params (code, count, browse=True, tail=False)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>browse_df_params(<span class="st">""</span>, <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(None, '', '', nan, True, True)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>browse_df_params(<span class="st">"y s* if year&lt;1910, noformat"</span>, <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(None, 'y s*', 'if year&lt;1910', nan, True, False)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>browse_df_params(<span class="st">'in 1/5'</span>, <span class="dv">41</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(range(0, 5), '', '', nan, True, True)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>get_df(<span class="op">*</span>browse_df_params(<span class="st">'in 1/5'</span>, obs_count()))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+
+<div>
+
+<table class="dataframe table table-sm table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th>year</th>
+      <th>le</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>1900</td>
+      <td>47.3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1901</td>
+      <td>49.1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1902</td>
+      <td>51.5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1903</td>
+      <td>50.5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1904</td>
+      <td>47.6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="browse-magic-perspectivewidget" class="level2">
+<h2 class="anchored" data-anchor-id="browse-magic-perspectivewidget">Browse magic: PerspectiveWidget</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L180" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="perspective_not_found" class="level3">
+<h3 class="anchored" data-anchor-id="perspective_not_found">perspective_not_found</h3>
+<blockquote class="blockquote">
+<pre><code> perspective_not_found ()</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L189" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="perspective_is_enabled" class="level3">
+<h3 class="anchored" data-anchor-id="perspective_is_enabled">perspective_is_enabled</h3>
+<blockquote class="blockquote">
+<pre><code> perspective_is_enabled ()</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>perspective_is_enabled()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L202" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="browse_not_enabled" class="level3">
+<h3 class="anchored" data-anchor-id="browse_not_enabled">browse_not_enabled</h3>
+<blockquote class="blockquote">
+<pre><code> browse_not_enabled (kernel)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/browse.py#L214" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="display_perspective" class="level3">
+<h3 class="anchored" data-anchor-id="display_perspective">display_perspective</h3>
+<blockquote class="blockquote">
+<pre><code> display_perspective (df, sformat)</code></pre>
+</blockquote>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

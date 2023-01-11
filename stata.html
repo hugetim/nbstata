@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Wrapper for pystata/sfi (which require a Stata installation)">
+
+<title>nbstata - stata</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1XLFCC9FMF"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+ 
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'analytics_storage': 'denied'
+  });
+gtag('config', 'G-1XLFCC9FMF', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="nbstata - stata">
+<meta property="og:description" content="Wrapper for `pystata`/`sfi` (which require a Stata installation)">
+<meta property="og:site-name" content="nbstata">
+<meta name="twitter:title" content="nbstata - stata">
+<meta name="twitter:description" content="Wrapper for `pystata`/`sfi` (which require a Stata installation)">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">nbstata</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hugetim/nbstata"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">stata</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">nbstata</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Developer Docs</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./config.html" class="sidebar-item-text sidebar-link">config</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utils.html" class="sidebar-item-text sidebar-link">utils</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stata.html" class="sidebar-item-text sidebar-link active">stata</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./helpers.html" class="sidebar-item-text sidebar-link">helpers</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pandas.html" class="sidebar-item-text sidebar-link">pandas</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./browse.html" class="sidebar-item-text sidebar-link">browse</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stata_session.html" class="sidebar-item-text sidebar-link">stata_session</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./magics.html" class="sidebar-item-text sidebar-link">magics</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./completion_env.html" class="sidebar-item-text sidebar-link">completion_env</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./completions.html" class="sidebar-item-text sidebar-link">completions</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./kernel.html" class="sidebar-item-text sidebar-link">kernel</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#simple-wrappers" id="toc-simple-wrappers" class="nav-link active" data-scroll-target="#simple-wrappers">Simple wrappers</a>
+  <ul class="collapse">
+  <li><a href="#run_direct" id="toc-run_direct" class="nav-link" data-scroll-target="#run_direct">run_direct</a></li>
+  <li><a href="#get_local" id="toc-get_local" class="nav-link" data-scroll-target="#get_local">get_local</a></li>
+  <li><a href="#get_global" id="toc-get_global" class="nav-link" data-scroll-target="#get_global">get_global</a></li>
+  <li><a href="#stata_formatted" id="toc-stata_formatted" class="nav-link" data-scroll-target="#stata_formatted">stata_formatted</a></li>
+  <li><a href="#variable_names" id="toc-variable_names" class="nav-link" data-scroll-target="#variable_names">variable_names</a></li>
+  </ul></li>
+  <li><a href="#simple-utilities" id="toc-simple-utilities" class="nav-link" data-scroll-target="#simple-utilities">Simple utilities</a>
+  <ul class="collapse">
+  <li><a href="#obs_count" id="toc-obs_count" class="nav-link" data-scroll-target="#obs_count">obs_count</a></li>
+  <li><a href="#resolve_macro" id="toc-resolve_macro" class="nav-link" data-scroll-target="#resolve_macro">resolve_macro</a></li>
+  </ul></li>
+  <li><a href="#run-multi-line-stata-commands-no-echo" id="toc-run-multi-line-stata-commands-no-echo" class="nav-link" data-scroll-target="#run-multi-line-stata-commands-no-echo">Run multi-line Stata commands no-echo</a>
+  <ul class="collapse">
+  <li><a href="#run_as_program" id="toc-run_as_program" class="nav-link" data-scroll-target="#run_as_program">run_as_program</a></li>
+  <li><a href="#run_non_prog_noecho" id="toc-run_non_prog_noecho" class="nav-link" data-scroll-target="#run_non_prog_noecho">run_non_prog_noecho</a></li>
+  <li><a href="#run_prog_noecho" id="toc-run_prog_noecho" class="nav-link" data-scroll-target="#run_prog_noecho">run_prog_noecho</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/hugetim/nbstata/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">stata</h1>
+</div>
+
+<div>
+  <div class="description">
+    Wrapper for <code>pystata</code>/<code>sfi</code> (which require a Stata installation)
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p><code>sfi</code> is <a href="https://www.stata.com/python/api17/index.html">Stata’s python API</a>, originally intended for interacting with Stata from python <em>within Stata</em>. As such, it can only be imported with Stata running. <code>pystata.stata.run</code> <a href="https://www.stata.com/python/pystata/stata.html#pystata.stata.run">enables running Stata code from python</a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> textwrap <span class="im">import</span> dedent</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="simple-wrappers" class="level2">
+<h2 class="anchored" data-anchor-id="simple-wrappers">Simple wrappers</h2>
+<p>For one thing, these remove the need to constantly import <code>pystata</code> and/or <code>sfi</code> within functions to avoid running afoul of CI tests in an environment without Stata installed.</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L12" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="run_direct" class="level3">
+<h3 class="anchored" data-anchor-id="run_direct">run_direct</h3>
+<blockquote class="blockquote">
+<pre><code> run_direct (*args, **kwargs)</code></pre>
+</blockquote>
+<p><a href="https://www.stata.com/python/api16/Macro.html#sfi.Macro.getLocal">https://www.stata.com/python/api16/Macro.html#sfi.Macro.getLocal</a></p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L17" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_local" class="level3">
+<h3 class="anchored" data-anchor-id="get_local">get_local</h3>
+<blockquote class="blockquote">
+<pre><code> get_local (name)</code></pre>
+</blockquote>
+<p>https://www.stata.com/python/api16/Macro.html#sfi.Macro.getGlobal</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L22" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_global" class="level3">
+<h3 class="anchored" data-anchor-id="get_global">get_global</h3>
+<blockquote class="blockquote">
+<pre><code> get_global (name)</code></pre>
+</blockquote>
+<p>https://www.stata.com/python/api16/SFIToolkit.html#sfi.SFIToolkit.formatValue</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L27" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="stata_formatted" class="level3">
+<h3 class="anchored" data-anchor-id="stata_formatted">stata_formatted</h3>
+<blockquote class="blockquote">
+<pre><code> stata_formatted (value, s_format)</code></pre>
+</blockquote>
+<p><a href="https://hugetim.github.io/nbstata/stata.html#variable_names"><code>variable_names</code></a> uses ‘getVarCount’ and ‘getVarName’: https://www.stata.com/python/api16/Data.html</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L32" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="variable_names" class="level3">
+<h3 class="anchored" data-anchor-id="variable_names">variable_names</h3>
+<blockquote class="blockquote">
+<pre><code> variable_names ()</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>launch_stata(splash<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">"gen var1 = 1"</span>, quietly<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>variable_names()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['var1']</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="simple-utilities" class="level2">
+<h2 class="anchored" data-anchor-id="simple-utilities">Simple utilities</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L37" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="obs_count" class="level3">
+<h3 class="anchored" data-anchor-id="obs_count">obs_count</h3>
+<blockquote class="blockquote">
+<pre><code> obs_count ()</code></pre>
+</blockquote>
+<p>Count the number of observations</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>obs_count()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>0</code></pre>
+</div>
+</div>
+<p>The following function is not currently used and is likely made unnecessary by <code>sfi.SFIToolkit.macroExpand</code>.</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L43" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="resolve_macro" class="level3">
+<h3 class="anchored" data-anchor-id="resolve_macro">resolve_macro</h3>
+<blockquote class="blockquote">
+<pre><code> resolve_macro (macro)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">'global test = "hello world"'</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>resolve_macro(<span class="st">"$test"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'hello world'</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="run-multi-line-stata-commands-no-echo" class="level2">
+<h2 class="anchored" data-anchor-id="run-multi-line-stata-commands-no-echo">Run multi-line Stata commands no-echo</h2>
+<p><code>pystata.stata.run</code> can only suppress the “echo” of single commands, not multi-line Stata code:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">'disp "test 1"'</span>, echo<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test 1</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>two_lines_of_code <span class="op">=</span> dedent(<span class="st">'''</span><span class="ch">\</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="st">    disp "test 1"</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="st">    disp "test 2"</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="st">    '''</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>run_direct(two_lines_of_code, echo<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+. disp "test 1"
+test 1
+
+. disp "test 2"
+test 2
+
+. </code></pre>
+</div>
+</div>
+<p>As a workaround when echo is not desired, we can run multiple commands as a Stata program:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="ss">f"program temp_nbstata_program_name</span><span class="ch">\n</span><span class="sc">{</span>two_lines_of_code<span class="sc">}</span><span class="ch">\n</span><span class="ss">end</span><span class="ch">\n</span><span class="ss">"</span>, quietly<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code></code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">"temp_nbstata_program_name"</span>, quietly<span class="op">=</span><span class="va">False</span>, inline<span class="op">=</span><span class="va">True</span>, echo<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test 1
+test 2</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="ss">f"program drop temp_nbstata_program_name"</span>, quietly<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The first <code>run</code> (defining the temp. program) prints an unwanted blank line despite setting “quietly” to True, so we block its printed output in the function version below.</p>
+<p>(Note: This and the following two functions assume input Stata code standardized by <a href="https://hugetim.github.io/nbstata/utils.html#standardize_code"><code>standardize_code</code></a>, which will be ensured by the <a href="https://hugetim.github.io/nbstata/utils.html#break_out_prog_blocks"><code>break_out_prog_blocks</code></a> within the ultimate <a href="https://hugetim.github.io/nbstata/helpers.html#dispatch_run"><code>dispatch_run</code></a> wrapper function.)</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L56" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="run_as_program" class="level3">
+<h3 class="anchored" data-anchor-id="run_as_program">run_as_program</h3>
+<blockquote class="blockquote">
+<pre><code> run_as_program (std_non_prog_code, prog_def_option_code='')</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>run_as_program(two_lines_of_code)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test 1
+test 2</code></pre>
+</div>
+</div>
+<p>Not all code can be run within a program without modification, however: 1. Programs cannot be defined within another program, nor can python or mata blocks be run. 2. A program definition is a different scope for locals, so: * the program code does not have access to locals defined previously, and * locals set within the program code do not persist outside of it.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.test <span class="im">import</span> ExceptionExpected</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> ExceptionExpected(<span class="pp">SystemError</span>):</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    run_as_program(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="st">        program define prog1</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="st">            disp 1</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="st">        end</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="st">        """</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">"local test1 = 1"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">"disp `test1'"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>1</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>run_as_program(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="st">    disp `test1'</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="st">    local test2 = 2"""</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code></code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="st">    disp `test1'</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="st">    disp `test2' """</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+.     disp `test1'
+1
+
+.     disp `test2' 
+
+
+. </code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L72" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="run_non_prog_noecho" class="level3">
+<h3 class="anchored" data-anchor-id="run_non_prog_noecho">run_non_prog_noecho</h3>
+<blockquote class="blockquote">
+<pre><code> run_non_prog_noecho (std_non_prog_code, run_as_prog=&lt;function
+                      run_as_program&gt;)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>run_non_prog_noecho(<span class="st">'disp "test 1"'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test 1</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>run_non_prog_noecho(two_lines_of_code)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test 1
+test 2</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/stata.py#L79" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="run_prog_noecho" class="level3">
+<h3 class="anchored" data-anchor-id="run_prog_noecho">run_prog_noecho</h3>
+<blockquote class="blockquote">
+<pre><code> run_prog_noecho (std_prog_code)</code></pre>
+</blockquote>
+<p>Other programs (that is, Stata’s <code>program define</code>, as well as <a href="https://www.stata.com/manuals/m-1first.pdf">mata</a> or <a href="https://www.stata.com/stata-news/news35-3/python-blogs/">python</a> blocks) cannot be defined/run within a Stata program, however. Instead, we will just run them directly, quietly to prevent echo, except for the case of mata programs, in which case <code>quietly</code> would block the output.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>prog_block_code <span class="op">=</span> dedent(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="st">    program define display1</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="st">        disp "display1 output"</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="st">    end</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span>)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>run_prog_noecho(prog_block_code)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>run_direct(<span class="st">"display1"</span>, echo<span class="op">=</span><span class="va">False</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+display1 output</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>python_block_code <span class="op">=</span> dedent(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="st">    python:</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="st">    print("hello")</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="st">    end</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span>)</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>run_prog_noecho(python_block_code)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>hello
+</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>mata_block_code <span class="op">=</span> dedent(<span class="st">"""</span><span class="ch">\</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="st">    mata:</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="st">    display("hello")</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="st">    end</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span>)</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>run_prog_noecho(mata_block_code)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+. mata:
+------------------------------------------------- mata (type end to exit) -----
+: display("hello")
+hello
+
+: end
+-------------------------------------------------------------------------------
+
+. </code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,261 @@
+[
+  {
+    "objectID": "config.html",
+    "href": "config.html",
+    "title": "config",
+    "section": "",
+    "text": "Before we can use pystata, we need to find the local Stata path (i.e., find_path) and then add pystata to sys.path (i.e., set_pystata_path) so it can be imported.\nThe get_config function handles nbstata configuration, more broadly."
+  },
+  {
+    "objectID": "config.html#pystata-configuration",
+    "href": "config.html#pystata-configuration",
+    "title": "config",
+    "section": "pystata configuration",
+    "text": "pystata configuration\n\nsource\n\nfind_dir_edition\n\n find_dir_edition ()\n\n\nsource\n\n\nset_pystata_path\n\n set_pystata_path (path=None)\n\n\nset_pystata_path()\nimport pystata\n\n\nfrom fastcore.test import ExceptionExpected\n\n\nwith ExceptionExpected(): import sfi\n\n\nsource\n\n\nlaunch_stata\n\n launch_stata (path=None, edition=None, splash=True)\n\nWe modify stata_setup to make splash screen optional\n\nlaunch_stata(splash=False)\npystata.config.status()\n\n    System information\n      Python version         3.10.4\n      Stata version          Stata 17.0 (MP)\n      Stata library path     C:\\Program Files\\Stata17\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = default, height = default\n      graphic format         svg\n\n\n\nimport sfi"
+  },
+  {
+    "objectID": "config.html#nbstata-configuration",
+    "href": "config.html#nbstata-configuration",
+    "title": "config",
+    "section": "nbstata configuration",
+    "text": "nbstata configuration\n\nsource\n\nget_config\n\n get_config ()\n\nFirst check if a configuration file exists. If not, try find_dir_edition.\n\nget_config()\n\n{'stata_dir': 'C:\\\\Program Files\\\\Stata17',\n 'edition': 'mp',\n 'graph_format': 'png',\n 'echo': 'None',\n 'splash': 'False',\n 'missing': '.'}"
+  },
+  {
+    "objectID": "stata.html",
+    "href": "stata.html",
+    "title": "stata",
+    "section": "",
+    "text": "sfi is Stata’s python API, originally intended for interacting with Stata from python within Stata. As such, it can only be imported with Stata running. pystata.stata.run enables running Stata code from python."
+  },
+  {
+    "objectID": "stata.html#simple-wrappers",
+    "href": "stata.html#simple-wrappers",
+    "title": "stata",
+    "section": "Simple wrappers",
+    "text": "Simple wrappers\nFor one thing, these remove the need to constantly import pystata and/or sfi within functions to avoid running afoul of CI tests in an environment without Stata installed.\n\nsource\n\nrun_direct\n\n run_direct (*args, **kwargs)\n\nhttps://www.stata.com/python/api16/Macro.html#sfi.Macro.getLocal\n\nsource\n\n\nget_local\n\n get_local (name)\n\nhttps://www.stata.com/python/api16/Macro.html#sfi.Macro.getGlobal\n\nsource\n\n\nget_global\n\n get_global (name)\n\nhttps://www.stata.com/python/api16/SFIToolkit.html#sfi.SFIToolkit.formatValue\n\nsource\n\n\nstata_formatted\n\n stata_formatted (value, s_format)\n\nvariable_names uses ‘getVarCount’ and ‘getVarName’: https://www.stata.com/python/api16/Data.html\n\nsource\n\n\nvariable_names\n\n variable_names ()\n\n\nlaunch_stata(splash=False)\nrun_direct(\"gen var1 = 1\", quietly=True)\nvariable_names()\n\n['var1']"
+  },
+  {
+    "objectID": "stata.html#simple-utilities",
+    "href": "stata.html#simple-utilities",
+    "title": "stata",
+    "section": "Simple utilities",
+    "text": "Simple utilities\n\nsource\n\nobs_count\n\n obs_count ()\n\nCount the number of observations\n\nobs_count()\n\n0\n\n\nThe following function is not currently used and is likely made unnecessary by sfi.SFIToolkit.macroExpand.\n\nsource\n\n\nresolve_macro\n\n resolve_macro (macro)\n\n\nrun_direct('global test = \"hello world\"')\nresolve_macro(\"$test\")\n\n'hello world'"
+  },
+  {
+    "objectID": "stata.html#run-multi-line-stata-commands-no-echo",
+    "href": "stata.html#run-multi-line-stata-commands-no-echo",
+    "title": "stata",
+    "section": "Run multi-line Stata commands no-echo",
+    "text": "Run multi-line Stata commands no-echo\npystata.stata.run can only suppress the “echo” of single commands, not multi-line Stata code:\n\nrun_direct('disp \"test 1\"', echo=False)\n\ntest 1\n\n\n\ntwo_lines_of_code = dedent('''\\\n    disp \"test 1\"\n    disp \"test 2\"\n    ''')\nrun_direct(two_lines_of_code, echo=False)\n\n\n. disp \"test 1\"\ntest 1\n\n. disp \"test 2\"\ntest 2\n\n. \n\n\nAs a workaround when echo is not desired, we can run multiple commands as a Stata program:\n\nrun_direct(f\"program temp_nbstata_program_name\\n{two_lines_of_code}\\nend\\n\", quietly=True)\n\n\n\n\n\nrun_direct(\"temp_nbstata_program_name\", quietly=False, inline=True, echo=False)\n\ntest 1\ntest 2\n\n\n\nrun_direct(f\"program drop temp_nbstata_program_name\", quietly=True)\n\nThe first run (defining the temp. program) prints an unwanted blank line despite setting “quietly” to True, so we block its printed output in the function version below.\n(Note: This and the following two functions assume input Stata code standardized by standardize_code, which will be ensured by the break_out_prog_blocks within the ultimate dispatch_run wrapper function.)\n\nsource\n\nrun_as_program\n\n run_as_program (std_non_prog_code, prog_def_option_code='')\n\n\nrun_as_program(two_lines_of_code)\n\ntest 1\ntest 2\n\n\nNot all code can be run within a program without modification, however: 1. Programs cannot be defined within another program, nor can python or mata blocks be run. 2. A program definition is a different scope for locals, so: * the program code does not have access to locals defined previously, and * locals set within the program code do not persist outside of it.\n\nfrom fastcore.test import ExceptionExpected\n\n\nwith ExceptionExpected(SystemError):\n    run_as_program(\"\"\"\\\n        program define prog1\n            disp 1\n        end\n        \"\"\")\n\n\nrun_direct(\"local test1 = 1\")\nrun_direct(\"disp `test1'\")\n\n1\n\n\n\nrun_as_program(\"\"\"\\\n    disp `test1'\n    local test2 = 2\"\"\")\n\n\n\n\n\nrun_direct(\"\"\"\\\n    disp `test1'\n    disp `test2' \"\"\")\n\n\n.     disp `test1'\n1\n\n.     disp `test2' \n\n\n. \n\n\n\nsource\n\n\nrun_non_prog_noecho\n\n run_non_prog_noecho (std_non_prog_code, run_as_prog=<function\n                      run_as_program>)\n\n\nrun_non_prog_noecho('disp \"test 1\"')\n\ntest 1\n\n\n\nrun_non_prog_noecho(two_lines_of_code)\n\ntest 1\ntest 2\n\n\n\nsource\n\n\nrun_prog_noecho\n\n run_prog_noecho (std_prog_code)\n\nOther programs (that is, Stata’s program define, as well as mata or python blocks) cannot be defined/run within a Stata program, however. Instead, we will just run them directly, quietly to prevent echo, except for the case of mata programs, in which case quietly would block the output.\n\nprog_block_code = dedent(\"\"\"\\\n    program define display1\n        disp \"display1 output\"\n    end\n    \"\"\")\nrun_prog_noecho(prog_block_code)\nrun_direct(\"display1\", echo=False)\n\n\ndisplay1 output\n\n\n\npython_block_code = dedent(\"\"\"\\\n    python:\n    print(\"hello\")\n    end\n    \"\"\")\nrun_prog_noecho(python_block_code)\n\nhello\n\n\n\n\nmata_block_code = dedent(\"\"\"\\\n    mata:\n    display(\"hello\")\n    end\n    \"\"\")\nrun_prog_noecho(mata_block_code)\n\n\n. mata:\n------------------------------------------------- mata (type end to exit) -----\n: display(\"hello\")\nhello\n\n: end\n-------------------------------------------------------------------------------\n\n."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "nbstata",
+    "section": "",
+    "text": "JupyterLab is a browser-based editor that allows you to combine interactive code and results with Markdown in a single document (called a Jupyter notebook). It is open source and widely used. Though it is named after the three core programming languages it supports (Julia, Python, and R), it can be used with with a wide variety of languages.\nnbstata allows you to create Stata notebooks (as opposed to using Stata within a Python notebook, which is a nice way to embed Stata commands within Python code but is needlessly clunky if you are working primarily with Stata).\n\n\n\n\nWorks with Stata 17 (only).\nAutocompletion for variables, macros, matrices, and file paths.\nDataGrid widget with browse-like capabilities (e.g., interactive filtering).\nVariable and data properties (describe and return/ereturn list) available in a side panel.\nInteractive help files available within notebook.\n#delimit ; interactive support (along with all types of comments).\nMata interactive support.\n\n\n\n\n\nExploratory analysis that is both:\n\ninteractive\npreserved for future reference/editing\n\nPresenting results in a way that interweaves:\n\ncode\nresults (including graphs)\nrich text:\n\nlists\nHeadings\n\nlinks\nmath: \\(y_{it}=\\beta_0+\\varepsilon_{it}\\)"
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "nbstata",
+    "section": "Install",
+    "text": "Install\nBecause it uses pystata under the hood, nbstata requires Stata 17 to be installed locally. (If you have an older version of Stata, consider stata_kernel instead.)\nTo install nbstata, run:\npip install nbstata\npython -m nbstata.install [--sys-prefix] [--prefix PREFIX] [--conf-file]\nInclude --sys-prefix to install to sys.prefix (e.g. a virtualenv or conda env), or --prefix PREFIX if you want to specify the install path yourself.\n\nConfiguration file\nThe --conf-file option creates a configuration file for you. (Note: If the installer cannot find the location of your Stata installation, a configuration file will be created even if you do not include the --conf-file option to allow you to manually specify the Stata location.) The location of the configuration file will be:\n\n[prefix]/etc/nbstata.conf if --sys-prefix or --prefix is specified.\n~/.nbstata.conf otherwise.\n\n(Note: If a configuration file exists in both locations at kernel runtime, the user version takes precedence.)\n\n\nUpdating\nTo update from a previous version of nbstata, run:\npip install nbstata --upgrade\nWhen updating, you don’t have to run python -m nbstata.install again.\n\n\nSyntax highlighting\nStata syntax highlighting can be installed for Jupyter Lab:\npip install jupyterlab_stata_highlight2"
+  },
+  {
+    "objectID": "index.html#configuration",
+    "href": "index.html#configuration",
+    "title": "nbstata",
+    "section": "Configuration",
+    "text": "Configuration\nThe following settings are permitted inside the configuration file:\n\nstata_dir: Stata installation directory.\nedition: Stata edition. Acceptable values are ‘be’, ‘se’ and ‘mp’. Default is ‘be’.\ngraph_format: Acceptable values are ‘png’ (the default), ‘pdf’, ‘svg’ and ‘pystata’. Specify the last option if you want to use pystata’s default setting.\necho: controls the echo of commands, with the default being ‘None’:\n\n‘True’: the kernel will echo all commands.\n‘False’: the kernel will not echo single-line commands.\n‘None’: the kernel will not echo any command.\n\nsplash: controls display of the splash message during Stata startup. Default is ‘False’.\nmissing: What should be displayed in the output of the *%head and *%tail magics for a missing value. Default is ‘.’, following Stata. To defer to pandas’ format for NA, specify ‘pandas’.\n\nSettings must be under the title [nbstata]. Example:\n[nbstata]\nstata_dir = /opt/stata\nedition = mp\ngraph_format = svg\necho = True\nsplash = False\nmissing = NA\n\nDefault Graph Format\nBoth pystata and stata_kernel default to the SVG image format. nbstata defaults to the PNG image format instead for several reasons:\n\nJupyter does not show SVG images from untrusted notebooks (link 1).\nNotebooks with empty cells are untrusted (link 2).\nSVG images cannot be copied and pasted directly into Word or PowerPoint."
+  },
+  {
+    "objectID": "index.html#magics",
+    "href": "index.html#magics",
+    "title": "nbstata",
+    "section": "Magics",
+    "text": "Magics\nMagics are commands that only work in nbstata and are not part of Stata’s syntax. Magics normally start with %, but this will cause errors when the notebook is exported and run as a Stata script. As an alternative, you may prefix the magic name with *%, which will then be treated by Stata as a single-line comment.\nnbstata currently supports the following magics:\n\n\n\n\n\n\n\n\nMagic\nDescription\nFull Syntax\n\n\n\n\n*%browse\nInteractively view dataset\n*%browse [-h] [varlist] [if] [in] [, nolabel noformat]\n\n\n*%head\nView first 5 (or N) rows\n*%head [-h] [N] [varlist] [if] [, nolabel noformat]\n\n\n*%tail\nView last 5 (or N) rows\n*%tail [-h] [N] [varlist] [if] [, nolabel noformat]\n\n\n*%locals\nList locals with their values\n*%locals\n\n\n*%delimit\nPrint the current delimiter\n*%delimit\n\n\n*%help\nDisplay Stata help\n*%help [-h] command_or_topic_name\n\n\n*%echo\nEnsure echo from cell\n*%echo\n\n\n*%noecho\nSuppress echo from cell\n*%noecho\n\n\n*%quietly\nSuppress all output from cell\n*%quietly\n\n\n\nThe %browse magic requires JupyterLab with the @finos/perspective-jupyterlab extension correctly installed.\nBy default, the %browse, %head, and %tail magics convert numeric Stata values to strings using their Stata format (or value labels). To prevent this behavior, specify the noformat and/or nolabel options."
+  },
+  {
+    "objectID": "index.html#stata-implementation-details",
+    "href": "index.html#stata-implementation-details",
+    "title": "nbstata",
+    "section": "Stata Implementation Details",
+    "text": "Stata Implementation Details\n\n#delimit behavior\nA #delimit; command in one cell will persist into other cells, until #delimit cr is called. For example, see delimit tests.ipynb."
+  },
+  {
+    "objectID": "index.html#contributing",
+    "href": "index.html#contributing",
+    "title": "nbstata",
+    "section": "Contributing",
+    "text": "Contributing\nnbstata is being developed using nbdev. The /nbs directory is where edits to the source code should be made. (The python code is then exported to the /nbdev library folder.) The one exception is install.py.\nThe @patch_to decorator is occasionally used to break up class definitions into separate cells.\nFor more, see CONTRIBUTING.md."
+  },
+  {
+    "objectID": "index.html#acknowledgements",
+    "href": "index.html#acknowledgements",
+    "title": "nbstata",
+    "section": "Acknowledgements",
+    "text": "Acknowledgements\nKyle Barron authored the original stata_kernel and Vinci Chow carried that work forward for Stata 17, converting the backend to use pystata. nbstata is directly derived from his pystata-kernel."
+  },
+  {
+    "objectID": "completion_env.html",
+    "href": "completion_env.html",
+    "title": "completion_env",
+    "section": "",
+    "text": "Adapted from the stata_kernel version (omitting mata-specific stuff).\nNote the corner cases discussed here, but the commented out test cases below are not yet handled:\n\ngithub.com/kylebarron/language-stata/issues/90\nstatalist.org/forums/forum/general-stata-discussion/general/1448244\n\n\nsource\n\nCompletionEnv\n\n CompletionEnv ()\n\nends_in_a_string_literal tests:\nends_in_a_comment tests:\n\nsource\n\n\nEnv\n\n Env (value, names=None, module=None, qualname=None, type=None, start=1)\n\nAn enumeration.\n\nsource\n\n\nCompletionEnv.get_env\n\n CompletionEnv.get_env (code:str, r2chars:str, sc_delimiter)\n\nReturns completions environment\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\ncode\nstr\nRight-truncated to cursor position\n\n\nr2chars\nstr\nThe two characters immediately after code, used to accurately determine rcomp\n\n\nsc_delimiter\n\n\n\n\nReturns\ntyping.Tuple[main.Env, int, str, str]\n\n\n\n\n\ntest_eq(\n    test_instance.get_env(\"`\", \"\", None)[0:3],\n    (Env.LOCAL, 1, \"\"))\n\n\ntest_eq(\n    test_instance.get_env(\"*%e\", \"\", None)[0:2],\n    (Env.MAGIC, 2))"
+  },
+  {
+    "objectID": "kernel.html",
+    "href": "kernel.html",
+    "title": "kernel",
+    "section": "",
+    "text": "The latest documentation for implementing a wrapper kernel is here, but the current code deviates from those instructions (which call for inheriting from kernelbase.Kernel), instead inheriting from the IPython kernel implementation, IPythonKernel.\n\nsource\n\nPyStataKernel\n\n PyStataKernel (**kwargs)\n\nA jupyter kernel based on pystata\n\nsource\n\n\nPyStataKernel.init_stata\n\n PyStataKernel.init_stata ()\n\n\nsource\n\n\nCell\n\n Cell (kernel, code_w_magics, silent=False)\n\nA class for managing execution of a single code cell\nSome Cell functionality can be tested apart from a kernel:\n\nfrom fastcore.test import test_eq\nfrom textwrap import dedent\nfrom unittest.mock import Mock\n\n\nkernel1 = Mock()\nkernel1.env = {'echo': 'None'}\nkernel1.magic_handler = StataMagics()\nkernel1.sc_delimiter = None\n\ncode_w_magics = '''disp \"test output\"'''\ncell1 = Cell(kernel1, code_w_magics)\ncell1.code\n\n'disp \"test output\"'\n\n\n\ncell1.sc_delimiter = True\ncell1._check_ending_delimiter()\ncell1.sc_delimiter = False\n\nWarning: Code cell (with #delimit; in effect) does not end in ';'. Exported .do script may behave differently from notebook. In v1.0, nbstata may trigger an error instead of just a warning.\n\n\n\nlaunch_stata(splash=False)\nkernel1.stata_session = StataSession()\ncell1a = Cell(kernel1, code_w_magics)\ncell1a.run()\n\ntest output\n\n\n\ncode_w_magics = dedent('''\\\n    *%quietly\n    disp \"test output\"\n    ''')\ncell2 = Cell(kernel1, code_w_magics)\ntest_eq(cell2.quietly, True)\n\n\ncell2.run()\n\n\nkernel1.env = {'echo': 'True'}\n\ncode_w_magics = '''disp \"test output\"'''\ncell3 = Cell(kernel1, code_w_magics)\ntest_eq(cell3.noecho, False)\n\n\ncell3.run()\n\n. disp \"test output\"\ntest output\n\n\n\ncode_w_magics = dedent('''\\\n    *%noecho\n    #delimit cr\n    disp \"test output\"\n    ''')\ncell4 = Cell(kernel1, code_w_magics)\ntest_eq(cell4.noecho, True)\n\n\ncell4.run()\n\ntest output\n\n\n\nsource\n\n\nprint_stata_error\n\n print_stata_error (text)\n\n\nprint_stata_error(dedent(\"\"\"\\\n    output prior to error\n    error message\n    error code\n    \"\"\"))\n\noutput prior to error\nerror message\nerror code\n\n\n\nsource\n\n\nPyStataKernel.post_do_hook\n\n PyStataKernel.post_do_hook ()\n\n\nsource\n\n\nPyStataKernel.do_execute\n\n PyStataKernel.do_execute (code, silent, store_history=True,\n                           user_expressions=None, allow_stdin=False)\n\nExecute Stata code cell\n\nsource\n\n\nPyStataKernel.do_complete\n\n PyStataKernel.do_complete (code, cursor_pos)\n\nProvide context-aware suggestions\n\nsource\n\n\nPyStataKernel.do_is_complete\n\n PyStataKernel.do_is_complete (code)\n\nOverrides IPythonKernel with kernelbase default\n\nsource\n\n\nPyStataKernel.do_inspect\n\n PyStataKernel.do_inspect (code, cursor_pos, detail_level=0,\n                           omit_sections=())\n\nDisplay Stata ‘describe’ output regardless of cursor position\n\nsource\n\n\nPyStataKernel.do_history\n\n PyStataKernel.do_history (hist_access_type, output, raw, session=None,\n                           start=None, stop=None, n=None, pattern=None,\n                           unique=False)\n\nOverrides IPythonKernel with kernelbase default"
+  },
+  {
+    "objectID": "magics.html",
+    "href": "magics.html",
+    "title": "magics",
+    "section": "",
+    "text": "source"
+  },
+  {
+    "objectID": "magics.html#browse-magic",
+    "href": "magics.html#browse-magic",
+    "title": "magics",
+    "section": "Browse magic",
+    "text": "Browse magic\n\nsource\n\nStataMagics.magic_browse\n\n StataMagics.magic_browse (code, kernel, cell)\n\nDisplay data interactively."
+  },
+  {
+    "objectID": "magics.html#headtail-magics",
+    "href": "magics.html#headtail-magics",
+    "title": "magics",
+    "section": "Head/tail magics",
+    "text": "Head/tail magics\nModeled after pandas.\n\nsource\n\nStataMagics.magic_head\n\n StataMagics.magic_head (code, kernel, cell)\n\nDisplay data in a nicely-formatted table.\n\nsource\n\n\nStataMagics.magic_tail\n\n StataMagics.magic_tail (code, kernel, cell)\n\nDisplay data in a nicely-formatted table."
+  },
+  {
+    "objectID": "magics.html#help-magic",
+    "href": "magics.html#help-magic",
+    "title": "magics",
+    "section": "Help magic",
+    "text": "Help magic\n\nsource\n\nStataMagics.magic_help\n\n StataMagics.magic_help (code, kernel, cell)\n\nShow help file from stata.com."
+  },
+  {
+    "objectID": "utils.html",
+    "href": "utils.html",
+    "title": "utils",
+    "section": "",
+    "text": "source\n\n\n\n _remove_multi_line_comments (code)\n\n\nfrom fastcore.test import test_eq\nfrom textwrap import dedent\n\n\ntest_eq(\n    _remove_multi_line_comments(dedent(\"\"\"\\\n        disp ///\n        1\"\"\")),\n    \"disp 1\")\n\nCorrectly ignores “///” when not preceded by a space:\n\ntest_eq(\n    _remove_multi_line_comments(dedent(\"\"\"\\\n        disp///\n        1\n        \"\"\")),\n    dedent(\"\"\"\\\n        disp///\n        1\n        \"\"\")\n)\n\n\ntest_eq(\n    _remove_multi_line_comments(dedent(\"\"\"\\\n        /*\n        blah\n        blah\n        */\n        list var\n        \"\"\")),\n    \"\"\"\\\n \nlist var\n\"\"\"\n)\n\n\nsource\n\n\n\n\n _replace_delimiter (code, sc_delimiter=False)\n\nNote: the following more-complicated regex would detect valid delimiters plus macros:\ndelimit_regex = re.compile(r'#delimit( |\\t)+(;|cr|`.+\\'|\\$_.+|\\$.+)')\nbut that’s unnecessary, since Stata’s #delimit x interprets any x other than ‘cr’ as switching the delimiter to ‘;’.\n\ntest_eq(\n    _replace_delimiter(dedent(\"\"\"\\\n        list var1\n        #delimit;\n        list var2;list var3;\n        list\n        var4;\n        \"\"\")),\n    dedent(\"\"\"\\\n        list var1\n         list var2\n        list var3\n         list var4\n        \"\"\")\n)\n\n\nsource\n\n\n\n\n ending_sc_delimiter (code, sc_delimiter=False)\n\n\ntest_eq(\n    ending_sc_delimiter(dedent(\"\"\"\\\n        list var1\n        #delimit;\n        list var2;list var3;\n        \"\"\")),\n    True)\n\n\ntest_eq(\n    ending_sc_delimiter(dedent(\"\"\"\\\n        /*\n        #delimit;\n        */\n        disp 1\n        disp 2\"\"\")),\n    False)\n\n\nsource\n\n\n\n\n standardize_code (code, sc_delimiter=False)\n\nRemove comments spanning multiple lines and replace custom delimiters\n\ntest_eq(\n    standardize_code(dedent(\"\"\"\\\n        list var1\n        #delimit;\n        list var2; list var3;\n        list\n        var4;\n        \"\"\")), \n    dedent(\"\"\"\\\n        list var1\n        list var2\n        list var3\n        list var4\"\"\")\n)\n\n\ntest_eq(\n    standardize_code(dedent(\"\"\"\\\n        /*\n        blah\n        blah\n        */\n        list var\n        \"\"\")), \n    \"list var\")\n\n\ntest_eq(\n    standardize_code(dedent(\"\"\"\\\n        disp /// comment\n        1\n        \"\"\")),\n    \"disp 1\")\n\n\ntest_eq(standardize_code(\"list    var\"), \"list var\")"
+  },
+  {
+    "objectID": "utils.html#separate-out-stata-program-code",
+    "href": "utils.html#separate-out-stata-program-code",
+    "title": "utils",
+    "section": "Separate out Stata program code",
+    "text": "Separate out Stata program code\n…because such code (as well as python/mata blocks) is unsuitable for run_as_program\n\nsource\n\nis_start_of_program_block\n\n is_start_of_program_block (std_code_line)\n\n\ntest_eq(is_start_of_program_block(\"capture noisily program test_program\"), True)\ntest_eq(is_start_of_program_block(\"capture noisily list var\"), False)\n\n\nsource\n\n\nbreak_out_prog_blocks\n\n break_out_prog_blocks (code, sc_delimiter=False)\n\n\ntest_eq(\n    break_out_prog_blocks(dedent('''\\\n        capture program drop ender\n        program define ender\n            disp \"ender output\"\n        end\n        capture program drop display2\n        program define display2\n            ender\n        end\n        display2\n        ''')),\n    [{'is_prog': False, 'std_code': 'capture program drop ender'},\n     {'is_prog': True,\n      'std_code': 'program define ender\\ndisp \"ender output\"\\nend'},\n     {'is_prog': False, 'std_code': 'capture program drop display2'},\n     {'is_prog': True, 'std_code': 'program define display2\\nender\\nend'},\n     {'is_prog': False, 'std_code': 'display2'}]\n)"
+  },
+  {
+    "objectID": "utils.html#other-utils",
+    "href": "utils.html#other-utils",
+    "title": "utils",
+    "section": "Other utils",
+    "text": "Other utils\n\nsource\n\nHiddenPrints\n\n HiddenPrints ()\n\nA context manager for suppressing print output\nHiddenPrints source: https://stackoverflow.com/a/45669280/10637373\n\nwith HiddenPrints():\n    print(\"test print output\")\n\n\nsource\n\n\nDivertedPrints\n\n DivertedPrints ()\n\nA context manager for suppressing print output\n\nwith DivertedPrints() as diverted:\n    print(\"test print output\")\n    out = diverted.getvalue()\nprint(f\"diverted:\\n{out}\")\n\ndiverted:\ntest print output\n\n\n\n\nsource\n\n\nprint_red\n\n print_red (text)\n\nprint_red source: https://stackoverflow.com/a/16816874/10637373\n\nprint_red(\"test_red\")\n\ntest_red"
+  },
+  {
+    "objectID": "stata_session.html",
+    "href": "stata_session.html",
+    "title": "stata_session",
+    "section": "",
+    "text": "Some parts adapted from the stata_kernel version, limited for now to variables, globals, locals, scalars, matrices, and file names.\n\nfrom nbstata.stata import get_local\n\n\nsource\n\nStataSession\n\n StataSession ()\n\n\nsource\n\n\nStataSession.refresh_suggestions\n\n StataSession.refresh_suggestions ()\n\n\nfrom nbstata.config import launch_stata\n\n\nsource\n\n\nStataSession._completions\n\n StataSession._completions ()\n\n\nlaunch_stata(splash=False)\n\n\nrun_direct(\"local varlist = 5\")\nrun_direct(\"local varlist1 = 5\")\n\n\nsource\n\n\nStataSession.get_suggestions\n\n StataSession.get_suggestions ()\n\n\ntest_instance.refresh_suggestions()\ntest_instance.suggestions\n\n{'varlist': [],\n 'globals': ['S_level',\n  'F1',\n  'F2',\n  'F7',\n  'F8',\n  'S_ADO',\n  'S_StataMP',\n  'S_StataSE',\n  'S_CONSOLE',\n  'S_FLAVOR',\n  'S_OS',\n  'S_OSDTL',\n  'S_MACH'],\n 'locals': ['varlist', 'varlist1'],\n 'scalars': [],\n 'matrices': []}\n\n\n\nfrom fastcore.test import test_eq\n\n\nrun_direct(dedent(\"\"\"\n    local local1 = 1\n    local local2 \"two\"\n    local local3 `\"\"3\"\"' \n    \"\"\"), quietly=True)\nprint(repr(get_local(\"local1\")))\nprint(repr(get_local(\"local2\")))\nprint(repr(get_local(\"local3\")))\n\n\n'1'\n'two'\n'\"3\"'\n\n\n\nsource\n\n\nStataSession.get_local_dict\n\n StataSession.get_local_dict ()\n\n\nfrom nbstata.helpers import run_noecho\n\n\nrun_noecho('macro drop _all')\nrun_noecho('local test1 \"blah blah\"')\ntest_instance.clear_suggestions()\ntest_eq(test_instance.get_local_dict(), {'test1': 'blah blah'})\nrun_noecho('local test1 \"\"')\n\n\nsource\n\n\nStataSession.run_as_program_w_locals\n\n StataSession.run_as_program_w_locals (std_code)\n\nAfter break_out_prog_blocks, run noecho, inserting locals when needed\n\nrun_direct(dedent(\"\"\"\n    macro drop _all\n    local local1 = 1\n    local local2 \"two\"\n    local local3 `\"\"3\"\"' \n    \"\"\"), quietly=True)\ntest_instance.clear_suggestions()\ntest_instance.run_as_program_w_locals(\"\"\"disp `\"`local1' `local2' `local3'\"' \"\"\")\n\n\n1 two \"3\"\n\n\n\ncode = '''\\\nlocal test1 \"blah blah\"\nlocal test2 \"blah\"\n'''\ntest_instance.clear_suggestions()\ntest_instance.run_as_program_w_locals(\"\"\"disp `\"`local1' `local2' `local3'\"' \\n\"\"\" + code)\ntest_eq(test_instance.get_local_dict(), \n        {'test2': 'blah',\n         'test1': 'blah blah',\n         'local1': '1',\n         'local2': 'two',\n         'local3': '\"3\"'})\n\n1 two \"3\"\n\n\n\n\ntest_instance.clear_suggestions()\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=test_instance.run_as_program_w_locals)\n\n1 two \"3\"\n1 two \"3\" blah blah\n\n\n\ncode = \"\"\"\\\nlocal local1 \"foo\"\nlocal local2 \"bar\"\nlocal abcd \"foo bar\"\n\"\"\"\ntest_instance.clear_suggestions()\nrun_noecho(code, run_as_prog=test_instance.run_as_program_w_locals)\ntest_instance.clear_suggestions()\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=test_instance.run_as_program_w_locals)\n\n\nfoo bar \"3\"\nfoo bar \"3\" blah blah"
+  },
+  {
+    "objectID": "helpers.html",
+    "href": "helpers.html",
+    "title": "helpers",
+    "section": "",
+    "text": "from nbstata.config import launch_stata"
+  },
+  {
+    "objectID": "helpers.html#simple-helpers",
+    "href": "helpers.html#simple-helpers",
+    "title": "helpers",
+    "section": "Simple Helpers",
+    "text": "Simple Helpers\n\nsource\n\nSelectVar\n\n SelectVar (stata_if_code)\n\nClass for generating Stata select_var for getAsDict\nSelectvar.varname is a temporary Stata variable for use in sfi.Data.getAsDict\n\nfrom fastcore.test import test_eq\n\n\nlaunch_stata(splash=False)\nrun_direct(\"\"\"\\\nset obs 5\ngen var1 = _n > 3\n\"\"\", quietly=True)\nwith SelectVar(\" if var1==0\") as sel_varname:\n    print(f\"varname: {sel_varname}\")\n    run_direct(\"list, clean\")\n    test_eq(bool(get_local(\"__selectionVar\")), True)\nrun_direct(\"desc, simple\")\ntest_eq(get_local(\"__selectionVar\"), \"\")\n\n\n\nvarname: __000000\n\n       var1   __000000  \n  1.      0          1  \n  2.      0          1  \n  3.      0          1  \n  4.      1          0  \n  5.      1          0  \nvar1\n\n\n\nsource\n\n\nIndexVar\n\n IndexVar ()\n\nInitialize self. See help(type(self)) for accurate signature.\n\nwith IndexVar() as idx_var:\n    run_direct(\"desc, simple\")\n    test_eq(bool(get_local('indexvar')), True)\nrun_direct(\"desc, simple\")\ntest_eq(get_local('indexvar'), \"\")\n\n\nvar1      __000001\nvar1"
+  },
+  {
+    "objectID": "helpers.html#divert-stata-output-to-string",
+    "href": "helpers.html#divert-stata-output-to-string",
+    "title": "helpers",
+    "section": "Divert Stata output to string",
+    "text": "Divert Stata output to string\nHere we want to get output from some Stata commands without changing the Stata environment. Preserving r() return values is a particular challenge, in part because the log on/off commands needed to ensure this output is not logged are themselves r-class. But the input std_code may also contain rclass commands. And capturing multi-line Stata output without the commands echoed poses additional challenges run_as_program-related challenges with regard to local variables.\nTo start, we set aside the latter two issues and simply use run_direct to run the Stata code. We handle the first issue by running the log commands inside an r-class program with return add at the start.\nA custom code runner may be specified. This may be useful if, for instance, the input std_code needs to access the r() results.\n\nsource\n\ndiverted_stata_output\n\n diverted_stata_output (std_code, runner=None)\n\n\nfrom textwrap import dedent\n\n\ntwo_lines_of_code = dedent('''\\\n    disp \"test 1\"\n    disp \"test 2\"\n    ''')\nout = diverted_stata_output(two_lines_of_code)\n\n\nprint(out)\n\n\n. disp \"test 1\"\ntest 1\n\n. disp \"test 2\"\ntest 2\n\n. \n\n\n\n\nprint(diverted_stata_output('disp \"test 1\"', run_as_program))\n\ntest 1\n\n\n\nIf we know the code we’re running is non-program code, we can get a speed improvement by running the log code together with the input std_non_prog_code.\n\nsource\n\n\ndiverted_stata_output_quicker\n\n diverted_stata_output_quicker (std_non_prog_code)\n\n\nprint(diverted_stata_output_quicker(two_lines_of_code))\n\ntest 1\ntest 2\n\n\n\n\nimport time\ntic = time.perf_counter()\ndiverted_stata_output(two_lines_of_code)\ntoc = time.perf_counter()\nprint(f\"diverted_stata_output_direct run in {toc - tic:0.4f} seconds\")\ntic = time.perf_counter()\ndiverted_stata_output_quicker(two_lines_of_code)\ntoc = time.perf_counter()\nprint(f\"diverted_stata_output_quicker run in {toc - tic:0.4f} seconds\")\n\ndiverted_stata_output_direct run in 0.3039 seconds\ndiverted_stata_output_quicker run in 0.1424 seconds"
+  },
+  {
+    "objectID": "helpers.html#run-noecho-as-if-run-directly",
+    "href": "helpers.html#run-noecho-as-if-run-directly",
+    "title": "helpers",
+    "section": "Run noecho as if run directly",
+    "text": "Run noecho as if run directly\nWe now have the tools needed to run generic code without echoing the commands, handling locals as if the code were run directly (rather than inside a program definition). We can use diverted_stata_output to pull any previously-defined locals into the program.\n\nsource\n\nlocal_names\n\n local_names ()\n\n\nrun_direct(\"local test1 = 1 \\n local test2 = 2\", quietly=True)\ntest_eq(set(local_names()), {'test1', 'test2'})\n\n\n\n\n\nsource\n\n\nget_local_dict\n\n get_local_dict (_local_names=None)\n\n\ntest_eq(get_local_dict(), {'test1': '1', 'test2': '2'})\n\n\nsource\n\n\n_locals_code_from_dict\n\n _locals_code_from_dict (preexisting_local_dict)\n\n\nprint(_locals_code_from_dict(get_local_dict()))\n\nlocal test2 `\"2\"'\nlocal test1 `\"1\"'\n\n\nWe can use diverted_stata_output to artificially transfer any locals created within the program to the outside scope. We will do this by making the program an s-class program and storing any locals present at the end of the program that way. Then these locals can be quietly set after the program run has completed.\n\nsource\n\n\n_run_as_program_w_locals_sreturned\n\n _run_as_program_w_locals_sreturned (std_code)\n\n\n_run_as_program_w_locals_sreturned('local test3 \"3\"')\nrun_direct(\"sreturn list\")\n\n\nmacros:\n              s(test3) : \"3\"\n\n\n\nsource\n\n\n_local_dict_from_sreturn\n\n _local_dict_from_sreturn (sreturn_output)\n\n\n_local_dict_from_sreturn(output)\n\n{'test1': 'blah', 'test2': 'blah blah'}\n\n\n\nsource\n\n\nrun_as_program_w_locals\n\n run_as_program_w_locals (std_code, local_dict=None)\n\n\nrun_direct(dedent(\"\"\"\n    macro drop _all\n    local local1 = 1\n    local local2 \"two\"\n    local local3 `\"\"3\"\"' \n    \"\"\"), quietly=True)\nrun_as_program_w_locals(\"\"\"disp `\"`local1' `local2' `local3'\"' \"\"\")\n\n\n1 two \"3\"\n\n\n\ncode = '''\\\nlocal test1 \"blah blah\"\nlocal test2 \"blah\"\n'''\nrun_as_program_w_locals(\"\"\"disp `\"`local1' `local2' `local3'\"' \\n\"\"\" + code)\ntest_eq(get_local_dict(), \n        {'test2': 'blah',\n         'test1': 'blah blah',\n         'local1': '1',\n         'local2': 'two',\n         'local3': '\"3\"'})\n\n1 two \"3\""
+  },
+  {
+    "objectID": "helpers.html#dispatch_run",
+    "href": "helpers.html#dispatch_run",
+    "title": "helpers",
+    "section": "dispatch_run",
+    "text": "dispatch_run\n\nsource\n\nrun_noecho\n\n run_noecho (code, sc_delimiter=False, run_as_prog=<function\n             run_as_program_w_locals>)\n\nAfter break_out_prog_blocks, run each prog and non-prog block noecho\n\nrun_noecho(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''))\n\n\n\nender output\n\n\n\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=run_as_program_w_locals)\n\n1 two \"3\"\n1 two \"3\" blah blah\n\n\n\ncode = \"\"\"\\\nlocal local1 \"foo\"\nlocal local2 \"bar\"\nlocal abcd \"foo bar\"\n\"\"\"\nrun_noecho(code, run_as_prog=run_as_program_w_locals)\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=run_as_program_w_locals)\n\n\nfoo bar \"3\"\nfoo bar \"3\" blah blah\n\n\n\nsource\n\n\nrun_simple\n\n run_simple (code, quietly=False, echo=False, sc_delimiter=False)\n\n\nrun_simple(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''), quietly=True)\n\n\n\n\n\nsource\n\n\ndispatch_run\n\n dispatch_run (code, quietly=False, echo=False, sc_delimiter=False,\n               noecho=False, run_as_prog=<function\n               run_as_program_w_locals>)\n\n\ndispatch_run(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''), quietly=True)\n\n\n\n\n\ndispatch_run(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''), noecho=True)\n\n\n\nender output"
+  },
+  {
+    "objectID": "helpers.html#output-for-kernel.do_inspect",
+    "href": "helpers.html#output-for-kernel.do_inspect",
+    "title": "helpers",
+    "section": "Output for kernel.do_inspect()",
+    "text": "Output for kernel.do_inspect()\n\nsource\n\nget_inspect\n\n get_inspect (code='', cursor_pos=0, detail_level=0, omit_sections=())\n\n\nrun_noecho('sum \\nreturn list')\n\n\n    Variable |        Obs        Mean    Std. dev.       Min        Max\n-------------+---------------------------------------------------------\n        var1 |          5          .4    .5477226          0          1\n\nscalars:\n                  r(N) =  5\n              r(sum_w) =  5\n               r(mean) =  .4\n                r(Var) =  .3\n                 r(sd) =  .5477225575051662\n                r(min) =  0\n                r(max) =  1\n                r(sum) =  2\n\n\n\nprint(get_inspect())\nprint(\"--\")\nrun_noecho('return list')\n\n*** Last updated 17:23:36 11 Jan 2023 ***\n\nContains data\n Observations:             5                  \n    Variables:             1                  \n-------------------------------------------------------------------------------\nVariable      Storage   Display    Value\n    name         type    format    label      Variable label\n-------------------------------------------------------------------------------\nvar1            float   %9.0g                 \n-------------------------------------------------------------------------------\nSorted by: \n     Note: Dataset has changed since last saved.\n\nscalars:\n                r(sum) =  2\n                r(max) =  1\n                r(min) =  0\n                 r(sd) =  .5477225575051662\n                r(Var) =  .3\n               r(mean) =  .4\n              r(sum_w) =  5\n                  r(N) =  5\n\n--\n\nscalars:\n                r(sum) =  2\n                r(max) =  1\n                r(min) =  0\n                 r(sd) =  .5477225575051662\n                r(Var) =  .3\n               r(mean) =  .4\n              r(sum_w) =  5\n                  r(N) =  5"
+  },
+  {
+    "objectID": "completions.html",
+    "href": "completions.html",
+    "title": "completions",
+    "section": "",
+    "text": "Adapted from the stata_kernel version.\n\nsource\n\nCompletionsManager\n\n CompletionsManager (stata_session:nbstata.stata_session.StataSession,\n                     available_magics)\n\n\nsource\n\n\nCompletionsManager.get_globals\n\n CompletionsManager.get_globals ()\n\n\nsource\n\n\nCompletionsManager.get_file_paths\n\n CompletionsManager.get_file_paths (chunk)\n\nGet file paths based on chunk Args: chunk (str): chunk of text after last space. Doesn’t include string punctuation characters Returns: (List[str]): folders and files at that location\n\nfrom nbstata.config import launch_stata\nfrom nbstata.helpers import run_noecho\n\n\nlaunch_stata(splash=False)\ntest_stata = StataSession()\ntest_instance = CompletionsManager(test_stata, list(StataMagics.available_magics.keys()))\ntest_instance.get_file_paths(\"0\")\n\n['00_config.ipynb',\n '01_utils.ipynb',\n '02_stata.ipynb',\n '03_helpers.ipynb',\n '04_pandas.ipynb',\n '05_browse.ipynb',\n '06_stata_session.ipynb',\n '07_magics.ipynb',\n '08_completion_env.ipynb',\n '09_completions.ipynb']\n\n\n\nrun_noecho('global in_path \"../nbstata\"')\ntest_instance.stata_session.refresh_suggestions()\ntest_instance.get_file_paths(\"$in_path/com\")\n\n['$in_path/completion_env.py', '$in_path/completions.py']\n\n\n\nsource\n\n\nCompletionsManager.get\n\n CompletionsManager.get (starts, env, rcomp)\n\nReturn environment-aware completions list.\n\nsource\n\n\nCompletionsManager.do\n\n CompletionsManager.do (code, cursor_pos, sc_delimiter=False)\n\n\nfrom fastcore.test import test_eq\nfrom pystata import stata\n\n\ndef completions_test_setup(code):\n    global test_instance\n    stata.run(\"clear all\", quietly=True)\n    run_noecho(code)\n    test_instance.stata_session.clear_suggestions()\n    \n\ndef _complete(code, cursor_pos):\n    _, _, matches = test_instance.do(code, cursor_pos)\n    return matches\n\n\ncompletions_test_setup(\"gen var1 = 1\")\ncode = \"list va\"\ncursor_pos = 7\n\ntest_eq(\n    test_instance.env_helper.get_env(\n        code[:cursor_pos], code[cursor_pos:(cursor_pos + 2)],\n        False),\n    (0, 5, 'va', ''),\n) \ntest_eq(\n    _complete(code, cursor_pos),\n    ['var1'],\n)\n\n\ncompletions_test_setup('local test_local \"test value\"')\ntest_eq(\n    _complete(\"list `t\", 7),\n    [\"test_local'\"],\n)\nrun_noecho('local test_local \"\"')\n\n\ncompletions_test_setup('global test_global \"test value\"')\ntest_eq(\n    _complete(\"list ${tes}\", 10),\n    ['test_global'],\n)"
+  },
+  {
+    "objectID": "pandas.html",
+    "href": "pandas.html",
+    "title": "pandas",
+    "section": "",
+    "text": "source\n\n\n\n simple_dataframe_from_stata (stfr, var, valuelabel, missingval)\n\nReference Stata docs: getAsDict example\n\nsource\n\n\n\n\n better_dataframe_from_stata (stfr, varlist, obs, selectvar, valuelabel,\n                              missingval, sformat)\n\n\nsource\n\n\n\n\n better_pdataframe_from_data (varlist='', obs=None, selectvar=None,\n                              valuelabel=False, missingval=nan,\n                              sformat=False)\n\n\nsource\n\n\n\n\n better_pdataframe_from_frame (stfr, varlist='', obs=None, selectvar=None,\n                               valuelabel=False, missingval=nan,\n                               sformat=False)\n\n\nrun_noecho(\"\"\"\\\nreplace le = . if _n==5\nreplace year = 2022 if year==1900\nformat year %-ty\ngen str_var = \"test string\" if _n!=5\ngen date = dofy(year)\nformat date %td\ngen double date_tc = cofd(date)\nformat date_tc %tc\ngen double date_tC = Cofd(date)\nformat date_tC %tC\n\"\"\")\nbetter_pdataframe_from_data().head()\n\n(1 real change made, 1 to missing)\n(1 real change made)\n(1 missing value generated)\n\n\n\n\n\n\n\n  \n    \n      \n      year\n      le\n      str_var\n      date\n      date_tc\n      date_tC\n    \n  \n  \n    \n      1\n      2022\n      47.299999\n      test string\n      22646.0\n      1.956614e+12\n      1.956614e+12\n    \n    \n      2\n      1901\n      49.099998\n      test string\n      -21549.0\n      -1.861834e+12\n      -1.861834e+12\n    \n    \n      3\n      1902\n      51.500000\n      test string\n      -21184.0\n      -1.830298e+12\n      -1.830298e+12\n    \n    \n      4\n      1903\n      50.500000\n      test string\n      -20819.0\n      -1.798762e+12\n      -1.798762e+12\n    \n    \n      5\n      1904\n      NaN\n      \n      -20454.0\n      -1.767226e+12\n      -1.767226e+12\n    \n  \n\n\n\n\n\nbetter_pdataframe_from_data(sformat=True).head()\n\n\n\n\n\n\n\n\n  \n    \n      \n      year\n      le\n      str_var\n      date\n      date_tc\n      date_tC\n    \n  \n  \n    \n      1\n      2022\n      47.3\n      test string\n      01jan2022\n      01jan2022 00:00:00\n      01jan2022 00:00:00\n    \n    \n      2\n      1901\n      49.1\n      test string\n      01jan1901\n      01jan1901 00:00:00\n      01jan1901 00:00:00\n    \n    \n      3\n      1902\n      51.5\n      test string\n      01jan1902\n      01jan1902 00:00:00\n      01jan1902 00:00:00\n    \n    \n      4\n      1903\n      50.5\n      test string\n      01jan1903\n      01jan1903 00:00:00\n      01jan1903 00:00:00\n    \n    \n      5\n      1904\n      .\n      \n      01jan1904\n      01jan1904 00:00:00\n      01jan1904 00:00:00"
+  },
+  {
+    "objectID": "browse.html",
+    "href": "browse.html",
+    "title": "browse",
+    "section": "",
+    "text": "source\n\n\n\n parse_code_if_in (code)\n\nParse line of Stata code into code, if, in\n\nfrom fastcore.test import test_eq, test_fail\nfrom textwrap import dedent\n\n\ncode = \"list var1 if var1==0 in 1/10\"\ntest_eq(parse_code_if_in(code), {'code': 'list var1', 'if': 'if var1==0', 'in': 'in 1/10'})\n\n\nparse_code_if_in('x in 1/10')\n\n{'code': 'x', 'if': '', 'in': 'in 1/10'}\n\n\n\nsource\n\n\n\n\n in_range (stata_in_code, count)\n\nReturn in-statement range\n\ntest_eq(in_range(\"\", 100), (None, None))\ntest_eq(in_range(\"in 10\", 100), (0, 10))\ntest_eq(in_range(\"in 1/10\", 100), (0, 10))\ntest_eq(in_range(\"in F/10\", 100), (0, 10))\ntest_eq(in_range(\"in 3/10\", 100), (2, 10))\ntest_fail(in_range, args=(\"in 10\", 5))\ntest_fail(in_range, args=(\"in 10/1\", 100))\n\nNegative indices are converted to positive, following Stata syntax:\n\ntest_eq(in_range(\"in -10/-1\", 41), (31, 41))"
+  },
+  {
+    "objectID": "browse.html#headtailbrowse-magic-helpers",
+    "href": "browse.html#headtailbrowse-magic-helpers",
+    "title": "browse",
+    "section": "Head/tail/browse magic helpers",
+    "text": "Head/tail/browse magic helpers\n\nsource\n\nparse_browse_magic\n\n parse_browse_magic (code)\n\n\ncode = \"le if year==1920 in 1/10, noformat\"\ntest_eq(parse_browse_magic(code), \n        (['le'], 'in 1/10', 'if year==1920', ['noformat'])\n       )\n\n\nsource\n\n\nget_df\n\n get_df (obs_range, varlist, stata_if_code, missingval, valuelabel,\n         sformat)"
+  },
+  {
+    "objectID": "browse.html#headtail-magic-helpers",
+    "href": "browse.html#headtail-magic-helpers",
+    "title": "browse",
+    "section": "Head/tail magic helpers",
+    "text": "Head/tail magic helpers\n\nsource\n\nheadtail_df_params\n\n headtail_df_params (code, count, missing_config, tail=False)\n\n\ntest_eq(headtail_df_params(\"\", 50, \".\"),\n        ((range(0, 5), '', '', \".\", True, True)))\n\n\ntest_eq(headtail_df_params(\"10 y s*, noformat\", 50, \".\"),\n        ((range(0, 10), 'y s*', '', \".\", True, False)))\n\n\ntest_eq(headtail_df_params(\"10 y s*, noformat\", 50, \".\", tail=True),\n        ((range(40, 50), 'y s*', '', \".\", True, False)))\n\n\nsource\n\n\nheadtail_get_df\n\n headtail_get_df (obs_range, varlist, stata_if_code, missingval,\n                  valuelabel, sformat)\n\n\nfrom nbstata.config import launch_stata\nfrom nbstata.stata import obs_count\nfrom nbstata.helpers import run_noecho\n\n\nlaunch_stata(splash=False)\nrun_noecho(\"\"\"\\\nsysuse uslifeexp2, clear\n\"\"\")\n\n(U.S. life expectancy, 1900-1940)\n\n\n\nget_df(*headtail_df_params('', obs_count(), \".\"))\n\n\n\n\n\n\n\n\n\n  \n    \n      \n      year\n      le\n    \n  \n  \n    \n      1\n      1900\n      47.3\n    \n    \n      2\n      1901\n      49.1\n    \n    \n      3\n      1902\n      51.5\n    \n    \n      4\n      1903\n      50.5\n    \n    \n      5\n      1904\n      47.6\n    \n  \n\n\n\n\n\nheadtail_get_df(*headtail_df_params('if year<1903', obs_count(), \".\"))\n\n\n\n\n\n\n\n\n\n\n  \n    \n      \n      year\n      le\n    \n  \n  \n    \n      1\n      1900\n      47.3\n    \n    \n      2\n      1901\n      49.1\n    \n    \n      3\n      1902\n      51.5\n    \n  \n\n\n\n\n\ntest_eq(headtail_get_df(*headtail_df_params('if year<1903', obs_count(), \".\")),\n        headtail_get_df(*headtail_df_params('if year<1903', obs_count(), \".\", tail=True)),)\n\n\n\n\n\n\n\n\n\n\nheadtail_get_df(*headtail_df_params('if year>1910', obs_count(), \".\"))\n\n\n\n\n\n\n\n\n\n\n  \n    \n      \n      year\n      le\n    \n  \n  \n    \n      12\n      1911\n      52.6\n    \n    \n      13\n      1912\n      53.5\n    \n    \n      14\n      1913\n      52.5\n    \n    \n      15\n      1914\n      54.2\n    \n    \n      16\n      1915\n      54.5"
+  },
+  {
+    "objectID": "browse.html#browse-magic-helpers",
+    "href": "browse.html#browse-magic-helpers",
+    "title": "browse",
+    "section": "Browse magic helpers",
+    "text": "Browse magic helpers\n\nsource\n\nbrowse_df_params\n\n browse_df_params (code, count, browse=True, tail=False)\n\n\nbrowse_df_params(\"\", 10)\n\n(None, '', '', nan, True, True)\n\n\n\nbrowse_df_params(\"y s* if year<1910, noformat\", 50)\n\n(None, 'y s*', 'if year<1910', nan, True, False)\n\n\n\nbrowse_df_params('in 1/5', 41)\n\n(range(0, 5), '', '', nan, True, True)\n\n\n\nget_df(*browse_df_params('in 1/5', obs_count()))\n\n\n\n\n\n\n\n\n\n  \n    \n      \n      year\n      le\n    \n  \n  \n    \n      1\n      1900\n      47.3\n    \n    \n      2\n      1901\n      49.1\n    \n    \n      3\n      1902\n      51.5\n    \n    \n      4\n      1903\n      50.5\n    \n    \n      5\n      1904\n      47.6"
+  },
+  {
+    "objectID": "browse.html#browse-magic-perspectivewidget",
+    "href": "browse.html#browse-magic-perspectivewidget",
+    "title": "browse",
+    "section": "Browse magic: PerspectiveWidget",
+    "text": "Browse magic: PerspectiveWidget\n\nsource\n\nperspective_not_found\n\n perspective_not_found ()\n\n\nsource\n\n\nperspective_is_enabled\n\n perspective_is_enabled ()\n\n\nperspective_is_enabled()\n\nTrue\n\n\n\nsource\n\n\nbrowse_not_enabled\n\n browse_not_enabled (kernel)\n\n\nsource\n\n\ndisplay_perspective\n\n display_perspective (df, sformat)"
+  }
+]

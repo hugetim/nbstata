@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="IPython magics for nbstata">
+
+<title>nbstata - magics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1XLFCC9FMF"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+ 
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'analytics_storage': 'denied'
+  });
+gtag('config', 'G-1XLFCC9FMF', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="nbstata - magics">
+<meta property="og:description" content="IPython magics for nbstata">
+<meta property="og:site-name" content="nbstata">
+<meta name="twitter:title" content="nbstata - magics">
+<meta name="twitter:description" content="IPython magics for nbstata">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">nbstata</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/hugetim/nbstata"><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">magics</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">nbstata</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Developer Docs</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./config.html" class="sidebar-item-text sidebar-link">config</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./utils.html" class="sidebar-item-text sidebar-link">utils</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stata.html" class="sidebar-item-text sidebar-link">stata</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./helpers.html" class="sidebar-item-text sidebar-link">helpers</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pandas.html" class="sidebar-item-text sidebar-link">pandas</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./browse.html" class="sidebar-item-text sidebar-link">browse</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./stata_session.html" class="sidebar-item-text sidebar-link">stata_session</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./magics.html" class="sidebar-item-text sidebar-link active">magics</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./completion_env.html" class="sidebar-item-text sidebar-link">completion_env</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./completions.html" class="sidebar-item-text sidebar-link">completions</a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./kernel.html" class="sidebar-item-text sidebar-link">kernel</a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#print_kernel" id="toc-print_kernel" class="nav-link active" data-scroll-target="#print_kernel">print_kernel</a></li>
+  <li><a href="#statamagics" id="toc-statamagics" class="nav-link" data-scroll-target="#statamagics">StataMagics</a></li>
+  <li><a href="#statamagics.magic" id="toc-statamagics.magic" class="nav-link" data-scroll-target="#statamagics.magic">StataMagics.magic</a></li>
+  <li><a href="#statamagics.magic_locals" id="toc-statamagics.magic_locals" class="nav-link" data-scroll-target="#statamagics.magic_locals">StataMagics.magic_locals</a></li>
+  <li><a href="#browse-magic" id="toc-browse-magic" class="nav-link" data-scroll-target="#browse-magic">Browse magic</a>
+  <ul class="collapse">
+  <li><a href="#statamagics.magic_browse" id="toc-statamagics.magic_browse" class="nav-link" data-scroll-target="#statamagics.magic_browse">StataMagics.magic_browse</a></li>
+  </ul></li>
+  <li><a href="#headtail-magics" id="toc-headtail-magics" class="nav-link" data-scroll-target="#headtail-magics">Head/tail magics</a>
+  <ul class="collapse">
+  <li><a href="#statamagics.magic_head" id="toc-statamagics.magic_head" class="nav-link" data-scroll-target="#statamagics.magic_head">StataMagics.magic_head</a></li>
+  <li><a href="#statamagics.magic_tail" id="toc-statamagics.magic_tail" class="nav-link" data-scroll-target="#statamagics.magic_tail">StataMagics.magic_tail</a></li>
+  </ul></li>
+  <li><a href="#help-magic" id="toc-help-magic" class="nav-link" data-scroll-target="#help-magic">Help magic</a>
+  <ul class="collapse">
+  <li><a href="#statamagics.magic_help" id="toc-statamagics.magic_help" class="nav-link" data-scroll-target="#statamagics.magic_help">StataMagics.magic_help</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/hugetim/nbstata/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">magics</h1>
+</div>
+
+<div>
+  <div class="description">
+    IPython magics for nbstata
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L15" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="print_kernel" class="level3">
+<h3 class="anchored" data-anchor-id="print_kernel">print_kernel</h3>
+<blockquote class="blockquote">
+<pre><code> print_kernel (msg, kernel)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L22" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="statamagics" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics">StataMagics</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics ()</code></pre>
+</blockquote>
+<p>Class for handling magics</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.test <span class="im">import</span> test_eq, test_fail</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>test_instance <span class="op">=</span> StataMagics()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>test_eq(test_instance._parse_code_for_magic(<span class="st">"%browse"</span>), (<span class="st">'browse'</span>, <span class="st">""</span>))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>test_eq(test_instance._parse_code_for_magic(<span class="st">"*%browse"</span>), (<span class="st">'browse'</span>, <span class="st">""</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>test_eq(test_instance._parse_code_for_magic(<span class="st">"*%browse,"</span>), (<span class="st">'browse'</span>, <span class="st">","</span>))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>test_fail(test_instance._parse_code_for_magic, args<span class="op">=</span>(<span class="st">"*%blah</span><span class="ch">\n</span><span class="st">reg var1"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>test_instance._parse_code_for_magic(<span class="st">"*%browse in 1/10"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>('browse', 'in 1/10')</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L101" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="statamagics.magic" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics.magic">StataMagics.magic</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics.magic (code, kernel, cell)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fake_locals <span class="op">=</span> {<span class="st">'test1'</span>: <span class="st">"blah blah"</span>, <span class="st">'long_name_local'</span>: <span class="st">'s'</span>, <span class="st">'local2'</span>: <span class="dv">1234</span>}</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(_formatted_local_list(fake_locals))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test1:          blah blah
+long_name_local:
+                s
+local2:         1234</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L124" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="statamagics.magic_locals" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics.magic_locals">StataMagics.magic_locals</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics.magic_locals (code, kernel, cell)</code></pre>
+</blockquote>
+</section>
+<section id="browse-magic" class="level2">
+<h2 class="anchored" data-anchor-id="browse-magic">Browse magic</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L131" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="statamagics.magic_browse" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics.magic_browse">StataMagics.magic_browse</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics.magic_browse (code, kernel, cell)</code></pre>
+</blockquote>
+<p>Display data interactively.</p>
+</section>
+</section>
+<section id="headtail-magics" class="level2">
+<h2 class="anchored" data-anchor-id="headtail-magics">Head/tail magics</h2>
+<p>Modeled after <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.head.html">pandas</a>.</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L174" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="statamagics.magic_head" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics.magic_head">StataMagics.magic_head</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics.magic_head (code, kernel, cell)</code></pre>
+</blockquote>
+<p>Display data in a nicely-formatted table.</p>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L180" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="statamagics.magic_tail" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics.magic_tail">StataMagics.magic_tail</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics.magic_tail (code, kernel, cell)</code></pre>
+</blockquote>
+<p>Display data in a nicely-formatted table.</p>
+</section>
+</section>
+<section id="help-magic" class="level2">
+<h2 class="anchored" data-anchor-id="help-magic">Help magic</h2>
+<hr>
+<p><a href="https://github.com/hugetim/nbstata/blob/main/nbstata/magics.py#L186" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="statamagics.magic_help" class="level3">
+<h3 class="anchored" data-anchor-id="statamagics.magic_help">StataMagics.magic_help</h3>
+<blockquote class="blockquote">
+<pre><code> StataMagics.magic_help (code, kernel, cell)</code></pre>
+</blockquote>
+<p>Show help file from stata.com.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
