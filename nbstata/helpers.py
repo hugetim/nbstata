@@ -140,7 +140,7 @@ pre = (
     r'|n(o|oi|ois|oisi|oisil|oisily)?)')
 kwargs = {'flags': re.MULTILINE}
 local_def_in = re.compile(
-    r"^({0} )*(loc|loca|local)\s".format(pre),
+    r"(^({0} )*(loc(a|al)?|tempname|tempvar|tempfile|gettoken|token(i|iz|ize)?)\s)|st_local\(".format(pre),
     **kwargs,
 ).search
 
