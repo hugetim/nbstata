@@ -20,7 +20,7 @@ commands within Python
 code](https://www.stata.com/python/pystata/notebook/Example2.html) but
 is needlessly clunky if you are working primarily with Stata).
 
-<img align="center" width="650" src="https://github.com/hugetim/nbstata/raw/master/nbs/jupyter_notebook_example.gif">
+<img align="center" width="650" src="https://github.com/kylebarron/stata_kernel/raw/master/docs/src/img/jupyter_notebook_example.gif">
 
 ### `nbstata` features
 
@@ -46,7 +46,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/69ff5bcb-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/32c0901a-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
