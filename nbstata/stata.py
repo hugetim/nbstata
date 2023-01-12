@@ -9,9 +9,9 @@ from .config import launch_stata
 from .misc_utils import HiddenPrints
 
 # %% ../nbs/02_stata.ipynb 8
-def run_direct(cmd, quietly=False, echo=False, inline=True):
+def run_direct(cmd, quietly=False, echo=False, inline=True, hide_prints_if_quietly=True):
     import pystata
-    if quietly:
+    if quietly and hide_prints_if_quietly:
         with HiddenPrints(): # to prevent blank line output, as with `program define`
             return pystata.stata.run(cmd, quietly, echo, inline)
     else:

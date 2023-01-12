@@ -82,6 +82,8 @@ def run_non_prog_noecho(std_non_prog_code, run_as_prog=sm.run_as_program):
 def run_prog_noecho(std_prog_code):
     if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
         run_direct(std_prog_code, quietly=False, inline=True, echo=False)
+    elif std_prog_code.splitlines()[0] in {'python', 'python:'}:  # b/c `HiddenPrints` blocks python output
+        run_direct(std_prog_code, quietly=True, inline=True, echo=False, hide_prints_if_quietly=False)
     else:
         run_direct(std_prog_code, quietly=True, inline=True, echo=False)
 
