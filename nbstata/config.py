@@ -88,7 +88,7 @@ def set_pystata_path(path=None):
     sys.path.append(os.path.join(path, 'utilities'))
 
 # %% ../nbs/00_config.ipynb 14
-def launch_stata(path=None, edition=None, splash=True):
+def _launch_stata(path=None, edition=None, splash=True):
     """
     We modify stata_setup to make splash screen optional
     """
@@ -107,7 +107,18 @@ def launch_stata(path=None, edition=None, splash=True):
     else:
         pystata.config.init(edition)
 
-# %% ../nbs/00_config.ipynb 18
+# %% ../nbs/00_config.ipynb 19
+def _set_graph_format(gformat):
+    from pystata import config
+    config.set_graph_format(gformat)
+
+# %% ../nbs/00_config.ipynb 21
+def launch_stata(path=None, edition=None, splash=True, graph_format='pystata'):
+    _launch_stata(path, edition, splash)
+    if graph_format != 'pystata':
+        _set_graph_format(graph_format)
+
+# %% ../nbs/00_config.ipynb 24
 def get_config():
     """First check if a configuration file exists. If not, try `find_dir_edition`."""
     global_config_path = Path(os.path.join(sys.prefix, 'etc', 'nbstata.conf'))

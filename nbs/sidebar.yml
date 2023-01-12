@@ -5,13 +5,16 @@ website:
       - section: Developer Docs
         contents:
           - 00_config.ipynb
-          - 01_utils.ipynb
+          - 01_misc_utils.ipynb
           - 02_stata.ipynb
-          - 03_helpers.ipynb
-          - 04_pandas.ipynb
-          - 05_browse.ipynb
-          - 06_stata_session.ipynb
-          - 07_magics.ipynb
-          - 08_completion_env.ipynb
-          - 09_completions.ipynb
-          - 10_kernel.ipynb
+          - 03_stata_more.ipynb
+          - 04_code_utils.ipynb
+          - 05_noecho.ipynb
+          - 06_pandas.ipynb
+          - 07_browse.ipynb
+          - 08_stata_session.ipynb
+          - 09_magics.ipynb
+          - 10_completion_env.ipynb
+          - 11_completions.ipynb
+          - 12_cell.ipynb
+          - 13_kernel.ipynb
