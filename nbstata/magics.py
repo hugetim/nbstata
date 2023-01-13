@@ -4,6 +4,7 @@
 __all__ = ['print_kernel', 'StataMagics']
 
 # %% ../nbs/09_magics.ipynb 3
+from .stata import obs_count
 import nbstata.browse as browse
 from fastcore.basics import patch_to
 import re

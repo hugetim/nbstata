@@ -72,7 +72,7 @@ def run_as_program_w_locals(std_code, local_dict=None):
         _restore_locals_and_clear_sreturn()
 
 # %% ../nbs/05_noecho.ipynb 26
-def run_non_prog_noecho(std_non_prog_code, run_as_prog=sm.run_as_program):
+def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program_w_locals):
     if len(std_non_prog_code.splitlines()) <= 1:  # to keep it simple when we can
         run_direct(std_non_prog_code, quietly=False, inline=True, echo=False)
     else:
@@ -82,8 +82,6 @@ def run_non_prog_noecho(std_non_prog_code, run_as_prog=sm.run_as_program):
 def run_prog_noecho(std_prog_code):
     if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
         run_direct(std_prog_code, quietly=False, inline=True, echo=False)
-    elif std_prog_code.splitlines()[0] in {'python', 'python:'}:  # b/c `HiddenPrints` blocks python output
-        run_direct(std_prog_code, quietly=True, inline=True, echo=False, hide_prints_if_quietly=False)
     else:
         run_direct(std_prog_code, quietly=True, inline=True, echo=False)
 

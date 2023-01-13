@@ -6,59 +6,64 @@ __all__ = ['run_direct', 'get_local', 'set_local', 'get_global', 'stata_formatte
 
 # %% ../nbs/02_stata.ipynb 5
 from .config import launch_stata
-from .misc_utils import HiddenPrints
+from .misc_utils import DivertedPrints
 
 # %% ../nbs/02_stata.ipynb 8
-def run_direct(cmd, quietly=False, echo=False, inline=True, hide_prints_if_quietly=True):
+def run_direct(cmd, quietly=False, echo=False, inline=True):
     import pystata
-    if quietly and hide_prints_if_quietly:
-        with HiddenPrints(): # to prevent blank line output, as with `program define`
-            return pystata.stata.run(cmd, quietly, echo, inline)
+    if quietly:
+        with DivertedPrints() as diverted: # to prevent blank line output, as with `program define`
+            out = pystata.stata.run(cmd, quietly, echo, inline)
+            prints = diverted.getvalue()
+        for line in prints.splitlines():
+            if line.strip():
+                print(line)
+        return out
     else:
         return pystata.stata.run(cmd, quietly, echo, inline)
 
-# %% ../nbs/02_stata.ipynb 12
+# %% ../nbs/02_stata.ipynb 14
 def get_local(name):
     import sfi
     return sfi.Macro.getLocal(name)
 
-# %% ../nbs/02_stata.ipynb 14
+# %% ../nbs/02_stata.ipynb 16
 def set_local(name, value):
     import sfi
     return sfi.Macro.setLocal(name, value)
 
-# %% ../nbs/02_stata.ipynb 16
+# %% ../nbs/02_stata.ipynb 18
 def get_global(name):
     import sfi
     return sfi.Macro.getGlobal(name)
 
-# %% ../nbs/02_stata.ipynb 18
+# %% ../nbs/02_stata.ipynb 20
 def stata_formatted(value, s_format):
     import sfi
     return sfi.SFIToolkit.formatValue(value, s_format)
 
-# %% ../nbs/02_stata.ipynb 20
+# %% ../nbs/02_stata.ipynb 22
 def variable_names():
     from sfi import Data
     return [Data.getVarName(i) for i in range(Data.getVarCount())]
 
-# %% ../nbs/02_stata.ipynb 23
+# %% ../nbs/02_stata.ipynb 25
 def drop_var(name):
     import sfi
     sfi.Data.dropVar(name)
 
-# %% ../nbs/02_stata.ipynb 26
+# %% ../nbs/02_stata.ipynb 28
 def obs_count():
     """Count the number of observations"""
     import sfi
     return sfi.Data.getObsTotal()
 
-# %% ../nbs/02_stata.ipynb 29
+# %% ../nbs/02_stata.ipynb 31
 def pwd():
     from sfi import SFIToolkit
     return SFIToolkit.getWorkingDir()
 
-# %% ../nbs/02_stata.ipynb 32
+# %% ../nbs/02_stata.ipynb 34
 def resolve_macro(macro):
     macro = macro.strip()
     if macro.startswith("`") and macro.endswith("'"):

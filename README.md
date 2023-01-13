@@ -46,7 +46,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/32c0901a-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5807db9a-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -128,8 +128,8 @@ Settings must be under the title `[nbstata]`. Example:
     stata_dir = /opt/stata
     edition = mp
     graph_format = svg
-    echo = True
-    splash = False
+    echo = False
+    splash = True
     missing = NA
 
 ### Default Graph Format
@@ -176,12 +176,27 @@ prevent this behavior, specify the `noformat` and/or `nolabel` options.
 
 ## Stata Implementation Details
 
-### \#delimit behavior
+### `#delimit` behavior
 
 A [`#delimit;`](https://www.stata.com/manuals/pdelimit.pdf) command in
 one cell will persist into other cells, until `#delimit cr` is called.
 For example, see [delimit
 tests.ipynb](https://github.com/hugetim/nbstata/blob/master/manual_test_nbs/delimit%20tests.ipynb).
+
+### `echo = None`: potential for unanticipated errors
+
+The default `echo = None` configuration does some complicated things
+under the hood to emulate functionality that `pystata` does not directly
+support: running multi-line Stata code without echoing the commands.
+While extensive automatic tests are in place to help ensure its
+reliability, unanticipated issues may arise. If, while using this mode,
+a particular code cell is not working as expected, try placing the
+`%noecho` magic at the top of it to see if that resolves the issue. (If
+so, please report that
+[here](https://github.com/hugetim/nbstata/issues/new?labels=bug).) You
+can also avoid such potential issues by setting the config
+`echo = False`, which will at least not echo single-line Stata commands
+though it will echo multiple commands.
 
 ## Contributing
 
