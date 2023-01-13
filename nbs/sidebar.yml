@@ -4,8 +4,8 @@ website:
       - index.ipynb
       - section: Developer Docs
         contents:
-          - 00_config.ipynb
-          - 01_misc_utils.ipynb
+          - 00_misc_utils.ipynb
+          - 01_config.ipynb
           - 02_stata.ipynb
           - 03_stata_more.ipynb
           - 04_code_utils.ipynb
