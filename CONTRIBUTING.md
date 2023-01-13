@@ -1,6 +1,6 @@
 # How to contribute
 
-This project is developed using [nbdev](https://nbdev.fast.ai/), a way to create delightful software with Jupyter notebooks. The Python library and docs are automatically created from the notebooks in the `/nbs` directory.
+This project is developed using [nbdev](https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/#whats-nbdev), a way to create delightful software with Jupyter notebooks. The Python library and docs are automatically created from the notebooks in the `/nbs` directory.
 
 ## How to get started
 Note: nbdev works on macOS, Linux, and most Unix-style operating systems. It works on Windows under [WSL](https://learn.microsoft.com/en-us/windows/wsl/setup/environment), but some features will not work under cmd or Powershell.
