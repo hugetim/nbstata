@@ -46,7 +46,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5807db9a-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/92d60255-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -200,10 +200,11 @@ though it will echo multiple commands.
 
 ## Contributing
 
-`nbstata` is being developed using [nbdev](https://nbdev.fast.ai/). The
-`/nbs` directory is where edits to the source code should be made. (The
-python code is then exported to the `/nbdev` library folder.) The one
-exception is `install.py`.
+`nbstata` is being developed using
+[nbdev](https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/#whats-nbdev).
+The `/nbs` directory is where edits to the source code should be made.
+(The python code is then exported to the `/nbdev` library folder.) The
+one exception is `install.py`.
 
 The [@patch_to](https://fastcore.fast.ai/basics.html#patch_to) decorator
 is occasionally used to break up class definitions into separate cells.
