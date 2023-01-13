@@ -11,8 +11,6 @@ from .stata_more import SelectVar
 from .pandas import better_pdataframe_from_data
 from fastcore.basics import patch_to
 import re
-import numpy as np
-import subprocess
 
 # %% ../nbs/07_browse.ipynb 5
 parse_code_if_in_regex = re.compile(
@@ -93,6 +91,7 @@ def parse_browse_magic(code):
 
 # %% ../nbs/07_browse.ipynb 23
 def _parse_df_params(code, count, browse=False, tail=False):
+    import numpy as np
     vargs, in_code, if_code, oargs = parse_browse_magic(code)
     sformat = 'noformat' not in oargs
     valuelabel = 'nolabel' not in oargs
@@ -143,6 +142,7 @@ def get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, sformat):
 
 # %% ../nbs/07_browse.ipynb 26
 def headtail_df_params(code, count, missing_config, tail=False):
+    import numpy as np
     custom_missingval = missing_config != 'pandas'
     missingval = missing_config if custom_missingval else np.NaN
     obs_range, varlist, stata_if_code, valuelabel, sformat = (
@@ -170,6 +170,7 @@ def headtail_get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, s
 
 # %% ../nbs/07_browse.ipynb 41
 def browse_df_params(code, count, browse=True, tail=False):
+    import numpy as np
     missingval = np.NaN
     obs_range, varlist, stata_if_code, valuelabel, sformat = (
         _parse_df_params(code, count, browse)
@@ -188,6 +189,7 @@ def perspective_not_found():
 # %% ../nbs/07_browse.ipynb 51
 def perspective_is_enabled():
     return not perspective_not_found()
+#     import subprocess
 #     if perspective_not_found():
 #         return False
 #     try:
