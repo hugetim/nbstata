@@ -6,7 +6,7 @@ __all__ = ['SelectVar', 'IndexVar', 'run_as_program', 'diverted_stata_output', '
 
 # %% ../nbs/03_stata_more.ipynb 3
 from .misc_utils import DivertedPrints
-from .stata import run_direct, get_local, set_local, drop_var
+from .stata import run_direct, run_single, get_local, set_local, drop_var
 from textwrap import dedent
 import functools
 
@@ -16,19 +16,17 @@ class SelectVar():
     varname = None
     
     def __init__(self, stata_if_code):
+        import sfi
         condition = stata_if_code.replace('if ', '', 1).strip()
         if condition:
-            cmd = dedent(f"""\
-                tempvar __selectionVar
-                generate `__selectionVar' = cond({condition},1,0)""")
-            run_direct(cmd, quietly=True)      
-            self.varname = get_local("__selectionVar")  
+            self.varname = sfi.SFIToolkit.getTempName()
+            cmd = f"quietly gen {self.varname} = cond({condition},1,0)"
+            run_single(cmd, show_exc_warning=False)
 
     def clear(self):
         """Remove temporary select_var from Stata dataset"""
         if self.varname:
             drop_var(self.varname)
-            set_local("__selectionVar", "")
             
     def __enter__(self):
         return self.varname
@@ -39,17 +37,15 @@ class SelectVar():
 # %% ../nbs/03_stata_more.ipynb 10
 class IndexVar:
     def __enter__(self):
-        run_direct("""\
-            tempvar indexvar
-            generate `indexvar' = _n""", quietly=True)
-        self.idx_var = get_local('indexvar')
+        import sfi
+        self.idx_var = sfi.SFIToolkit.getTempName()
+        run_single(f"gen {self.idx_var} = _n", show_exc_warning=False)
         return self.idx_var
     
     def __exit__(self, exc_type, exc_value, exc_tb):
         drop_var(self.idx_var)
-        set_local('indexvar', "")
 
-# %% ../nbs/03_stata_more.ipynb 21
+# %% ../nbs/03_stata_more.ipynb 23
 def run_as_program(std_non_prog_code, prog_def_option_code=""):
     _program_name = "temp_nbstata_program_name"
     _options = f", {prog_def_option_code}" if prog_def_option_code else ""
@@ -62,9 +58,9 @@ def run_as_program(std_non_prog_code, prog_def_option_code=""):
         run_direct(_program_define_code, quietly=True)
         run_direct(_program_name, quietly=False, inline=True, echo=False)
     finally:
-        run_direct(f"program drop {_program_name}", quietly=True)
+        run_single(f"quietly program drop {_program_name}", show_exc_warning=False)
 
-# %% ../nbs/03_stata_more.ipynb 33
+# %% ../nbs/03_stata_more.ipynb 35
 def diverted_stata_output(std_code, runner=None):
     if runner is None:
         runner = functools.partial(run_direct, quietly=False, inline=True, echo=False)
@@ -77,7 +73,7 @@ def diverted_stata_output(std_code, runner=None):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 39
+# %% ../nbs/03_stata_more.ipynb 41
 def diverted_stata_output_quicker(std_non_prog_code):
     with DivertedPrints() as diverted:
         code = f"return add\ncapture log off\n{std_non_prog_code}\ncapture log on"""
@@ -89,7 +85,7 @@ def diverted_stata_output_quicker(std_non_prog_code):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 46
+# %% ../nbs/03_stata_more.ipynb 47
 def var_from_varlist(varlist, stfr=None):
     if stfr:
         var_code = varlist.strip()
@@ -107,32 +103,32 @@ def var_from_varlist(varlist, stfr=None):
                 program drop {_program_name}
                 """).strip()
         except Exception as e:
-            run_direct(f"capture program drop {_program_name}", quietly=True)
+            run_single(f"capture program drop {_program_name}", show_exc_warning=True)
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_stata_more.ipynb 53
+# %% ../nbs/03_stata_more.ipynb 54
 def local_names():
-    run_direct("""\
-        mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))
-        """, quietly=True)
+    run_single("""\
+        mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""",
+        show_exc_warning=False)
     out = get_local('temp_nbstata_all_locals')
     set_local('temp_nbstata_all_locals', "")
     return out.split()
 
-# %% ../nbs/03_stata_more.ipynb 57
+# %% ../nbs/03_stata_more.ipynb 58
 def get_local_dict(_local_names=None):
     if _local_names is None:
         _local_names = local_names()
     return {n: get_local(n) for n in _local_names}
 
-# %% ../nbs/03_stata_more.ipynb 59
+# %% ../nbs/03_stata_more.ipynb 60
 def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
     return "\n".join(local_defs)
 
-# %% ../nbs/03_stata_more.ipynb 64
+# %% ../nbs/03_stata_more.ipynb 65
 def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
     runner = functools.partial(run_as_program, prog_def_option_code="rclass")
     inspect_code = """\

@@ -4,7 +4,7 @@
 __all__ = ['StataSession']
 
 # %% ../nbs/08_stata_session.ipynb 4
-from .stata import run_direct, variable_names
+from .stata import variable_names
 from .stata_more import run_as_program, diverted_stata_output, local_names
 from .stata_more import get_local_dict as _get_local_dict
 from .noecho import run_as_program_w_locals as _run_as_program_w_locals

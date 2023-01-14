@@ -22,8 +22,8 @@ def run_direct(cmds, quietly=False, echo=False, inline=True):
     else:
         return pystata.stata.run(cmds, quietly, echo, inline)
 
-# %% ../nbs/02_stata.ipynb 21
-def run_single(cmd, echo=False, show_exc_warning=False):
+# %% ../nbs/02_stata.ipynb 25
+def run_single(cmd, echo=False, show_exc_warning=True):
     import sfi
     try:
         sfi.SFIToolkit.stata(cmd, echo)
@@ -32,48 +32,48 @@ def run_single(cmd, echo=False, show_exc_warning=False):
             print_red(f"run_single (sfi.SFIToolkit.stata) error: {repr(e)}")
         run_direct(cmd, echo=echo)
 
-# %% ../nbs/02_stata.ipynb 24
+# %% ../nbs/02_stata.ipynb 28
 def get_local(name):
     import sfi
     return sfi.Macro.getLocal(name)
 
-# %% ../nbs/02_stata.ipynb 26
+# %% ../nbs/02_stata.ipynb 30
 def set_local(name, value):
     import sfi
     return sfi.Macro.setLocal(name, value)
 
-# %% ../nbs/02_stata.ipynb 28
+# %% ../nbs/02_stata.ipynb 32
 def get_global(name):
     import sfi
     return sfi.Macro.getGlobal(name)
 
-# %% ../nbs/02_stata.ipynb 30
+# %% ../nbs/02_stata.ipynb 34
 def stata_formatted(value, s_format):
     import sfi
     return sfi.SFIToolkit.formatValue(value, s_format)
 
-# %% ../nbs/02_stata.ipynb 32
+# %% ../nbs/02_stata.ipynb 36
 def variable_names():
     from sfi import Data
     return [Data.getVarName(i) for i in range(Data.getVarCount())]
 
-# %% ../nbs/02_stata.ipynb 35
+# %% ../nbs/02_stata.ipynb 39
 def drop_var(name):
     import sfi
     sfi.Data.dropVar(name)
 
-# %% ../nbs/02_stata.ipynb 38
+# %% ../nbs/02_stata.ipynb 42
 def obs_count():
     """Count the number of observations"""
     import sfi
     return sfi.Data.getObsTotal()
 
-# %% ../nbs/02_stata.ipynb 41
+# %% ../nbs/02_stata.ipynb 45
 def pwd():
     from sfi import SFIToolkit
     return SFIToolkit.getWorkingDir()
 
-# %% ../nbs/02_stata.ipynb 44
+# %% ../nbs/02_stata.ipynb 48
 def resolve_macro(macro):
     macro = macro.strip()
     if macro.startswith("`") and macro.endswith("'"):
