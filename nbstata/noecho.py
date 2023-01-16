@@ -6,7 +6,7 @@ __all__ = ['parse_sreturn', 'pre', 'kwargs', 'local_def_in', 'run_as_program_w_l
 
 # %% ../nbs/05_noecho.ipynb 3
 from .code_utils import break_out_prog_blocks
-from .stata import run_direct
+from .stata import run_direct, set_local, run_single
 from . import stata_more as sm 
 from textwrap import dedent
 import re
@@ -43,11 +43,9 @@ def _after_local_dict():
 # %% ../nbs/05_noecho.ipynb 19
 def _restore_locals_and_clear_sreturn():
     # run non-prog to avoid clearing locals
-    after_local_dict = _after_local_dict()
-    after_locals_code = sm.locals_code_from_dict(after_local_dict)
-    if after_local_dict:
-        after_locals_code += "\n" + "sreturn clear"
-    run_direct(after_locals_code, quietly=True)
+    for lname, value in _after_local_dict().items():
+        set_local(lname, value)
+    run_single("sreturn clear", show_exc_warning=False)
 
 # %% ../nbs/05_noecho.ipynb 20
 pre = (
