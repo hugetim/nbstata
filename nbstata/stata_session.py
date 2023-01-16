@@ -4,8 +4,7 @@
 __all__ = ['StataSession']
 
 # %% ../nbs/08_stata_session.ipynb 4
-from .stata import variable_names
-from .stata_more import run_as_program, diverted_stata_output, local_names
+from .stata_more import diverted_stata_output_quicker, local_names, run_sfi
 from .stata_more import get_local_dict as _get_local_dict
 from .noecho import run_as_program_w_locals as _run_as_program_w_locals
 from fastcore.basics import patch_to
@@ -20,7 +19,7 @@ class StataSession():
             r"\A.*?"
             r"^%varlist%(?P<varlist>.*?)"
             r"%globals%(?P<globals>.*?)"
-            r"%locals%(?P<locals>.*?)"
+            #r"%locals%(?P<locals>.*?)"
             r"%scalars%(?P<scalars>.*?)"
             r"%matrices%(?P<matrices>.*?)%end%", #"(\Z|---+\s*end)",
             flags=re.DOTALL + re.MULTILINE).match
@@ -69,7 +68,7 @@ def _completions(self):
 #     %globals%
 #     {' '.join(global_names())}
 #     """
-    return diverted_stata_output(dedent("""\
+    return diverted_stata_output_quicker(dedent("""\
         local _temp_completions_while_local_ = 1
         while `_temp_completions_while_local_' {
         set more off
@@ -87,8 +86,8 @@ def _completions(self):
         }
         disp "%globals%"
         disp `"`:all globals'"'
-        disp "%locals%"
-        mata : invtokens(st_dir("local", "macro", "*")')
+        *disp "%locals%"
+        *mata : invtokens(st_dir("local", "macro", "*")')
         disp "%scalars%"
         disp `"`:all scalars'"'
         disp "%matrices%"
@@ -100,6 +99,11 @@ def _completions(self):
     """))
 
 # %% ../nbs/08_stata_session.ipynb 14
+@patch_to(StataSession)
+def _get_locals(self):
+    return self.suggestions['locals'] if self.suggestions else local_names()
+
+# %% ../nbs/08_stata_session.ipynb 17
 @patch_to(StataSession)
 def get_suggestions(self):
     match = self.matchall(self._completions())
@@ -115,13 +119,8 @@ def get_suggestions(self):
 #                     f for f in self.filelist.split(v.strip()) if f]
 #             else:
         suggestions[k] = self.varlist.findall(self.varclean('', v))
-    #suggestions['locals'] = self.get_locals()
+    suggestions['locals'] = self._get_locals()
     return suggestions
-
-# %% ../nbs/08_stata_session.ipynb 16
-@patch_to(StataSession)
-def _get_locals(self):
-    return self.suggestions['locals'] if self.suggestions else local_names()
 
 # %% ../nbs/08_stata_session.ipynb 20
 @patch_to(StataSession)

@@ -6,7 +6,7 @@ __all__ = ['simple_dataframe_from_stata', 'better_dataframe_from_stata', 'better
 
 # %% ../nbs/06_pandas.ipynb 3
 from .stata import stata_formatted
-from .stata_more import run_as_program, IndexVar, var_from_varlist
+from .stata_more import IndexVar, var_from_varlist
 
 # %% ../nbs/06_pandas.ipynb 5
 def simple_dataframe_from_stata(stfr, var, valuelabel, missingval):
