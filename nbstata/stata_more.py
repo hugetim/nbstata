@@ -105,12 +105,14 @@ def var_from_varlist(varlist, stfr=None):
         var_code = varlist.strip()
     else:
         _program_name = "temp_nbstata_varlist_name"
-        run_direct(f"""\
-            program define {_program_name}
-                syntax [varlist(default=none)]
-                disp "`varlist'"
+        run_direct((
+            f"program define {_program_name}\n"
+            """ syntax [varlist(default=none)]
+                foreach var in `varlist' {
+                    disp "`var'"
+                }
             end
-            """, quietly=True)
+            """), quietly=True)
         try:
             var_code = diverted_stata_output_quicker(f"""\
                 {_program_name} {varlist}
@@ -121,7 +123,7 @@ def var_from_varlist(varlist, stfr=None):
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_stata_more.ipynb 59
+# %% ../nbs/03_stata_more.ipynb 62
 def local_names():
     run_single("""\
         mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""",
@@ -130,19 +132,19 @@ def local_names():
     set_local('temp_nbstata_all_locals', "")
     return out.split()
 
-# %% ../nbs/03_stata_more.ipynb 63
+# %% ../nbs/03_stata_more.ipynb 66
 def get_local_dict(_local_names=None):
     if _local_names is None:
         _local_names = local_names()
     return {n: get_local(n) for n in _local_names}
 
-# %% ../nbs/03_stata_more.ipynb 65
+# %% ../nbs/03_stata_more.ipynb 68
 def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
     return "\n".join(local_defs)
 
-# %% ../nbs/03_stata_more.ipynb 70
+# %% ../nbs/03_stata_more.ipynb 73
 def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
     runner = functools.partial(run_as_program, prog_def_option_code="rclass")
     inspect_code = """\
