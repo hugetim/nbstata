@@ -72,14 +72,15 @@ def in_range(stata_in_code, count):
         raise ValueError("observations numbers out of range")
     return (start-1, end)
 
-# %% ../nbs/07_browse.ipynb 20
+# %% ../nbs/07_browse.ipynb 21
 def _split_option_code(code):
-    code_parts = code.split(',')
+    comma_not_enclosed_in_paren = r',(?![^(]*\))'
+    code_parts = re.split(comma_not_enclosed_in_paren, code)
     main_code = code_parts[0] if code_parts else ""
     option_code = code_parts[1] if len(code_parts) > 1 else ""
     return main_code, option_code
 
-# %% ../nbs/07_browse.ipynb 21
+# %% ../nbs/07_browse.ipynb 22
 def parse_browse_magic(code):
     non_option_code, option_code = _split_option_code(code)
     args = parse_code_if_in(non_option_code)
@@ -89,7 +90,7 @@ def parse_browse_magic(code):
     oargs = [c.strip() for c in option_code.split() if c]
     return vargs, in_code, if_code, oargs
 
-# %% ../nbs/07_browse.ipynb 23
+# %% ../nbs/07_browse.ipynb 25
 def _parse_df_params(code, count, browse=False, tail=False):
     import numpy as np
     vargs, in_code, if_code, oargs = parse_browse_magic(code)
@@ -126,7 +127,7 @@ def _parse_df_params(code, count, browse=False, tail=False):
 
     return obs_range, varlist, if_code, valuelabel, sformat
 
-# %% ../nbs/07_browse.ipynb 24
+# %% ../nbs/07_browse.ipynb 26
 def get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, sformat):
     with SelectVar(stata_if_code) as sel_varname:
         df = better_pdataframe_from_data(obs=obs_range,
@@ -140,7 +141,7 @@ def get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, sformat):
             df = df.drop([sel_varname], axis=1)
     return df
 
-# %% ../nbs/07_browse.ipynb 26
+# %% ../nbs/07_browse.ipynb 28
 def headtail_df_params(code, count, missing_config, tail=False):
     import numpy as np
     custom_missingval = missing_config != 'pandas'
@@ -150,7 +151,7 @@ def headtail_df_params(code, count, missing_config, tail=False):
     )
     return obs_range, varlist, stata_if_code, missingval, valuelabel, sformat
 
-# %% ../nbs/07_browse.ipynb 30
+# %% ../nbs/07_browse.ipynb 32
 def headtail_get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, sformat):
     if not stata_if_code:
         return get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, sformat)
@@ -168,7 +169,7 @@ def headtail_get_df(obs_range, varlist, stata_if_code, missingval, valuelabel, s
             df = df.drop([sel_varname], axis=1)
     return df.tail(N_max) if tail else df.head(N_max)
 
-# %% ../nbs/07_browse.ipynb 41
+# %% ../nbs/07_browse.ipynb 45
 def browse_df_params(code, count, browse=True, tail=False):
     import numpy as np
     missingval = np.NaN
@@ -177,7 +178,7 @@ def browse_df_params(code, count, browse=True, tail=False):
     )
     return obs_range, varlist, stata_if_code, missingval, valuelabel, sformat
 
-# %% ../nbs/07_browse.ipynb 50
+# %% ../nbs/07_browse.ipynb 54
 def perspective_not_found():
     try:
         import perspective
@@ -186,7 +187,7 @@ def perspective_not_found():
     else:
         return False
 
-# %% ../nbs/07_browse.ipynb 51
+# %% ../nbs/07_browse.ipynb 55
 def perspective_is_enabled():
     return not perspective_not_found()
 #     import subprocess
@@ -200,7 +201,7 @@ def perspective_is_enabled():
 #     except Exception as e:
 #         return False
 
-# %% ../nbs/07_browse.ipynb 53
+# %% ../nbs/07_browse.ipynb 57
 def browse_not_enabled(kernel):
     content = {
         'data': {'text/markdown': (
@@ -212,7 +213,7 @@ def browse_not_enabled(kernel):
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
     return ''
 
-# %% ../nbs/07_browse.ipynb 54
+# %% ../nbs/07_browse.ipynb 58
 def display_perspective(df, sformat):
     import perspective
     from IPython.display import display
