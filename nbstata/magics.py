@@ -162,7 +162,7 @@ def _headtail_html(self, df, kernel):
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
-        df = browse.get_df(*browse.headtail_df_params(
+        df = browse.headtail_get_df(*browse.headtail_df_params(
             code, obs_count(), kernel.env['missing'], tail=tail
         ))
         self._headtail_html(df, kernel)
