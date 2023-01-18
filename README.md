@@ -46,7 +46,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/92d60255-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/6658eebb-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -100,6 +100,10 @@ Stata syntax highlighting can be installed for Jupyter Lab:
 ``` sh
 pip install jupyterlab_stata_highlight2
 ```
+
+(If you prefer the standard Jupyter color scheme, the original
+[jupyterlab-stata-highlight](https://kylebarron.dev/stata_kernel/using_jupyter/lab/#syntax-highlighting)
+also works.)
 
 ## Configuration
 
