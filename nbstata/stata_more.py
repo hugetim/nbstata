@@ -94,7 +94,7 @@ def diverted_stata_output_quicker(std_non_prog_code):
         try:
             run_as_program(code, prog_def_option_code="rclass")
         except SystemError as e:
-            run_as_rclass_prog("return add\ncapture log on")
+            run_as_program("return add\ncapture log on", prog_def_option_code="rclass")
             raise(e)
         out = diverted.getvalue()
     return out
