@@ -77,7 +77,10 @@ def _last_token_full_string(code, sc_delimiter=False):
 class CompletionEnv():
     def __init__(self):
         """"""
-        # any non-space/"/= 'word' at the end of the string after the last ", =, or white space
+        self.last_word = re.compile(
+            r'\W\w*?\Z', flags=re.MULTILINE).search
+        
+        # any non-space/"/= 'chunk' at the end of the string after the last ", =, or white space
         self.last_chunk = re.compile(
             r'[\s"=][^\s"=]*?\Z', flags=re.MULTILINE).search
         
@@ -175,6 +178,12 @@ def _start_of_last_chunk(self, code):
 
 # %% ../nbs/10_completion_env.ipynb 46
 @patch_to(CompletionEnv)
+def _start_of_last_word(self, code):
+    search = self.last_word(code)
+    return search.start() + 1 if search else 0
+
+# %% ../nbs/10_completion_env.ipynb 49
+@patch_to(CompletionEnv)
 def _last_line_first_word(self, code, sc_delimiter=False):
     if sc_delimiter:
         linecontext = self.context['delimit_line'](code)
@@ -187,7 +196,7 @@ def _last_line_first_word(self, code, sc_delimiter=False):
     else:
         return None, None
 
-# %% ../nbs/10_completion_env.ipynb 52
+# %% ../nbs/10_completion_env.ipynb 55
 class Env(IntEnum):
     NONE = -9      # no suggestions
     MAGIC = -1     # magics, %x*
@@ -201,7 +210,7 @@ class Env(IntEnum):
     MATA = 9       # inline or in mata environment
     STRING = 10    # file path
 
-# %% ../nbs/10_completion_env.ipynb 53
+# %% ../nbs/10_completion_env.ipynb 56
 @patch_to(CompletionEnv)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
@@ -235,8 +244,7 @@ def get_env(self,
     sc_delimiter = ending_sc_delimiter(code, sc_delimiter)
     env = Env.GENERAL   
     
-    # Detect last "word" delimited by white space, a double-quote, or =.
-    pos = self._start_of_last_chunk(code)
+    pos = self._start_of_last_word(code)
 
     if _ends_in_a_comment(code, sc_delimiter):
         return env, pos, code[pos:], rcomp
@@ -259,24 +267,25 @@ def get_env(self,
     else:
         # Figure out if this is a local or global; env = 0 (default)
         # will suggest variables in memory.
-        chunk = code[pos:]
+        cpos = self._start_of_last_chunk(code) # last "chunk" delimited by white space, a double-quote, or =.
+        chunk = code[cpos:]
         lfind = chunk.rfind('`')
         gfind = chunk.rfind('$')
         path_chars = any(x in chunk for x in ['/', '\\', '~'])
 
         if lfind >= 0 and (lfind > gfind):
-            pos += lfind + 1
+            pos = cpos + lfind + 1
             env = Env.LOCAL
             rcomp = "" if r2chars[0:1] == "'" else "'"
         elif gfind >= 0 and not path_chars:
             bfind = chunk.rfind('{')
             if bfind >= 0 and (bfind == gfind+1):
-                pos += bfind + 1
+                pos = cpos + bfind + 1
                 env = Env.GLOBAL
                 rcomp = "" if r2chars[0:1] == "}" else "}"
             else:
                 env = Env.GLOBAL
-                pos += gfind + 1    
+                pos = cpos + gfind + 1    
     
     if pos == 0:
         env = Env.NONE # to-do: auto-complete commands here
