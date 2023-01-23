@@ -147,7 +147,8 @@ def locals_code_from_dict(preexisting_local_dict):
 # %% ../nbs/03_stata_more.ipynb 73
 def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
     runner = functools.partial(run_as_program, prog_def_option_code="rclass")
-    inspect_code = """\
+    inspect_code = """
+        disp _newline "*** Stored results:"
         return list
         ereturn list
         return add
@@ -156,4 +157,7 @@ def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
         """
     raw_output = diverted_stata_output(inspect_code, runner=runner)
     desc_start = raw_output.find('*** Last updated ')
-    return raw_output[desc_start:] + raw_output[:desc_start]
+    out = raw_output[desc_start:]
+    if desc_start > 21:
+        out += raw_output[:desc_start]
+    return out
