@@ -48,7 +48,7 @@ is needlessly clunky if you are working primarily with Stata).
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/fc5682dc-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/8f5d101f-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -203,6 +203,13 @@ so, please report that
 can also avoid such potential issues by setting the config
 `echo = False`, which will at least not echo single-line Stata commands
 though it will echo multiple commands.
+
+### `more` and `pause`
+
+Stata’s [more](https://www.stata.com/help.cgi?more) and
+[pause](https://www.stata.com/help.cgi?pause) commands do not work in a
+notebook, so these features should remain in their default “off” state
+(i.e., `set more off` and `pause off`).
 
 ## Contributing
 
