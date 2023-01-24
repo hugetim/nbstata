@@ -37,20 +37,27 @@ is needlessly clunky if you are working primarily with Stata).
   comments).
 - [ ] Mata interactive support.
 
-### What do Stata notebooks allow that the official Stata IDE doesn’t?
+### What can you do with Stata notebooks…
+
+…that you can’t do with the [official Stata
+interface](https://www.stata.com/features/overview/graphical-user-interface/)?
 
 - Exploratory analysis that is both:
   - interactive
   - preserved for future reference/editing
-- Presenting results in a way that interweaves:
+- Present results in a way that interweaves:\[1\]
   - code
   - results (including graphs)
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/39740ccd-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/4fb82f42-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
+
+\[1\] Stata [dynamic
+documents](https://www.stata.com/manuals/rptdynamicdocumentsintro.pdf)
+can do something similar, but with a very different workflow.
 
 ## Install
 
