@@ -5,7 +5,6 @@ __all__ = ['run_direct', 'run_single', 'get_local', 'set_local', 'get_global', '
            'obs_count', 'pwd', 'resolve_macro']
 
 # %% ../nbs/02_stata.ipynb 5
-from .config import launch_stata
 from .misc_utils import DivertedPrints, print_red
 
 # %% ../nbs/02_stata.ipynb 7

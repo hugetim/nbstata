@@ -6,6 +6,7 @@ __all__ = ['relevant_suggestion_keys', 'CompletionsManager']
 # %% ../nbs/11_completions.ipynb 4
 from .stata import get_global, pwd
 from .stata_session import StataSession
+from .magics import StataMagics
 from .completion_env import CompletionEnv, Env
 from fastcore.basics import patch_to
 import os
@@ -14,10 +15,10 @@ import platform
 
 # %% ../nbs/11_completions.ipynb 5
 class CompletionsManager():
-    def __init__(self, stata_session: StataSession, available_magics):
+    def __init__(self, stata_session: StataSession):
         """"""
         self.stata_session = stata_session
-        self.available_magics = available_magics
+        self.available_magics = list(StataMagics.available_magics.keys())
         self.env_helper = CompletionEnv()
 
 # %% ../nbs/11_completions.ipynb 8

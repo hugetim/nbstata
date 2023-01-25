@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['run_sfi', 'SelectVar', 'IndexVar', 'run_as_program', 'diverted_stata_output', 'diverted_stata_output_quicker',
-           'var_from_varlist', 'local_names', 'get_local_dict', 'locals_code_from_dict', 'get_inspect']
+           'var_from_varlist', 'local_names', 'get_local_dict', 'locals_code_from_dict']
 
 # %% ../nbs/03_stata_more.ipynb 3
 from .misc_utils import DivertedPrints, print_red
@@ -144,21 +144,3 @@ def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
     return "\n".join(local_defs)
-
-# %% ../nbs/03_stata_more.ipynb 72
-def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
-    runner = functools.partial(run_as_program, prog_def_option_code="rclass")
-    inspect_code = """
-        disp _newline "*** Stored results:"
-        return list
-        ereturn list
-        return add
-        display "*** Last updated `c(current_time)' `c(current_date)' ***"
-        describe, fullnames
-        """
-    raw_output = diverted_stata_output(inspect_code, runner=runner)
-    desc_start = raw_output.find('*** Last updated ')
-    out = raw_output[desc_start:]
-    if desc_start > 21:
-        out += raw_output[:desc_start]
-    return out

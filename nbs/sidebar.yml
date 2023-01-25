@@ -16,5 +16,6 @@ website:
           - 09_magics.ipynb
           - 10_completion_env.ipynb
           - 11_completions.ipynb
-          - 12_cell.ipynb
-          - 13_kernel.ipynb
+          - 12_inspect.ipynb
+          - 13_cell.ipynb
+          - 14_kernel.ipynb

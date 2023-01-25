@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['parse_sreturn', 'pre', 'kwargs', 'local_def_in', 'run_as_program_w_locals', 'run_non_prog_noecho', 'run_prog_noecho',
-           'run_noecho', 'run_simple', 'dispatch_run']
+           'run_noecho']
 
 # %% ../nbs/05_noecho.ipynb 4
 from .code_utils import break_out_prog_blocks
@@ -90,16 +90,3 @@ def run_noecho(code, sc_delimiter=False, run_as_prog=run_as_program_w_locals):
             run_prog_noecho(block['std_code'])
         else:
             run_non_prog_noecho(block['std_code'], run_as_prog=run_as_prog)
-
-# %% ../nbs/05_noecho.ipynb 40
-def run_simple(code, quietly=False, echo=False, sc_delimiter=False):
-    if sc_delimiter:
-        code = "#delimit;\n" + code
-    run_direct(code, quietly=quietly, inline=not quietly, echo=echo)
-
-# %% ../nbs/05_noecho.ipynb 42
-def dispatch_run(code, quietly=False, echo=False, sc_delimiter=False, noecho=False, run_as_prog=run_as_program_w_locals):
-    if noecho and not quietly:
-        run_noecho(code, sc_delimiter, run_as_prog=run_as_prog)
-    else:
-        run_simple(code, quietly, echo, sc_delimiter)   

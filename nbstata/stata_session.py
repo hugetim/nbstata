@@ -4,9 +4,10 @@
 __all__ = ['StataSession']
 
 # %% ../nbs/08_stata_session.ipynb 4
+from .stata import run_direct
 from .stata_more import diverted_stata_output_quicker, local_names, run_sfi
 from .stata_more import get_local_dict as _get_local_dict
-from .noecho import run_as_program_w_locals as _run_as_program_w_locals
+from .noecho import run_as_program_w_locals, run_noecho
 from fastcore.basics import patch_to
 from textwrap import dedent
 import re
@@ -129,6 +130,21 @@ def get_local_dict(self):
 
 # %% ../nbs/08_stata_session.ipynb 21
 @patch_to(StataSession)
-def run_as_program_w_locals(self, std_code):
+def _run_as_program_w_locals(self, std_code):
     """After `break_out_prog_blocks`, run noecho, inserting locals when needed"""
-    return _run_as_program_w_locals(std_code, local_dict=self.get_local_dict())
+    return run_as_program_w_locals(std_code, local_dict=self.get_local_dict())
+
+# %% ../nbs/08_stata_session.ipynb 26
+def _run_simple(code, quietly=False, echo=False, sc_delimiter=False):
+    if sc_delimiter:
+        code = "#delimit;\n" + code
+    run_direct(code, quietly=quietly, inline=not quietly, echo=echo)
+
+# %% ../nbs/08_stata_session.ipynb 28
+@patch_to(StataSession)
+def dispatch_run(self, code, quietly=False, echo=False, sc_delimiter=False, noecho=False):
+    if noecho and not quietly:
+        run_noecho(code, sc_delimiter, run_as_prog=self._run_as_program_w_locals)
+    else:
+        _run_simple(code, quietly, echo, sc_delimiter)
+    self.clear_suggestions()
