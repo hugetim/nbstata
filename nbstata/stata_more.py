@@ -50,6 +50,7 @@ class SelectVar():
 
 # %% ../nbs/03_stata_more.ipynb 15
 class IndexVar:
+    """Class for generating Stata index var for use with pandas"""
     def __enter__(self):
         import sfi
         self.idx_var = sfi.SFIToolkit.getTempName()
@@ -99,7 +100,7 @@ def diverted_stata_output_quicker(std_non_prog_code):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 52
+# %% ../nbs/03_stata_more.ipynb 51
 def var_from_varlist(varlist, stfr=None):
     if stfr:
         var_code = varlist.strip()
@@ -123,7 +124,7 @@ def var_from_varlist(varlist, stfr=None):
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_stata_more.ipynb 62
+# %% ../nbs/03_stata_more.ipynb 61
 def local_names():
     run_single("""\
         mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""",
@@ -132,19 +133,19 @@ def local_names():
     set_local('temp_nbstata_all_locals', "")
     return out.split()
 
-# %% ../nbs/03_stata_more.ipynb 66
+# %% ../nbs/03_stata_more.ipynb 65
 def get_local_dict(_local_names=None):
     if _local_names is None:
         _local_names = local_names()
     return {n: get_local(n) for n in _local_names}
 
-# %% ../nbs/03_stata_more.ipynb 68
+# %% ../nbs/03_stata_more.ipynb 67
 def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
     return "\n".join(local_defs)
 
-# %% ../nbs/03_stata_more.ipynb 73
+# %% ../nbs/03_stata_more.ipynb 72
 def get_inspect(code="", cursor_pos=0, detail_level=0, omit_sections=()):
     runner = functools.partial(run_as_program, prog_def_option_code="rclass")
     inspect_code = """

@@ -11,7 +11,7 @@ from fastcore.basics import patch_to
 from textwrap import dedent
 import re
 
-# %% ../nbs/08_stata_session.ipynb 6
+# %% ../nbs/08_stata_session.ipynb 5
 class StataSession():
     def __init__(self):
         """"""
@@ -52,14 +52,14 @@ class StataSession():
     def clear_suggestions(self):
         self.suggestions = None
 
-# %% ../nbs/08_stata_session.ipynb 7
+# %% ../nbs/08_stata_session.ipynb 6
 @patch_to(StataSession)
 def refresh_suggestions(self):
     self.suggestions = self.get_suggestions()
 #     self.suggestions['magics_set'] = config.all_settings
 #     self.globals = self.get_globals(kernel)
 
-# %% ../nbs/08_stata_session.ipynb 9
+# %% ../nbs/08_stata_session.ipynb 8
 @patch_to(StataSession)
 def _completions(self):
 #     return dedent(f"""\
@@ -98,12 +98,12 @@ def _completions(self):
         macro drop _temp_completions_while_local_
     """))
 
-# %% ../nbs/08_stata_session.ipynb 14
+# %% ../nbs/08_stata_session.ipynb 11
 @patch_to(StataSession)
 def _get_locals(self):
     return self.suggestions['locals'] if self.suggestions else local_names()
 
-# %% ../nbs/08_stata_session.ipynb 17
+# %% ../nbs/08_stata_session.ipynb 15
 @patch_to(StataSession)
 def get_suggestions(self):
     match = self.matchall(self._completions())
@@ -122,12 +122,12 @@ def get_suggestions(self):
     suggestions['locals'] = self._get_locals()
     return suggestions
 
-# %% ../nbs/08_stata_session.ipynb 20
+# %% ../nbs/08_stata_session.ipynb 19
 @patch_to(StataSession)
 def get_local_dict(self):
     return _get_local_dict(self._get_locals())
 
-# %% ../nbs/08_stata_session.ipynb 22
+# %% ../nbs/08_stata_session.ipynb 21
 @patch_to(StataSession)
 def run_as_program_w_locals(self, std_code):
     """After `break_out_prog_blocks`, run noecho, inserting locals when needed"""

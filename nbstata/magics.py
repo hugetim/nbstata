@@ -88,7 +88,7 @@ def _parse_code_for_magic(self, code):
     else:
         return None, code
 
-# %% ../nbs/09_magics.ipynb 13
+# %% ../nbs/09_magics.ipynb 14
 @patch_to(StataMagics)
 def _do_magic(self, name, code, kernel, cell):
     if code.startswith('-h') or code.startswith('--help'):
@@ -97,7 +97,7 @@ def _do_magic(self, name, code, kernel, cell):
     else:
         return getattr(self, "magic_" + name)(code, kernel, cell)
 
-# %% ../nbs/09_magics.ipynb 14
+# %% ../nbs/09_magics.ipynb 15
 @patch_to(StataMagics)
 def magic(self, code, kernel, cell):
     try:
@@ -109,7 +109,7 @@ def magic(self, code, kernel, cell):
             code = self._do_magic(name, code, kernel, cell)
     return code        
 
-# %% ../nbs/09_magics.ipynb 15
+# %% ../nbs/09_magics.ipynb 16
 def _formatted_local_list(local_dict):
     std_len = 14
     str_reps = []
@@ -120,14 +120,14 @@ def _formatted_local_list(local_dict):
             str_reps.append(f"{n}:\n{' '*std_len}  {local_dict[n]}")
     return "\n".join(str_reps)
 
-# %% ../nbs/09_magics.ipynb 18
+# %% ../nbs/09_magics.ipynb 19
 @patch_to(StataMagics)
 def magic_locals(self, code, kernel, cell):
     local_dict = kernel.stata_session.get_local_dict()
     print_kernel(_formatted_local_list(local_dict), kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 20
+# %% ../nbs/09_magics.ipynb 21
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
@@ -144,12 +144,12 @@ def magic_browse(self, code, kernel, cell):
         print_kernel(f"Browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 23
+# %% ../nbs/09_magics.ipynb 24
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/09_magics.ipynb 24
+# %% ../nbs/09_magics.ipynb 25
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -158,7 +158,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/09_magics.ipynb 25
+# %% ../nbs/09_magics.ipynb 26
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -170,28 +170,28 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'Tail' if tail else 'Head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 26
+# %% ../nbs/09_magics.ipynb 27
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 27
+# %% ../nbs/09_magics.ipynb 28
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 29
+# %% ../nbs/09_magics.ipynb 30
 @patch_to(StataMagics)
 def magic_help(self,code,kernel,cell):
-    """Show help file from stata.com."""
+    """Show help file from stata.com/help.cgi?\{\}"""
     try:
         reply = urllib.request.urlopen(self.html_help.format(code))
         html = reply.read().decode("utf-8")
         soup = bs(html, 'html.parser')
 
-        # Set root for links to https://ww.stata.com
+        # Set root for links to https://www.stata.com
         for a in soup.find_all('a', href=True):
             href = a.get('href')
             match = re.search(r'{}(.*?)#'.format(code), href)
