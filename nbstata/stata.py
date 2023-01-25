@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['run_direct', 'run_single', 'get_local', 'set_local', 'get_global', 'stata_formatted', 'variable_names', 'drop_var',
-           'obs_count', 'pwd', 'simple_dataframe_from_stata', 'resolve_macro']
+           'obs_count', 'pwd', 'resolve_macro']
 
 # %% ../nbs/02_stata.ipynb 5
 from .config import launch_stata
@@ -73,17 +73,7 @@ def pwd():
     from sfi import SFIToolkit
     return SFIToolkit.getWorkingDir()
 
-# %% ../nbs/02_stata.ipynb 47
-def simple_dataframe_from_stata(stfr, var, valuelabel, missingval):
-    from pystata import stata
-    if stfr is None:
-        df = stata.pdataframe_from_data(var=var, valuelabel=valuelabel, missingval=missingval)
-    else:
-        df = stata.pdataframe_from_frame(stfr, var=var, valuelabel=valuelabel, missingval=missingval)
-    df.index += 1
-    return df
-
-# %% ../nbs/02_stata.ipynb 51
+# %% ../nbs/02_stata.ipynb 48
 def resolve_macro(macro):
     macro = macro.strip()
     if macro.startswith("`") and macro.endswith("'"):
