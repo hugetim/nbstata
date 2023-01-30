@@ -7,6 +7,7 @@ __all__ = ['StataSession']
 from .stata import run_direct
 from .stata_more import diverted_stata_output_quicker, local_names, run_sfi
 from .stata_more import get_local_dict as _get_local_dict
+from .code_utils import remove_comments
 from .noecho import run_as_program_w_locals, run_noecho
 from fastcore.basics import patch_to
 from textwrap import dedent
@@ -138,6 +139,8 @@ def _run_as_program_w_locals(self, std_code):
 def _run_simple(code, quietly=False, echo=False, sc_delimiter=False):
     if sc_delimiter:
         code = "#delimit;\n" + code
+    if len(code.splitlines()) == 1:
+        code = remove_comments(code)
     run_direct(code, quietly=quietly, inline=not quietly, echo=echo)
 
 # %% ../nbs/08_stata_session.ipynb 28

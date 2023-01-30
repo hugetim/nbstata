@@ -5,7 +5,7 @@ __all__ = ['parse_sreturn', 'pre', 'kwargs', 'local_def_in', 'run_as_program_w_l
            'run_noecho']
 
 # %% ../nbs/05_noecho.ipynb 4
-from .code_utils import break_out_prog_blocks
+from .code_utils import break_out_prog_blocks, remove_comments
 from .stata import run_direct, set_local, run_single
 from . import stata_more as sm 
 from textwrap import dedent
@@ -71,7 +71,7 @@ def run_as_program_w_locals(std_code, local_dict=None):
 # %% ../nbs/05_noecho.ipynb 23
 def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program_w_locals):
     if len(std_non_prog_code.splitlines()) <= 1:  # to keep it simple when we can
-        run_direct(std_non_prog_code, quietly=False, inline=True, echo=False)
+        run_direct(remove_comments(std_non_prog_code), quietly=False, inline=True, echo=False)
     else:
         run_as_prog(std_non_prog_code)
 
