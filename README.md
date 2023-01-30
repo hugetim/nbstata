@@ -35,7 +35,6 @@ is needlessly clunky if you are working primarily with Stata).
 - [x] Interactive help files available within notebook.
 - [x] `#delimit ;` interactive support (along with all types of
   comments).
-- [ ] Mata interactive support.
 
 ### What can you do with Stata notebooks…
 
@@ -51,7 +50,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/4fb82f42-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/051b68a5-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -204,7 +203,7 @@ support: running multi-line Stata code without echoing the commands.
 While extensive automatic tests are in place to help ensure its
 reliability, unanticipated issues may arise. If, while using this mode,
 a particular code cell is not working as expected, try placing the
-`%noecho` magic at the top of it to see if that resolves the issue. (If
+`%echo` magic at the top of it to see if that resolves the issue. (If
 so, please report that
 [here](https://github.com/hugetim/nbstata/issues/new?labels=bug).) You
 can also avoid such potential issues by setting the config
