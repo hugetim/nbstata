@@ -28,13 +28,13 @@ is needlessly clunky if you are working primarily with Stata).
 ### `nbstata` features
 
 - [x] Works with Stata 17 (only).
-- [x] Can display output from Stata code without an “echo” of multi-line
+- [x] Can display output from Stata code without an ‘echo’ of multi-line
   commands
 - [x] Autocompletion for variables, macros, matrices, and file paths.
 - [x] DataGrid widget with `browse`-like capabilities (e.g., interactive
   filtering).
 - [x] Variable and data properties (`describe` and `e`/`return list`)
-  available in a “contextual help” side panel.
+  available in a ‘contextual help’ side panel.
 - [x] Interactive help files available within notebook.
 - [x] `#delimit ;` interactive support (along with all types of
   comments).
@@ -53,7 +53,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/5c72f63f-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/ceaf43cd-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
