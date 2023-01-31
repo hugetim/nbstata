@@ -2,6 +2,7 @@ website:
   sidebar:
     contents:
       - index.ipynb
+      - user_guide.ipynb
       - section: Developer Docs
         contents:
           - 00_misc_utils.ipynb
