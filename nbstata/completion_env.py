@@ -90,7 +90,7 @@ class CompletionEnv():
 
         # Magic completion
         self.magic_completion = re.compile(
-            r'\A\*?%(?P<magic>\S*)\Z', flags=re.DOTALL + re.MULTILINE).match
+            r'\A\*?(?P<magic>%%?\S*)\Z', flags=re.DOTALL + re.MULTILINE).match
 
         # Match context; this is used to determine if the line starts
         # with matrix or scalar. It also matches constructs like
@@ -199,7 +199,7 @@ def _last_line_first_word(self, code, sc_delimiter=False):
 # %% ../nbs/10_completion_env.ipynb 56
 class Env(IntEnum):
     NONE = -9      # no suggestions
-    MAGIC = -1     # magics, %x*
+    MAGIC = -1     # magics, e.g., %x*
     GENERAL = 0    # varlist and/or file path
     LOCAL = 1      # `x* completed with `x*'
     GLOBAL = 2     # $x* completed with $x* or ${x* completed with ${x*}
@@ -237,7 +237,7 @@ def get_env(self,
     
     lcode = code.lstrip()
     if self.magic_completion(lcode):
-        pos = code.rfind("%") + 1
+        pos = code.find("%")
         env = Env.MAGIC
         return env, pos, code[pos:], rcomp
     

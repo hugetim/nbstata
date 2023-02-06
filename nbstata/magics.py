@@ -4,6 +4,7 @@
 __all__ = ['print_kernel', 'StataMagics']
 
 # %% ../nbs/09_magics.ipynb 3
+from .misc_utils import print_red
 from .stata import obs_count
 import nbstata.browse as browse
 from fastcore.basics import patch_to
@@ -26,19 +27,19 @@ class StataMagics():
     html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
 
     magic_regex = re.compile(
-        r'\A(%|\*%)(?P<magic>\w+?)(?P<code>[\s,]+.*?)?\Z', flags=re.DOTALL + re.MULTILINE)
+        r'\A\*?(?P<magic>%%?\w+?)(?P<code>[\s,]+.*?)?\Z', flags=re.DOTALL + re.MULTILINE)
 
     # Format: magic_name: help_content
     available_magics = {
-        'browse': '{} [-h] [varlist] [if] [in] [, nolabel noformat]',
-        'head': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
-        'tail': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
-        'locals': '',
-        'delimit': '',
-        'help': '{} [-h] command_or_topic_name',
-        'quietly': '',
-        'noecho': '',
-        'echo': '',
+        '%browse': '{} [-h] [varlist] [if] [in] [, nolabel noformat]',
+        '%head': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
+        '%tail': '{} [-h] [N] [varlist] [if] [, nolabel noformat]',
+        '%locals': '',
+        '%delimit': '',
+        '%help': '{} [-h] command_or_topic_name',
+        '%%quietly': '',
+        '%%noecho': '',
+        '%%echo': '',
     }
     
     csshelp_default = resource_filename(
@@ -82,8 +83,14 @@ def _parse_code_for_magic(self, code):
     match = self.magic_regex.match(code.strip())
     if match:
         name, code = _parse_magic_name_code(match)
-        if name not in self.available_magics:
-            raise ValueError(f"Unknown magic %{name}.")
+        if name in {'%quietly', '%noecho', '%echo'}:
+            print_red(
+                f"Warning: The correct syntax for a cell magic is '%{name}', not '{name}'. "
+                "In v1.0, nbstata may trigger an error instead of just a warning."
+            )
+            name = '%' + name
+        elif name not in self.available_magics:
+            raise ValueError(f"Unknown magic {name}.")
         return name, code
     else:
         return None, code
@@ -95,7 +102,7 @@ def _do_magic(self, name, code, kernel, cell):
         print_kernel(self.available_magics[name].format(name), kernel)
         return ''
     else:
-        return getattr(self, "magic_" + name)(code, kernel, cell)
+        return getattr(self, "magic_" + name.lstrip('%'))(code, kernel, cell)
 
 # %% ../nbs/09_magics.ipynb 15
 @patch_to(StataMagics)
