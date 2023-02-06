@@ -143,7 +143,7 @@ def _run_simple(code, quietly=False, echo=False, sc_delimiter=False):
         code = remove_comments(code)
     run_direct(code, quietly=quietly, inline=not quietly, echo=echo)
 
-# %% ../nbs/08_stata_session.ipynb 28
+# %% ../nbs/08_stata_session.ipynb 29
 @patch_to(StataSession)
 def dispatch_run(self, code, quietly=False, echo=False, sc_delimiter=False, noecho=False):
     if noecho and not quietly:

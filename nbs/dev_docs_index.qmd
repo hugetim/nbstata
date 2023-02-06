@@ -22,6 +22,8 @@ listing:
     - 13_cell.ipynb
     - 14_kernel.ipynb
 ---
+For information on how to help improve the `nbstata` code, see: [CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md)
+
 The main dependencies among the principal nbstata modules:
 ```{mermaid}
 flowchart TB

@@ -75,14 +75,14 @@ def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program_w_locals):
     else:
         run_as_prog(std_non_prog_code)
 
-# %% ../nbs/05_noecho.ipynb 28
+# %% ../nbs/05_noecho.ipynb 29
 def run_prog_noecho(std_prog_code):
     if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
         run_direct(std_prog_code, quietly=False, inline=True, echo=False)
     else:
         run_direct(std_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/05_noecho.ipynb 34
+# %% ../nbs/05_noecho.ipynb 35
 def run_noecho(code, sc_delimiter=False, run_as_prog=run_as_program_w_locals):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
     for block in break_out_prog_blocks(code, sc_delimiter):
