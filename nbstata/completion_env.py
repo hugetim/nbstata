@@ -15,13 +15,13 @@ from pygments import lexers
 from pygments.token import Comment, Keyword, Name, Number, \
     String, Text, Operator
 
-# %% ../nbs/10_completion_env.ipynb 6
+# %% ../nbs/10_completion_env.ipynb 7
 stata_lexer = lexers.get_lexer_by_name('stata')
 
 def _lex_tokens(code):
     return list(stata_lexer.get_tokens_unprocessed(code))
 
-# %% ../nbs/10_completion_env.ipynb 7
+# %% ../nbs/10_completion_env.ipynb 8
 def _last_token(code):
     tokens = _lex_tokens(code)
     last_tokentype = tokens[-1][1]
@@ -34,7 +34,7 @@ def _last_token(code):
     tokens_to_combine = list(reversed(tokens_to_combine))
     return (min(tokens_to_combine, key=lambda t: t[0])[0], last_tokentype, "".join([t[2] for t in tokens_to_combine]))
 
-# %% ../nbs/10_completion_env.ipynb 8
+# %% ../nbs/10_completion_env.ipynb 9
 def _last_token_full_string(code, sc_delimiter=False):
     if not code:
         return (0, None, "")
@@ -73,7 +73,7 @@ def _last_token_full_string(code, sc_delimiter=False):
         index = 0
     return (index, last_tokentype, value)
 
-# %% ../nbs/10_completion_env.ipynb 28
+# %% ../nbs/10_completion_env.ipynb 29
 class CompletionEnv():
     def __init__(self):
         """"""
@@ -142,19 +142,19 @@ class CompletionEnv():
 #             r'([^\"\']|\"(?!\')|\'(?<!\"))*' 
 #             r')*\Z').search
 
-# %% ../nbs/10_completion_env.ipynb 29
+# %% ../nbs/10_completion_env.ipynb 30
 def _ends_in_string_literal(code, sc_delimiter=False):
     if sc_delimiter:
         code = "#delimit;\n" + code
     return _last_token(code)[1] is String
 
-# %% ../nbs/10_completion_env.ipynb 30
+# %% ../nbs/10_completion_env.ipynb 31
 def _ends_in_a_comment(code, sc_delimiter=False):
     if sc_delimiter:
         code = "#delimit;\n" + code
     return _last_token(code)[1] in [Comment.Single, Comment.Multiline, Comment.Special]
 
-# %% ../nbs/10_completion_env.ipynb 37
+# %% ../nbs/10_completion_env.ipynb 38
 @patch_to(CompletionEnv)
 def _scalar_f_pos_rcomp(self, code, r2chars):
     scalar_f = False
@@ -170,19 +170,19 @@ def _scalar_f_pos_rcomp(self, code, r2chars):
     else:
         return False, None, None
 
-# %% ../nbs/10_completion_env.ipynb 43
+# %% ../nbs/10_completion_env.ipynb 44
 @patch_to(CompletionEnv)
 def _start_of_last_chunk(self, code):
     search = self.last_chunk(code)
     return search.start() + 1 if search else 0
 
-# %% ../nbs/10_completion_env.ipynb 46
+# %% ../nbs/10_completion_env.ipynb 47
 @patch_to(CompletionEnv)
 def _start_of_last_word(self, code):
     search = self.last_word(code)
     return search.start() + 1 if search else 0
 
-# %% ../nbs/10_completion_env.ipynb 49
+# %% ../nbs/10_completion_env.ipynb 50
 @patch_to(CompletionEnv)
 def _last_line_first_word(self, code, sc_delimiter=False):
     if sc_delimiter:
@@ -196,7 +196,7 @@ def _last_line_first_word(self, code, sc_delimiter=False):
     else:
         return None, None
 
-# %% ../nbs/10_completion_env.ipynb 55
+# %% ../nbs/10_completion_env.ipynb 56
 class Env(IntEnum):
     NONE = -9      # no suggestions
     MAGIC = -1     # magics, %x*
@@ -210,7 +210,7 @@ class Env(IntEnum):
     MATA = 9       # inline or in mata environment
     STRING = 10    # file path
 
-# %% ../nbs/10_completion_env.ipynb 56
+# %% ../nbs/10_completion_env.ipynb 57
 @patch_to(CompletionEnv)
 def get_env(self, 
             code: str, # Right-truncated to cursor position
