@@ -14,6 +14,8 @@ Follow the [install nbdev](https://nbdev.fast.ai/tutorials/tutorial.html#install
 5. Run [nbdev_export](https://nbdev.fast.ai/tutorials/tutorial.html#install-quarto) inside the project directory
 6. Run [pip install -e '.[dev]'](https://nbdev.fast.ai/tutorials/tutorial.html#install-your-package) inside the project directory
 
+Visit [https://hugetim.github.io/nbstata/dev_docs_index.html](https://hugetim.github.io/nbstata/dev_docs_index.html) to get oriented.
+
 ## How to submit notebook PRs
 After making changes to the `/nbs` notebooks, you should run [nbdev_prepare](https://nbdev.fast.ai/tutorials/tutorial.html#prepare-your-changes) and make any necessary changes in order to pass all the tests.
 

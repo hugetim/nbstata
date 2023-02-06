@@ -41,5 +41,17 @@ flowchart TB
   L -.-> H
   M -.-> H
   C -.-> H
+  click A "https://hugetim.github.io/nbstata/kernel.html"
+  click B "https://hugetim.github.io/nbstata/cell.html"
+  click C "https://hugetim.github.io/nbstata/noecho.html"
+  click D "https://hugetim.github.io/nbstata/stata_session.html"
+  click E "https://hugetim.github.io/nbstata/magics.html"
+  click F "https://hugetim.github.io/nbstata/completions.html"
+  click G "https://hugetim.github.io/nbstata/completion_env.html"
+  click H "https://hugetim.github.io/nbstata/stata_more.html"
+  click I "https://hugetim.github.io/nbstata/config.html"
+  click L "https://hugetim.github.io/nbstata/browse.html"
+  click M "https://hugetim.github.io/nbstata/pandas.html"
+  click N "https://hugetim.github.io/nbstata/inspect.html"
 ```
 The complete list of modules:
