@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['PyStataKernel', 'print_stata_error']
 
-# %% ../nbs/14_kernel.ipynb 6
+# %% ../nbs/14_kernel.ipynb 4
 from .config import get_config, launch_stata
 from .misc_utils import print_red
 from .inspect import get_inspect
@@ -14,7 +14,7 @@ import nbstata # for __version__
 from fastcore.basics import patch_to
 from ipykernel.ipkernel import IPythonKernel
 
-# %% ../nbs/14_kernel.ipynb 7
+# %% ../nbs/14_kernel.ipynb 6
 class PyStataKernel(IPythonKernel):
     """A jupyter kernel based on pystata"""
     implementation = 'nbstata'
@@ -49,7 +49,7 @@ class PyStataKernel(IPythonKernel):
         except ModuleNotFoundError as err:
             pass # wait for first do_execute so error message can be displayed under cell
 
-# %% ../nbs/14_kernel.ipynb 8
+# %% ../nbs/14_kernel.ipynb 7
 def _config_stata(env):
     launch_stata(env['stata_dir'], 
                  env['edition'],
@@ -57,7 +57,7 @@ def _config_stata(env):
                  env['graph_format'],
                 )
 
-# %% ../nbs/14_kernel.ipynb 9
+# %% ../nbs/14_kernel.ipynb 8
 @patch_to(PyStataKernel)
 def init_stata(self):
     self.env = get_config()
@@ -67,7 +67,7 @@ def init_stata(self):
     self.inspect_output = ""
     self.stata_ready = True
 
-# %% ../nbs/14_kernel.ipynb 10
+# %% ../nbs/14_kernel.ipynb 9
 _missing_stata_message = (
     "pystata path not found\n"
     "A Stata 17 installation is required to use the nbstata Stata kernel. "
@@ -75,7 +75,7 @@ _missing_stata_message = (
     "please specify its path in your configuration file."
 )
 
-# %% ../nbs/14_kernel.ipynb 12
+# %% ../nbs/14_kernel.ipynb 11
 def _handle_stata_import_error(err, silent, execution_count):
     if not silent:
         print_red(f"ModuleNotFoundError: {_missing_stata_message}")
@@ -87,14 +87,14 @@ def _handle_stata_import_error(err, silent, execution_count):
         'execution_count': execution_count,
     }
 
-# %% ../nbs/14_kernel.ipynb 13
+# %% ../nbs/14_kernel.ipynb 12
 def print_stata_error(text):
     lines = text.splitlines()
     if len(lines) > 2:
         print("\n".join(lines[:-2]))
     print_red("\n".join(lines[-2:]))
 
-# %% ../nbs/14_kernel.ipynb 16
+# %% ../nbs/14_kernel.ipynb 15
 def _handle_stata_error(err, silent, execution_count):
     reply_content = {
         "traceback": [],
@@ -114,12 +114,12 @@ def _handle_stata_error(err, silent, execution_count):
     })
     return reply_content
 
-# %% ../nbs/14_kernel.ipynb 17
+# %% ../nbs/14_kernel.ipynb 16
 @patch_to(PyStataKernel)
 def post_do_hook(self):
     self.inspect_output = ""
 
-# %% ../nbs/14_kernel.ipynb 18
+# %% ../nbs/14_kernel.ipynb 17
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent,
                store_history=True, user_expressions=None, allow_stdin=False):
@@ -144,7 +144,7 @@ def do_execute(self, code, silent,
         'user_expressions': {},
     }
 
-# %% ../nbs/14_kernel.ipynb 19
+# %% ../nbs/14_kernel.ipynb 18
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
     """Provide context-aware suggestions"""
@@ -165,13 +165,13 @@ def do_complete(self, code, cursor_pos):
         'matches': matches,
     }
 
-# %% ../nbs/14_kernel.ipynb 20
+# %% ../nbs/14_kernel.ipynb 19
 @patch_to(PyStataKernel)
 def do_is_complete(self, code):
     """Overrides IPythonKernel with kernelbase default"""
     return {"status": "unknown"}
 
-# %% ../nbs/14_kernel.ipynb 21
+# %% ../nbs/14_kernel.ipynb 20
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     """Display Stata 'describe' output regardless of cursor position"""
@@ -180,7 +180,7 @@ def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     data = {'text/plain': self.inspect_output}
     return {"status": "ok", "data": data, "metadata": {}, "found": True}
 
-# %% ../nbs/14_kernel.ipynb 22
+# %% ../nbs/14_kernel.ipynb 21
 @patch_to(PyStataKernel)
 def do_history(
     self,

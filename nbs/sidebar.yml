@@ -1,9 +1,11 @@
 website:
+  page-navigation: true
   sidebar:
     contents:
       - index.ipynb
       - user_guide.ipynb
-      - section: Developer Docs
+      - text: "---"
+      - href: dev_docs_index.qmd
         contents:
           - 00_misc_utils.ipynb
           - 01_config.ipynb

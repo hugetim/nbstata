@@ -1,0 +1,45 @@
+---
+title: Developer Docs
+listing:
+  fields: [title, description]
+  type: table
+  sort-ui: false
+  filter-ui: false
+  contents:
+    - 00_misc_utils.ipynb
+    - 01_config.ipynb
+    - 02_stata.ipynb
+    - 03_stata_more.ipynb
+    - 04_code_utils.ipynb
+    - 05_noecho.ipynb
+    - 06_pandas.ipynb
+    - 07_browse.ipynb
+    - 08_stata_session.ipynb
+    - 09_magics.ipynb
+    - 10_completion_env.ipynb
+    - 11_completions.ipynb
+    - 12_inspect.ipynb
+    - 13_cell.ipynb
+    - 14_kernel.ipynb
+---
+The main dependencies among the principal nbstata modules:
+```{mermaid}
+flowchart TB
+  A[kernel] -.-> I[config]
+  A -.-> B[cell]
+  B -.-> E[magics]
+  B -.-> D[stata_session]
+  D -.-> C[noecho]
+  E -.-> L[browse]
+  A -.-> F[completions]
+  F -.-> D
+  F -.-> G[completion_env]
+  A -.-> N[inspect]
+  N -.-> H[stata_more]
+  D -.-> H
+  L -.-> M[pandas]
+  L -.-> H
+  M -.-> H
+  C -.-> H
+```
+The complete list of modules:

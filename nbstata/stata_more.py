@@ -4,13 +4,13 @@
 __all__ = ['run_sfi', 'SelectVar', 'IndexVar', 'run_as_program', 'diverted_stata_output', 'diverted_stata_output_quicker',
            'var_from_varlist', 'local_names', 'get_local_dict', 'locals_code_from_dict']
 
-# %% ../nbs/03_stata_more.ipynb 3
+# %% ../nbs/03_stata_more.ipynb 4
 from .misc_utils import DivertedPrints, print_red
 from .stata import run_direct, run_single, get_local, set_local, drop_var
 from textwrap import dedent
 import functools
 
-# %% ../nbs/03_stata_more.ipynb 7
+# %% ../nbs/03_stata_more.ipynb 8
 def run_sfi(std_code, echo=False, show_exc_warning=True):
     import sfi
     cmds = std_code.splitlines()
@@ -24,7 +24,7 @@ def run_sfi(std_code, echo=False, show_exc_warning=True):
             run_direct(remaining_code, echo=echo)
             break
 
-# %% ../nbs/03_stata_more.ipynb 12
+# %% ../nbs/03_stata_more.ipynb 13
 class SelectVar():
     """Class for generating Stata select_var for getAsDict"""
     varname = None
@@ -48,7 +48,7 @@ class SelectVar():
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.clear()
 
-# %% ../nbs/03_stata_more.ipynb 15
+# %% ../nbs/03_stata_more.ipynb 16
 class IndexVar:
     """Class for generating Stata index var for use with pandas"""
     def __enter__(self):
@@ -60,7 +60,7 @@ class IndexVar:
     def __exit__(self, exc_type, exc_value, exc_tb):
         drop_var(self.idx_var)
 
-# %% ../nbs/03_stata_more.ipynb 28
+# %% ../nbs/03_stata_more.ipynb 29
 def run_as_program(std_non_prog_code, prog_def_option_code=""):
     _program_name = "temp_nbstata_program_name"
     _options = f", {prog_def_option_code}" if prog_def_option_code else ""
@@ -75,7 +75,7 @@ def run_as_program(std_non_prog_code, prog_def_option_code=""):
     finally:
         run_single(f"quietly program drop {_program_name}", show_exc_warning=False)
 
-# %% ../nbs/03_stata_more.ipynb 40
+# %% ../nbs/03_stata_more.ipynb 41
 def diverted_stata_output(std_code, runner=None):
     if runner is None:
         runner = functools.partial(run_direct, quietly=False, inline=True, echo=False)
@@ -88,7 +88,7 @@ def diverted_stata_output(std_code, runner=None):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 46
+# %% ../nbs/03_stata_more.ipynb 47
 def diverted_stata_output_quicker(std_non_prog_code):
     with DivertedPrints() as diverted:
         code = f"return add\ncapture log off\n{std_non_prog_code}\ncapture log on"""
@@ -100,7 +100,7 @@ def diverted_stata_output_quicker(std_non_prog_code):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 51
+# %% ../nbs/03_stata_more.ipynb 52
 def var_from_varlist(varlist, stfr=None):
     if stfr:
         var_code = varlist.strip()
@@ -124,7 +124,7 @@ def var_from_varlist(varlist, stfr=None):
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_stata_more.ipynb 61
+# %% ../nbs/03_stata_more.ipynb 62
 def local_names():
     run_single("""\
         mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""",
@@ -133,13 +133,13 @@ def local_names():
     set_local('temp_nbstata_all_locals', "")
     return out.split()
 
-# %% ../nbs/03_stata_more.ipynb 65
+# %% ../nbs/03_stata_more.ipynb 66
 def get_local_dict(_local_names=None):
     if _local_names is None:
         _local_names = local_names()
     return {n: get_local(n) for n in _local_names}
 
-# %% ../nbs/03_stata_more.ipynb 67
+# %% ../nbs/03_stata_more.ipynb 68
 def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
