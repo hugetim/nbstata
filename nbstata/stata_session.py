@@ -5,10 +5,11 @@ __all__ = ['StataSession']
 
 # %% ../nbs/08_stata_session.ipynb 4
 from .misc_utils import print_red
-from .stata import run_direct
+from .config import launch_stata
+from .stata import run_direct, get_local
 from .stata_more import diverted_stata_output_quicker, local_names, run_sfi
 from .stata_more import get_local_dict as _get_local_dict
-from .code_utils import valid_single_line_code, ending_sc_delimiter
+from .code_utils import valid_single_line_code, ending_sc_delimiter, ending_code_version
 from .noecho import run_as_program_w_locals, run_noecho
 from fastcore.basics import patch_to
 from textwrap import dedent
@@ -19,6 +20,8 @@ class StataSession():
     def __init__(self):
         """"""
         self.sc_delimiter = False
+        self.code_version = None
+        self.stata_version = None
         self.clear_suggestions()
         self._compile_re()
 
@@ -56,6 +59,15 @@ class StataSession():
 #         self.matasearch = re.compile(r"(?P<kw>\w.*?(?=\W|\b|$))").search
 
 # %% ../nbs/08_stata_session.ipynb 6
+@patch_to(StataSession)
+def config_stata(self, env):
+    launch_stata(env['stata_dir'], 
+                 env['edition'],
+                 False if env['splash']=='False' else True,
+                 env['graph_format'],
+                )
+
+# %% ../nbs/08_stata_session.ipynb 7
 @patch_to(StataSession)
 def refresh_suggestions(self):
     self.suggestions = self.get_suggestions()
@@ -148,14 +160,31 @@ def _update_ending_delimiter(self, code):
         print_red(_final_delimiter_warning)
 
 # %% ../nbs/08_stata_session.ipynb 32
+@patch_to(StataSession)    
+def _update_ending_delimiter(self, code):
+    self.sc_delimiter = ending_sc_delimiter(code, self.sc_delimiter)
+    _final_character = code.strip()[-1]
+    _code_missing_final_delimiter = (self.sc_delimiter
+                                     and _final_character != ';')
+    if _code_missing_final_delimiter:
+        print_red(_final_delimiter_warning)
+
+# %% ../nbs/08_stata_session.ipynb 35
 @patch_to(StataSession)
 def _post_run_hook(self, code):
+    import sfi
     self.clear_suggestions()
-    self._update_ending_delimiter(code)
+    if self.stata_version is None:
+        self.stata_version = f"{sfi.Scalar.getValue('c(stata_version)'):0.2f}"
+    self.code_version = ending_code_version(code, self.sc_delimiter, self.code_version, self.stata_version)
+    self._update_ending_delimiter(code) # after updating code_version (based on starting sc_delimiter)
 
-# %% ../nbs/08_stata_session.ipynb 33
+# %% ../nbs/08_stata_session.ipynb 36
 @patch_to(StataSession)
 def dispatch_run(self, code, quietly=False, echo=False, noecho=False):
+    if self.code_version:
+        version_prefix = "version " + self.code_version + (";" if self.sc_delimiter else "\n")
+        code = version_prefix + code
     if noecho and not quietly:
         run_noecho(code, self.sc_delimiter, run_as_prog=self._run_as_program_w_locals)
     else:
