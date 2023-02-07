@@ -65,7 +65,7 @@ class StataMagics():
     
     def magic_delimit(self, code, kernel, cell):
         delim = ';' if kernel.stata_session.sc_delimiter else 'cr'
-        print_kernel(f'The delimiter is currently: {delim}', kernel)
+        print_kernel(f'Stata command delimiter: {delim}', kernel)
         return ''
 
 # %% ../nbs/09_magics.ipynb 7
