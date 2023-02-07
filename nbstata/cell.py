@@ -4,8 +4,6 @@
 __all__ = ['magic_handler', 'Cell']
 
 # %% ../nbs/13_cell.ipynb 3
-from .misc_utils import print_red
-from .code_utils import ending_sc_delimiter
 from .stata_session import StataSession
 from .magics import StataMagics
 from fastcore.basics import patch_to
@@ -14,13 +12,6 @@ from fastcore.basics import patch_to
 magic_handler = StataMagics()
 
 # %% ../nbs/13_cell.ipynb 5
-_final_delimiter_warning = (
-    "Warning: Code cell (with #delimit; in effect) does not end in ';'. "
-    "Exported .do script may behave differently from notebook. "
-    "In v1.0, nbstata may trigger an error instead of just a warning."
-)
-
-# %% ../nbs/13_cell.ipynb 6
 class Cell:
     """A class for managing execution of a single code cell"""                
     def _set_echo(self, echo_config):
@@ -37,7 +28,6 @@ class Cell:
     def __init__(self, kernel, code_w_magics, silent=False):
         self._set_echo(kernel.env['echo'])
         self.quietly = silent
-        self.sc_delimiter = kernel.sc_delimiter
         self.stata_session = kernel.stata_session
         self.code = magic_handler.magic(code_w_magics, kernel, self)
        
@@ -45,15 +35,4 @@ class Cell:
         if not self.code:
             return
         self.stata_session.dispatch_run(self.code, 
-            quietly=self.quietly, echo=self.echo, sc_delimiter=self.sc_delimiter,
-            noecho=self.noecho)
-        self.sc_delimiter = self._check_ending_delimiter()
-
-    def _check_ending_delimiter(self):
-        _ending_sc_delimiter = ending_sc_delimiter(self.code, self.sc_delimiter)
-        _final_character = self.code.strip()[-1]
-        _code_missing_final_delimiter = (_ending_sc_delimiter
-                                         and _final_character != ';')
-        if _code_missing_final_delimiter:
-            print_red(_final_delimiter_warning)
-        return _ending_sc_delimiter
+            quietly=self.quietly, echo=self.echo, noecho=self.noecho)

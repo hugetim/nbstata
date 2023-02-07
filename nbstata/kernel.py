@@ -41,7 +41,6 @@ class PyStataKernel(IPythonKernel):
         super().__init__(**kwargs)
         self.stata_ready = False
         self.shell.execution_count = 0
-        self.sc_delimiter = False
         self.perspective_enabled = None
         self.inspect_output = "Stata not yet initialized."
         try:
@@ -135,7 +134,6 @@ def do_execute(self, code, silent,
         code_cell.run()
     except SystemError as err:
         return _handle_stata_error(err, silent, self.execution_count)
-    self.sc_delimiter = code_cell.sc_delimiter
     self.post_do_hook()
     return {
         'status': "ok",
@@ -152,7 +150,6 @@ def do_complete(self, code, cursor_pos):
         cursor_start, cursor_end, matches = self.completions.do(
             code,
             cursor_pos,
-            self.sc_delimiter,
         )
     else:
         cursor_start = cursor_end = cursor_pos
