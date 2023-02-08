@@ -78,14 +78,16 @@ def _handle_stata_import_error(err, silent, execution_count):
         'execution_count': execution_count,
     }
 
-# %% ../nbs/14_kernel.ipynb 11
+# %% ../nbs/14_kernel.ipynb 13
 def print_stata_error(text):
     lines = text.splitlines()
+    if len(lines) >= 2 and lines[-2] == lines[-1]:
+        lines.pop(-1) # remove duplicate error code glitch in pystata.stata.run multi-line (ex. below)
     if len(lines) > 2:
         print("\n".join(lines[:-2]))
     print_red("\n".join(lines[-2:]))
 
-# %% ../nbs/14_kernel.ipynb 14
+# %% ../nbs/14_kernel.ipynb 19
 def _handle_stata_error(err, silent, execution_count):
     reply_content = {
         "traceback": [],
@@ -105,12 +107,12 @@ def _handle_stata_error(err, silent, execution_count):
     })
     return reply_content
 
-# %% ../nbs/14_kernel.ipynb 15
+# %% ../nbs/14_kernel.ipynb 20
 @patch_to(PyStataKernel)
 def post_do_hook(self):
     self.inspect_output = ""
 
-# %% ../nbs/14_kernel.ipynb 16
+# %% ../nbs/14_kernel.ipynb 21
 @patch_to(PyStataKernel)
 def do_execute(self, code, silent,
                store_history=True, user_expressions=None, allow_stdin=False):
@@ -134,7 +136,7 @@ def do_execute(self, code, silent,
         'user_expressions': {},
     }
 
-# %% ../nbs/14_kernel.ipynb 17
+# %% ../nbs/14_kernel.ipynb 22
 @patch_to(PyStataKernel)
 def do_complete(self, code, cursor_pos):
     """Provide context-aware suggestions"""
@@ -154,13 +156,13 @@ def do_complete(self, code, cursor_pos):
         'matches': matches,
     }
 
-# %% ../nbs/14_kernel.ipynb 18
+# %% ../nbs/14_kernel.ipynb 23
 @patch_to(PyStataKernel)
 def do_is_complete(self, code):
     """Overrides IPythonKernel with kernelbase default"""
     return {"status": "unknown"}
 
-# %% ../nbs/14_kernel.ipynb 19
+# %% ../nbs/14_kernel.ipynb 24
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     """Display Stata 'describe' output regardless of cursor position"""
@@ -169,7 +171,7 @@ def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     data = {'text/plain': self.inspect_output}
     return {"status": "ok", "data": data, "metadata": {}, "found": True}
 
-# %% ../nbs/14_kernel.ipynb 20
+# %% ../nbs/14_kernel.ipynb 25
 @patch_to(PyStataKernel)
 def do_history(
     self,
