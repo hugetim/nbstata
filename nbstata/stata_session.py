@@ -6,7 +6,7 @@ __all__ = ['StataSession']
 # %% ../nbs/08_stata_session.ipynb 4
 from .misc_utils import print_red
 from .config import launch_stata
-from .stata import run_direct, get_local
+from .stata import run_direct, get_local, get_scalar
 from .stata_more import diverted_stata_output_quicker, local_names, run_sfi
 from .stata_more import get_local_dict as _get_local_dict
 from .code_utils import valid_single_line_code, ending_sc_delimiter, ending_code_version
@@ -169,17 +169,16 @@ def _update_ending_delimiter(self, code):
     if _code_missing_final_delimiter:
         print_red(_final_delimiter_warning)
 
-# %% ../nbs/08_stata_session.ipynb 35
+# %% ../nbs/08_stata_session.ipynb 34
 @patch_to(StataSession)
 def _post_run_hook(self, code):
-    import sfi
     self.clear_suggestions()
     if self.stata_version is None:
-        self.stata_version = f"{sfi.Scalar.getValue('c(stata_version)'):0.2f}"
+        self.stata_version = f"{get_scalar('c(stata_version)'):0.2f}"
     self.code_version = ending_code_version(code, self.sc_delimiter, self.code_version, self.stata_version)
     self._update_ending_delimiter(code) # after updating code_version (based on starting sc_delimiter)
 
-# %% ../nbs/08_stata_session.ipynb 36
+# %% ../nbs/08_stata_session.ipynb 35
 @patch_to(StataSession)
 def dispatch_run(self, code, quietly=False, echo=False, noecho=False):
     if self.code_version:
