@@ -5,7 +5,7 @@ __all__ = ['get_local', 'set_local', 'get_global', 'get_scalar', 'stata_formatte
            'pwd', 'run_direct', 'run_single', 'resolve_macro']
 
 # %% ../nbs/02_stata.ipynb 5
-from .misc_utils import DivertedPrints, print_red
+from .misc_utils import print_red
 
 # %% ../nbs/02_stata.ipynb 9
 def get_local(name):
@@ -53,31 +53,12 @@ def pwd():
     from sfi import SFIToolkit
     return SFIToolkit.getWorkingDir()
 
-# %% ../nbs/02_stata.ipynb 42
+# %% ../nbs/02_stata.ipynb 33
 def run_direct(cmds, quietly=False, echo=False, inline=True):
     import pystata
-    if quietly:
-        with DivertedPrints() as diverted: # to prevent blank line output, as with `program define`
-            out = pystata.stata.run(cmds, quietly, echo, inline)
-            prints = diverted.getvalue()
-        for line in prints.splitlines():
-            if line.strip():
-                print(line)
-        return out
-    elif len(cmds.splitlines()) > 1:
-        with DivertedPrints() as diverted:
-            pystata.stata.run(cmds, quietly, echo, inline)
-            output_lines = diverted.getvalue().splitlines()
-        if (len(output_lines) >= 2 
-            and not output_lines[0].strip() 
-            and "\n".join(output_lines[-2:]).strip() == "."):
-            print("\n".join(output_lines[1:-2]))
-        else:
-            print("\n".join(output_lines))
-    else:
-        return pystata.stata.run(cmds, quietly, echo, inline)
+    return pystata.stata.run(cmds, quietly, echo, inline)
 
-# %% ../nbs/02_stata.ipynb 53
+# %% ../nbs/02_stata.ipynb 41
 def run_single(cmd, echo=False, show_exc_warning=True):
     import sfi
     try:
@@ -87,7 +68,7 @@ def run_single(cmd, echo=False, show_exc_warning=True):
             print_red(f"run_single (sfi.SFIToolkit.stata) error: {repr(e)}")
         run_direct(cmd, echo=echo)
 
-# %% ../nbs/02_stata.ipynb 67
+# %% ../nbs/02_stata.ipynb 56
 def resolve_macro(macro):
     macro = macro.strip()
     if macro.startswith("`") and macro.endswith("'"):
