@@ -124,7 +124,7 @@ def ending_code_version(code, sc_delimiter=False, code_version=None, stata_versi
         if m:
             _version = Decimal(m.group(1)).normalize()
             if Decimal('1') <= _version <= Decimal(stata_version):
-                code_version = str(_version)
+                code_version = None if _version == Decimal(stata_version).normalize() else str(_version)
                 break
     return code_version
 
