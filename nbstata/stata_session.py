@@ -182,7 +182,7 @@ def _post_run_hook(self, code):
 @patch_to(StataSession)
 def dispatch_run(self, code, quietly=False, echo=False, noecho=False):
     if self.code_version:
-        version_prefix = "version " + self.code_version + (";" if self.sc_delimiter else "\n")
+        version_prefix = "capture version " + self.code_version + (";" if self.sc_delimiter else "\n")
         code = version_prefix + code
     if noecho and not quietly:
         run_noecho(code, self.sc_delimiter, run_as_prog=self._run_as_program_w_locals)
