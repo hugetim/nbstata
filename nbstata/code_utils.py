@@ -123,12 +123,12 @@ def ending_code_version(code, sc_delimiter=False, code_version=None, stata_versi
         m = re.match(r'\Aversion ([0-9]+(?:\.[0-9][0-9]?)?)\Z', _remove_prefixes(std_code_line))
         if m:
             _version = Decimal(m.group(1)).normalize()
-            if _version <= Decimal(stata_version):
+            if Decimal('1') <= _version <= Decimal(stata_version):
                 code_version = str(_version)
                 break
     return code_version
 
-# %% ../nbs/04_code_utils.ipynb 51
+# %% ../nbs/04_code_utils.ipynb 52
 def is_start_of_program_block(std_code_line):
     cs = _remove_prefixes(std_code_line)
     _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
@@ -137,7 +137,7 @@ def is_start_of_program_block(std_code_line):
             or (cs in {'mata', 'mata:'})
             or (cs in {'python', 'python:'}))
 
-# %% ../nbs/04_code_utils.ipynb 53
+# %% ../nbs/04_code_utils.ipynb 54
 def _prog_blocks(std_code_lines):
     next_block_lines = []
     in_program = False
@@ -159,7 +159,7 @@ def _prog_blocks(std_code_lines):
 def _block(block_lines, is_prog):
     return {"is_prog": is_prog, "std_code": '\n'.join(block_lines)}
 
-# %% ../nbs/04_code_utils.ipynb 54
+# %% ../nbs/04_code_utils.ipynb 55
 def break_out_prog_blocks(code, sc_delimiter=False):
     std_code_lines = standardize_code(code, sc_delimiter).splitlines()
     return list(_prog_blocks(std_code_lines))
