@@ -5,7 +5,7 @@ __all__ = ['StataSession']
 
 # %% ../nbs/08_stata_session.ipynb 4
 from .misc_utils import print_red
-from .config import launch_stata
+from .config import launch_stata as _launch_stata
 from .stata import run_direct, get_local, get_scalar
 from .stata_more import diverted_stata_output_quicker, local_names, run_sfi
 from .stata_more import get_local_dict as _get_local_dict
@@ -60,12 +60,12 @@ class StataSession():
 
 # %% ../nbs/08_stata_session.ipynb 6
 @patch_to(StataSession)
-def config_stata(self, env):
-    launch_stata(env['stata_dir'], 
-                 env['edition'],
-                 False if env['splash']=='False' else True,
-                 env['graph_format'],
-                )
+def launch_stata(self, env):
+    _launch_stata(env['stata_dir'], 
+                  env['edition'],
+                  False if env['splash']=='False' else True,
+                  env['graph_format'],
+                 )
 
 # %% ../nbs/08_stata_session.ipynb 7
 @patch_to(StataSession)

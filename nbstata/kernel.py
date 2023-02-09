@@ -53,7 +53,7 @@ class PyStataKernel(IPythonKernel):
 def init_stata(self):
     self.env = get_config()
     self.stata_session = StataSession()
-    self.stata_session.config_stata(self.env)
+    self.stata_session.launch_stata(self.env)
     self.completions = CompletionsManager(self.stata_session)
     self.inspect_output = ""
     self.stata_ready = True
