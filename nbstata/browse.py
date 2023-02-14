@@ -96,10 +96,12 @@ matchparts = re.compile(
 # %% ../nbs/07_browse.ipynb 22
 def parse_browse_magic(code):
     N = None
-    pieces = [c.strip() for c in code.split() if c]
-    if pieces and pieces[0].isnumeric():
-        N = int(pieces.pop(0))
-    code_minus_N = " ".join(pieces)
+    m = re.match(r"\A(?P<N>[0-9]+)?[\s]*(?P<remainder>.*?)\Z", code.strip())
+    if m is None:
+        raise ValueError(f"syntax error: this magic must be in a code by itself on a single line")
+    if m.group('N'):
+        N = int(m.group('N'))
+    code_minus_N = m.group('remainder')
     args = matchparts(_parse_browse_magic_syntax(code_minus_N)).groupdict()
     _var = [c.strip() for c in args['varlist'].split() if c]
     var = _var if _var else None
@@ -109,7 +111,7 @@ def parse_browse_magic(code):
     noformat = args['noformat'].strip()
     return N, var, if_code, in_code, nolabels, noformat
 
-# %% ../nbs/07_browse.ipynb 25
+# %% ../nbs/07_browse.ipynb 26
 def _parse_df_params(code, count, browse=False, tail=False):
     import numpy as np
     N, var, if_code, in_code, nolabels, noformat = parse_browse_magic(code)
@@ -141,7 +143,7 @@ def _parse_df_params(code, count, browse=False, tail=False):
 
     return obs_range, var, if_code, valuelabel, sformat
 
-# %% ../nbs/07_browse.ipynb 26
+# %% ../nbs/07_browse.ipynb 27
 def get_df(obs_range, var, stata_if_code, missingval, valuelabel, sformat):
     with SelectVar(stata_if_code) as sel_varname:
         df = better_pdataframe_from_data(obs=obs_range,
@@ -155,7 +157,7 @@ def get_df(obs_range, var, stata_if_code, missingval, valuelabel, sformat):
             df = df.drop([sel_varname], axis=1)
     return df
 
-# %% ../nbs/07_browse.ipynb 28
+# %% ../nbs/07_browse.ipynb 29
 def headtail_df_params(code, count, missing_config, tail=False):
     import numpy as np
     custom_missingval = missing_config != 'pandas'
@@ -165,7 +167,7 @@ def headtail_df_params(code, count, missing_config, tail=False):
     )
     return obs_range, var, stata_if_code, missingval, valuelabel, sformat
 
-# %% ../nbs/07_browse.ipynb 32
+# %% ../nbs/07_browse.ipynb 33
 def headtail_get_df(obs_range, var, stata_if_code, missingval, valuelabel, sformat):
     if not stata_if_code:
         return get_df(obs_range, var, stata_if_code, missingval, valuelabel, sformat)
@@ -183,7 +185,7 @@ def headtail_get_df(obs_range, var, stata_if_code, missingval, valuelabel, sform
             df = df.drop([sel_varname], axis=1)
     return df.tail(N_max) if tail else df.head(N_max)
 
-# %% ../nbs/07_browse.ipynb 43
+# %% ../nbs/07_browse.ipynb 44
 def browse_df_params(code, count, browse=True, tail=False):
     import numpy as np
     missingval = np.NaN # converted to perspective's 'null' (with `noformat`)
@@ -192,7 +194,7 @@ def browse_df_params(code, count, browse=True, tail=False):
     )
     return obs_range, var, stata_if_code, missingval, valuelabel, sformat
 
-# %% ../nbs/07_browse.ipynb 52
+# %% ../nbs/07_browse.ipynb 53
 def perspective_not_found():
     try:
         import perspective
@@ -201,7 +203,7 @@ def perspective_not_found():
     else:
         return False
 
-# %% ../nbs/07_browse.ipynb 53
+# %% ../nbs/07_browse.ipynb 54
 def perspective_is_enabled():
     return not perspective_not_found()
 #     import subprocess
@@ -215,7 +217,7 @@ def perspective_is_enabled():
 #     except Exception as e:
 #         return False
 
-# %% ../nbs/07_browse.ipynb 55
+# %% ../nbs/07_browse.ipynb 56
 def browse_not_enabled(kernel):
     content = {
         'data': {'text/markdown': (
@@ -227,7 +229,7 @@ def browse_not_enabled(kernel):
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
     return ''
 
-# %% ../nbs/07_browse.ipynb 56
+# %% ../nbs/07_browse.ipynb 57
 def display_perspective(df, sformat):
     import perspective
     from IPython.display import display
