@@ -186,7 +186,7 @@ def headtail_get_df(obs_range, var, stata_if_code, missingval, valuelabel, sform
 # %% ../nbs/07_browse.ipynb 43
 def browse_df_params(code, count, browse=True, tail=False):
     import numpy as np
-    missingval = np.NaN
+    missingval = np.NaN # converted to perspective's 'null' (with `noformat`)
     obs_range, var, stata_if_code, valuelabel, sformat = (
         _parse_df_params(code, count, browse)
     )
