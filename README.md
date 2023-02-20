@@ -53,7 +53,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/7e7c265d-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/eb0f57e1-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -79,6 +79,7 @@ For more, see
 
 Kyle Barron authored the original `stata_kernel` and Vinci Chow carried
 that work forward for Stata 17, converting the backend to use
-[pystata](https://www.stata.com/python/pystata/). `nbstata` is directly
-derived from his
-[pystata-kernel](https://github.com/ticoneva/pystata-kernel).
+[pystata](https://www.stata.com/python/pystata/). `nbstata` was
+originally derived from his
+[pystata-kernel](https://github.com/ticoneva/pystata-kernel), but much
+of the docs and newer features are derived directly from `stata_kernel`.
