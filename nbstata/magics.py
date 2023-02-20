@@ -6,7 +6,7 @@ __all__ = ['print_kernel', 'StataMagics']
 # %% ../nbs/09_magics.ipynb 3
 from .misc_utils import print_red
 from .config import set_graph_format
-from .stata import obs_count
+from .stata import obs_count, macro_expand
 from .stata_session import warn_re_unclosed_comment_block_if_needed
 import nbstata.browse as browse
 from fastcore.basics import patch_to
@@ -200,7 +200,8 @@ def magic_browse(self, code, kernel, cell):
     if not kernel.perspective_enabled:
         return browse.browse_not_enabled(kernel)
     try:
-        params = browse.browse_df_params(code, obs_count())
+        expanded_code = macro_expand(code)
+        params = browse.browse_df_params(expanded_code, obs_count())
         sformat = params[-1]
         df = browse.get_df(*params)
         browse.display_perspective(df, sformat)
@@ -226,8 +227,9 @@ def _headtail_html(self, df, kernel):
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
+        expanded_code = macro_expand(code)
         df = browse.headtail_get_df(*browse.headtail_df_params(
-            code, obs_count(), kernel.env['missing'], tail=tail
+            expanded_code, obs_count(), kernel.env['missing'], tail=tail
         ))
         self._headtail_html(df, kernel)
     except Exception as e:
