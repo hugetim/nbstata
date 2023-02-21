@@ -6,7 +6,7 @@ __all__ = ['parse_sreturn', 'pre', 'kwargs', 'local_def_in', 'run_as_program_w_l
 
 # %% ../nbs/05_noecho.ipynb 4
 from .code_utils import break_out_prog_blocks, valid_single_line_code
-from .stata import run_direct, set_local, run_single
+from .stata import run_direct, set_local, run_single, get_global
 from . import stata_more as sm 
 from textwrap import dedent
 import re
@@ -27,37 +27,38 @@ def _run_as_program_w_locals_sreturned(std_code):
 
 # %% ../nbs/05_noecho.ipynb 11
 parse_sreturn = re.compile(
-    r'^\s*?(?:\ss\((?P<name>\w+)\) : \"(?P<value>.+)\"\s)', flags=re.MULTILINE
+    r'^\s*?(?:\ss\((?P<name>\w+)\) : )', flags=re.MULTILINE
 ).findall
 
 # %% ../nbs/05_noecho.ipynb 13
-def _local_dict_from_sreturn(sreturn_output):
+def _local_names_from_sreturn(sreturn_output):
     matches = parse_sreturn(sreturn_output)
-    return {m[0]: m[1] for m in matches}
+    return matches
 
 # %% ../nbs/05_noecho.ipynb 15
 def _after_local_dict():
     sreturn_output = sm.diverted_stata_output_quicker("sreturn list")
-    return _local_dict_from_sreturn(sreturn_output)
+    _local_names = _local_names_from_sreturn(sreturn_output)
+    return {name: get_global(f"s({name})") for name in _local_names}
 
-# %% ../nbs/05_noecho.ipynb 16
+# %% ../nbs/05_noecho.ipynb 20
 def _restore_locals_and_clear_sreturn():
     for lname, value in _after_local_dict().items():
         set_local(lname, value)
     run_single("sreturn clear", show_exc_warning=False)
 
-# %% ../nbs/05_noecho.ipynb 17
+# %% ../nbs/05_noecho.ipynb 21
 pre = (
     r'(cap(t|tu|tur|ture)?'
     r'|qui(e|et|etl|etly)?'
     r'|n(o|oi|ois|oisi|oisil|oisily)?)')
 kwargs = {'flags': re.MULTILINE}
 local_def_in = re.compile(
-    r"(^({0} )*(loc(a|al)?|tempname|tempvar|tempfile|gettoken|token(i|iz|ize)?)\s)|st_local\(".format(pre),
+    r"(^({0} )*(loc(a|al)?|tempname|tempvar|tempfile|gettoken|token(i|iz|ize)?|levelsof)\s)|st_local\(".format(pre),
     **kwargs,
 ).search
 
-# %% ../nbs/05_noecho.ipynb 20
+# %% ../nbs/05_noecho.ipynb 24
 def run_as_program_w_locals(std_code, local_dict=None):
     if local_dict is None:
         local_dict = sm.get_local_dict()
@@ -68,7 +69,7 @@ def run_as_program_w_locals(std_code, local_dict=None):
         _run_as_program_w_locals_sreturned(f"""{locals_code}\n{std_code}""")
         _restore_locals_and_clear_sreturn()
 
-# %% ../nbs/05_noecho.ipynb 23
+# %% ../nbs/05_noecho.ipynb 27
 def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program_w_locals):
     if len(std_non_prog_code.splitlines()) <= 1:  # to keep it simple when we can
         run_direct(valid_single_line_code(std_non_prog_code),
@@ -76,14 +77,14 @@ def run_non_prog_noecho(std_non_prog_code, run_as_prog=run_as_program_w_locals):
     else:
         run_as_prog(std_non_prog_code)
 
-# %% ../nbs/05_noecho.ipynb 29
+# %% ../nbs/05_noecho.ipynb 33
 def run_prog_noecho(std_prog_code):
     if std_prog_code.splitlines()[0] in {'mata', 'mata:'}:  # b/c 'quietly' blocks mata output
         run_direct(std_prog_code, quietly=False, inline=True, echo=False)
     else:
         run_direct(std_prog_code, quietly=True, inline=True, echo=False)
 
-# %% ../nbs/05_noecho.ipynb 35
+# %% ../nbs/05_noecho.ipynb 39
 def run_noecho(code, sc_delimiter=False, run_as_prog=run_as_program_w_locals):
     """After `break_out_prog_blocks`, run each prog and non-prog block noecho"""
     for block in break_out_prog_blocks(code, sc_delimiter):
