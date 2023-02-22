@@ -30,14 +30,14 @@ is needlessly clunky if you are working primarily with Stata).
 - [x] [Easy
   setup](https://hugetim.github.io/nbstata/user_guide.html#install)
 - [x] Works with Stata 17 (only).
-- [x] Can display output from Stata code without an ‘echo’ of multi-line
+- [x] Displays Stata output without the redundant ‘echo’ of (multi-line)
   commands
 - [x] Autocompletion for variables, macros, matrices, and file paths
 - [x] DataGrid widget with `browse`-like capabilities (e.g., interactive
   filtering)
 - [x] Variable and data properties (`describe` and `e`/`return list`)
   available in a ‘contextual help’ side panel
-- [x] Interactive help files available within notebook
+- [x] Interactive/richtext help files accessible within notebook
 - [x] `#delimit ;` interactive support (along with all types of
   comments)
 
@@ -55,7 +55,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/bc594f23-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/838079a1-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
