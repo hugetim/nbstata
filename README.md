@@ -55,13 +55,17 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/838079a1-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/766814e4-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
 \[1\] Stata [dynamic
 documents](https://www.stata.com/manuals/rptdynamicdocumentsintro.pdf)
-can do something similar, but with a very different workflow.
+can do this part, but with a very different, less interactive workflow.
+(See also: [markstat](https://grodri.github.io/markstat/),
+[stmd](https://www.ssc.wisc.edu/~hemken/Stataworkshops/stmd/Usage/stmdusage.html),
+and
+[Statamarkdown](https://ssc.wisc.edu/~hemken/Stataworkshops/Statamarkdown/stata-and-r-markdown.html))
 
 ## Contributing
 
