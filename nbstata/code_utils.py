@@ -52,11 +52,11 @@ def _is_not_cr_delimiter(delimiter):
     return delimiter != 'cr'
 
 # %% ../nbs/04_code_utils.ipynb 26
-delimit_regex = re.compile(r'#delimit(.*$)', flags=re.MULTILINE)
+delimit_regex = re.compile(r'^[ \t]*#delimit(.*$)', flags=re.MULTILINE)
 def _replace_delimiter(code, sc_delimiter=False):
     # Recursively replace custom delimiter with newline
 
-    split = delimit_regex.split(code.strip(),maxsplit=1)
+    split = delimit_regex.split(code.strip(), maxsplit=1)
 
     if len(split) == 3:
         before = split[0]
@@ -66,12 +66,17 @@ def _replace_delimiter(code, sc_delimiter=False):
         after = ''
 
     if sc_delimiter:
+        before_last_sc_pos = before.rfind(';')
+        if before_last_sc_pos < len(before.strip()) - 1:
+            before = before[:before_last_sc_pos+1]
+            if len(split) > 1:
+                after = _replace_delimiter(before[before_last_sc_pos+1:]+" ".join(split[1:]), sc_delimiter=True)
         before = before.replace('\r', ' ').replace('\n', ' ')
         before = before.replace(';','\n')
 
     return before + after
 
-# %% ../nbs/04_code_utils.ipynb 31
+# %% ../nbs/04_code_utils.ipynb 33
 def valid_single_line_code(code):
     code = remove_comments(code)
     if delimit_regex.match(code):
@@ -79,7 +84,7 @@ def valid_single_line_code(code):
     else:
         return code
 
-# %% ../nbs/04_code_utils.ipynb 33
+# %% ../nbs/04_code_utils.ipynb 35
 def ending_sc_delimiter(code, sc_delimiter=False):
     code = _remove_multi_line_comments(code)
     # Recursively determine ending delimiter
@@ -90,7 +95,7 @@ def ending_sc_delimiter(code, sc_delimiter=False):
         sc_delimiter = _is_not_cr_delimiter(split[1].strip())
     return sc_delimiter
 
-# %% ../nbs/04_code_utils.ipynb 38
+# %% ../nbs/04_code_utils.ipynb 40
 # Detect Multiple whitespace
 multi_regex = re.compile(r' +')
 
@@ -113,14 +118,14 @@ def standardize_code(code, sc_delimiter=False):
             std_lines.append(cs)
     return '\n'.join(std_lines)
 
-# %% ../nbs/04_code_utils.ipynb 49
+# %% ../nbs/04_code_utils.ipynb 52
 def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
     for j in range(len(shortest_abbrev), len(full_command)+1):
         if string.startswith(full_command[0:j] + ' '):
             return True
     return False
 
-# %% ../nbs/04_code_utils.ipynb 51
+# %% ../nbs/04_code_utils.ipynb 54
 def _remove_prefixes(std_code_line):
     if (_startswith_stata_abbrev(std_code_line, 'quietly', 'qui')
         or std_code_line.startswith('capture ')
@@ -129,7 +134,7 @@ def _remove_prefixes(std_code_line):
     else:
         return std_code_line
 
-# %% ../nbs/04_code_utils.ipynb 53
+# %% ../nbs/04_code_utils.ipynb 56
 def ending_code_version(code, sc_delimiter=False, code_version=None, stata_version='17.0'):
     if 'version' not in code:
         return code_version
@@ -145,7 +150,7 @@ def ending_code_version(code, sc_delimiter=False, code_version=None, stata_versi
                 break
     return code_version
 
-# %% ../nbs/04_code_utils.ipynb 57
+# %% ../nbs/04_code_utils.ipynb 60
 def is_start_of_program_block(std_code_line):
     cs = _remove_prefixes(std_code_line)
     _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
@@ -154,7 +159,7 @@ def is_start_of_program_block(std_code_line):
             or (cs in {'mata', 'mata:'})
             or (cs in {'python', 'python:'}))
 
-# %% ../nbs/04_code_utils.ipynb 59
+# %% ../nbs/04_code_utils.ipynb 62
 def _prog_blocks(std_code_lines):
     next_block_lines = []
     in_program = False
@@ -176,7 +181,7 @@ def _prog_blocks(std_code_lines):
 def _block(block_lines, is_prog):
     return {"is_prog": is_prog, "std_code": '\n'.join(block_lines)}
 
-# %% ../nbs/04_code_utils.ipynb 60
+# %% ../nbs/04_code_utils.ipynb 63
 def break_out_prog_blocks(code, sc_delimiter=False):
     std_code_lines = standardize_code(code, sc_delimiter).splitlines()
     return list(_prog_blocks(std_code_lines))
