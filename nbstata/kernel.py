@@ -4,7 +4,7 @@
 __all__ = ['PyStataKernel', 'print_stata_error']
 
 # %% ../nbs/14_kernel.ipynb 4
-from .config import get_config
+from .config import Config
 from .misc_utils import print_red
 from .inspect import get_inspect
 from .stata_session import StataSession
@@ -44,16 +44,16 @@ class PyStataKernel(IPythonKernel):
         self.perspective_enabled = None
         self.inspect_output = "Stata not yet initialized."
         try:
-            self.init_stata()
+            self.init_session()
         except ModuleNotFoundError as err:
             pass # wait for first do_execute so error message can be displayed under cell
 
 # %% ../nbs/14_kernel.ipynb 7
 @patch_to(PyStataKernel)
-def init_stata(self):
-    self.env = get_config()
+def init_session(self):
+    self.config = Config()
     self.stata_session = StataSession()
-    self.stata_session.launch_stata(self.env)
+    self.stata_session.init_stata(self.config)
     self.completions = CompletionsManager(self.stata_session)
     self.inspect_output = ""
     self.stata_ready = True
@@ -119,7 +119,7 @@ def do_execute(self, code, silent,
     """Execute Stata code cell"""
     if not self.stata_ready:
         try:
-            self.init_stata()
+            self.init_session()
         except ModuleNotFoundError as err:
             return _handle_stata_import_error(err, silent, self.execution_count)
     self.shell.execution_count += 1

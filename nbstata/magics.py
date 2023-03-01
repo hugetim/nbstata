@@ -153,30 +153,26 @@ def magic_locals(self, code, kernel, cell):
 
 # %% ../nbs/09_magics.ipynb 22
 def _get_new_settings(code):
-    _config = ConfigParser(
+    parser = ConfigParser(
         empty_lines_in_values=False,
-        comment_prefixes=('*','//', '/*'),
+        comment_prefixes=('*','//', '/*'), # '/*': to not cause error when commenting out for Stata purposes only
         inline_comment_prefixes=('//',),
     )
-    _config.read_string("[set]\n" + code.strip())        
-    return dict(_config.items('set'))
+    parser.read_string("[set]\n" + code.strip())        
+    return dict(parser.items('set'))
 
-# %% ../nbs/09_magics.ipynb 24
+# %% ../nbs/09_magics.ipynb 26
 def _process_new_settings(settings, kernel):
     for key in settings:
         if key not in ('graph_format', 'echo', 'missing'):
             print_red(f"set error: {key} not allowed")
+            settings.pop(key)
+    kernel.config.update(settings)
+    kernel.config.display_and_clear_update_errors()
     if 'graph_format' in settings:
-        try:
-            set_graph_format(settings['graph_format'])
-        except ValueError as err:
-            print_red("set error: invalid graph format")
-            settings.pop('graph_format')
-    kernel.env.update(settings)
-    for key in settings:
-        print(f"{key} is now {settings[key]}")
+        set_graph_format(kernel.config.env['graph_format'])
 
-# %% ../nbs/09_magics.ipynb 25
+# %% ../nbs/09_magics.ipynb 27
 @patch_to(StataMagics)
 def magic_set(self, code, kernel, cell):
     try:
@@ -191,7 +187,7 @@ def magic_set(self, code, kernel, cell):
         _process_new_settings(settings, kernel)
         warn_re_unclosed_comment_block_if_needed(code)
 
-# %% ../nbs/09_magics.ipynb 27
+# %% ../nbs/09_magics.ipynb 29
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
@@ -209,12 +205,12 @@ def magic_browse(self, code, kernel, cell):
         print_kernel(f"Browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 30
+# %% ../nbs/09_magics.ipynb 32
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/09_magics.ipynb 31
+# %% ../nbs/09_magics.ipynb 33
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -223,7 +219,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/09_magics.ipynb 32
+# %% ../nbs/09_magics.ipynb 34
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -236,19 +232,19 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'Tail' if tail else 'Head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 33
+# %% ../nbs/09_magics.ipynb 35
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 34
+# %% ../nbs/09_magics.ipynb 36
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 36
+# %% ../nbs/09_magics.ipynb 38
 @patch_to(StataMagics)
 def magic_help(self,code,kernel,cell):
     """Show help file from stata.com/help.cgi?\{\}"""

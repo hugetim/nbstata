@@ -13,20 +13,10 @@ magic_handler = StataMagics()
 
 # %% ../nbs/13_cell.ipynb 5
 class Cell:
-    """A class for managing execution of a single code cell"""                
-    def _set_echo(self, echo_config):
-        if echo_config == 'None':
-            self.noecho = True
-            self.echo = False
-        elif echo_config == 'True':
-            self.noecho = False
-            self.echo = True
-        else:
-            self.noecho = False
-            self.echo = False
-    
+    """A class for managing execution of a single code cell"""                  
     def __init__(self, kernel, code_w_magics, silent=False):
-        self._set_echo(kernel.env['echo'])
+        self.noecho = kernel.config.noecho
+        self.echo = kernel.config.echo
         self.quietly = silent
         self.stata_session = kernel.stata_session
         self.code = magic_handler.magic(code_w_magics, kernel, self)
