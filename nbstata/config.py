@@ -110,12 +110,22 @@ def launch_stata(path=None, edition=None, splash=True):
 
 # %% ../nbs/01_config.ipynb 21
 def set_graph_format(gformat):
-    from pystata import config
+    import pystata
     if gformat == 'pystata':
         gformat = 'svg' # pystata default
-    config.set_graph_format(gformat)
+    pystata.config.set_graph_format(gformat)
 
 # %% ../nbs/01_config.ipynb 24
+def _get_config_settings(cpath):
+    parser = ConfigParser(
+        empty_lines_in_values=False,
+        comment_prefixes=('*','//'),
+        inline_comment_prefixes=('//',),
+    )
+    parser.read(str(cpath))
+    return dict(parser.items('nbstata'))
+
+# %% ../nbs/01_config.ipynb 25
 class Config:
     env = {'stata_dir': None,
            'edition': None,
@@ -146,52 +156,56 @@ class Config:
         """First check if a configuration file exists. If not, try `find_dir_edition`."""
         self.errors = []
         self.config_path = None
+        self._process_config_file()
+        if self.env['stata_dir'] == None or self.env['edition'] == None:     
+            stata_dir, stata_ed = find_dir_edition()     
+            self.env.update({'stata_dir': stata_dir, 'edition': stata_ed})
+
+    def _process_config_file(self):
         global_config_path = Path(os.path.join(sys.prefix, 'etc', 'nbstata.conf'))
         user_config_path = Path('~/.nbstata.conf').expanduser()
         for cpath in (user_config_path, global_config_path):      
             if cpath.is_file():
-                parser = ConfigParser(
-                    empty_lines_in_values=False,
-                    comment_prefixes=('*','//'),
-                    inline_comment_prefixes=('//',),
-                )
-                try:
-                    parser.read(str(cpath))
-                except ParsingError:
-                    print_red(f"Configuration error in {cpath}:\n"
-                              "    invalid syntax")
-                except DuplicateOptionError:
-                    print_red(f"Configuration error in {cpath}:\n"
-                              "    attempted to set the same thing twice")
-                except ConfigParserError:
-                    print_red(f"Configuration error in {cpath}")
-                else:
-                    self.config_path = str(cpath)
-                    self.update(dict(parser.items('nbstata')), quietly=True)
-                    self.display_and_clear_update_errors(init=True)
-                    break
-
-        if self.env['stata_dir'] == None or self.env['edition'] == None:     
-            stata_dir, stata_ed = find_dir_edition()     
-            self.env.update({'stata_dir': stata_dir, 'edition': stata_ed})
+                self._get_config_env(cpath)
+                break
             
-    def update(self, env, quietly=False):
-        for key in ['graph_format', 'echo', 'splash']:
-            if env[key] not in self.permissible[key]:
+    def _get_config_env(self, cpath):
+        try:
+            settings = _get_config_settings(cpath)
+        except ParsingError:
+            print_red(f"Configuration error in {cpath}:\n"
+                      "    invalid syntax")
+        except DuplicateOptionError:
+            print_red(f"Configuration error in {cpath}:\n"
+                      "    attempted to set the same thing twice")
+        except ConfigParserError:
+            print_red(f"Configuration error in {cpath}")
+        else:
+            self.config_path = str(cpath)
+            self.update(settings, init=True)
+            self.display_and_clear_update_errors(
+                error_header=f"Configuration errors in {self.config_path}:"
+            )
+            
+    def update(self, env, init=False):
+        valid_settings = self.env if init else set(self.env)-{'stata_dir','edition'}
+        for key in list(env):
+            if key not in valid_settings:
+                self.errors.append(f"    '{key}' is not a valid setting.")
+                env.pop(key)
+            elif key in self.permissible and env[key] not in self.permissible[key]:
                 self.errors.append(
-                    f"    {key} configuration invalid. "
+                    f"    '{key}' configuration invalid. "
                     f"Reverting to: {key} = {self.env['graph_format']}"
                 )
                 env.pop(key)
         self.env.update(env)
         for key in env:
-            if not quietly: print(f"{key} is now {settings[key]}")
+            if not init: print(f"{key} is now {settings[key]}")
   
-    def display_and_clear_update_errors(self, init=False):
-        if init and self.errors:
-            print_red(f"Configuration errors in {self.config_path}:")
-        elif self.errors:
-            print_red("%set error(s):")
+    def display_and_clear_update_errors(self, error_header="%set error(s):"):
+        if self.errors:
+            print_red(error_header)
         for message in self.errors:
             print_red(message)
         self.errors = []

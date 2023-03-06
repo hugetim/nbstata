@@ -64,26 +64,22 @@ class StataSession():
 #         self.matasearch = re.compile(r"(?P<kw>\w.*?(?=\W|\b|$))").search
 
 # %% ../nbs/08_stata_session.ipynb 6
-def _init_stata_config(env):
-    if env['graph_format'] != 'pystata':
-        set_graph_format(env['graph_format'])
-
-# %% ../nbs/08_stata_session.ipynb 7
 @patch_to(StataSession)
 def init_stata(self, config: Config):
-    #| export
     launch_stata(config.env['stata_dir'],
                  config.env['edition'],
                  config.splash,
                 )
-    _init_stata_config(config.env)
+    graph_format = config.env['graph_format']
+    if graph_format != 'pystata':
+        set_graph_format(graph_format)
 
-# %% ../nbs/08_stata_session.ipynb 8
+# %% ../nbs/08_stata_session.ipynb 7
 @patch_to(StataSession)
 def refresh_suggestions(self):
     self.suggestions = self.get_suggestions()
 
-# %% ../nbs/08_stata_session.ipynb 9
+# %% ../nbs/08_stata_session.ipynb 8
 @patch_to(StataSession)
 def _completions(self):
     return diverted_stata_output_quicker(dedent("""\
@@ -116,12 +112,12 @@ def _completions(self):
         macro drop _temp_completions_while_local_
     """))
 
-# %% ../nbs/08_stata_session.ipynb 12
+# %% ../nbs/08_stata_session.ipynb 11
 @patch_to(StataSession)
 def _get_locals(self):
     return self.suggestions['locals'] if self.suggestions else local_names()
 
-# %% ../nbs/08_stata_session.ipynb 16
+# %% ../nbs/08_stata_session.ipynb 15
 @patch_to(StataSession)
 def get_suggestions(self):
     match = self.matchall(self._completions())
@@ -134,18 +130,18 @@ def get_suggestions(self):
     suggestions['locals'] = self._get_locals()
     return suggestions
 
-# %% ../nbs/08_stata_session.ipynb 20
+# %% ../nbs/08_stata_session.ipynb 19
 @patch_to(StataSession)
 def get_local_dict(self):
     return _get_local_dict(self._get_locals())
 
-# %% ../nbs/08_stata_session.ipynb 22
+# %% ../nbs/08_stata_session.ipynb 21
 @patch_to(StataSession)
 def _run_as_program_w_locals(self, std_code):
     """After `break_out_prog_blocks`, run noecho, inserting locals when needed"""
     return run_as_program_w_locals(std_code, local_dict=self.get_local_dict())
 
-# %% ../nbs/08_stata_session.ipynb 27
+# %% ../nbs/08_stata_session.ipynb 26
 def _run_simple(code, quietly=False, echo=False, sc_delimiter=False):
     if sc_delimiter:
         code = "#delimit;\n" + code
@@ -153,14 +149,14 @@ def _run_simple(code, quietly=False, echo=False, sc_delimiter=False):
         code = valid_single_line_code(code)
     run_direct(code, quietly=quietly, inline=not quietly, echo=echo)
 
-# %% ../nbs/08_stata_session.ipynb 30
+# %% ../nbs/08_stata_session.ipynb 29
 _final_delimiter_warning = (
     "Warning: Code cell (with #delimit; in effect) does not end in ';'. "
     "Exported .do script may behave differently from notebook. "
     "In v1.0, nbstata may trigger an error instead of just a warning."
 )
 
-# %% ../nbs/08_stata_session.ipynb 31
+# %% ../nbs/08_stata_session.ipynb 30
 @patch_to(StataSession)    
 def _update_ending_delimiter(self, code):
     self.sc_delimiter = ending_sc_delimiter(code, self.sc_delimiter)
@@ -170,7 +166,7 @@ def _update_ending_delimiter(self, code):
     if _code_missing_final_delimiter:
         print_red(_final_delimiter_warning)
 
-# %% ../nbs/08_stata_session.ipynb 33
+# %% ../nbs/08_stata_session.ipynb 32
 def warn_re_unclosed_comment_block_if_needed(code):
     if ends_in_comment_block(code):
         print_red("Warning: Code cell ends in a comment block without a "
@@ -179,7 +175,7 @@ def warn_re_unclosed_comment_block_if_needed(code):
                   "instead of just a warning."
                  )
 
-# %% ../nbs/08_stata_session.ipynb 36
+# %% ../nbs/08_stata_session.ipynb 35
 @patch_to(StataSession)
 def _post_run_hook(self, code):
     self.clear_suggestions()
@@ -189,7 +185,7 @@ def _post_run_hook(self, code):
     self._update_ending_delimiter(code) # after updating code_version (based on starting sc_delimiter)
     warn_re_unclosed_comment_block_if_needed(code)
 
-# %% ../nbs/08_stata_session.ipynb 37
+# %% ../nbs/08_stata_session.ipynb 36
 @patch_to(StataSession)
 def dispatch_run(self, code, quietly=False, echo=False, noecho=False):
     if self.code_version:

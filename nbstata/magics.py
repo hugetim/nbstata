@@ -163,10 +163,6 @@ def _get_new_settings(code):
 
 # %% ../nbs/09_magics.ipynb 26
 def _process_new_settings(settings, kernel):
-    for key in settings:
-        if key not in ('graph_format', 'echo', 'missing'):
-            print_red(f"set error: {key} not allowed")
-            settings.pop(key)
     kernel.config.update(settings)
     kernel.config.display_and_clear_update_errors()
     if 'graph_format' in settings:
