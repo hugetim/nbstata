@@ -146,7 +146,7 @@ def _get_config_settings(cpath):
 # %% ../nbs/01_config.ipynb 30
 class Config:
     env = {'stata_dir': None,
-           'edition': None,
+           'edition': 'be',
            'graph_format': 'png',
            'graph_width': '5.5in',
            'graph_height': '4in',
