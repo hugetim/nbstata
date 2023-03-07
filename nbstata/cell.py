@@ -15,8 +15,8 @@ magic_handler = StataMagics()
 class Cell:
     """A class for managing execution of a single code cell"""                  
     def __init__(self, kernel, code_w_magics, silent=False):
-        self.noecho = kernel.config.noecho
-        self.echo = kernel.config.echo
+        self.noecho = kernel.nbstata_config.noecho
+        self.echo = kernel.nbstata_config.echo
         self.quietly = silent
         self.stata_session = kernel.stata_session
         self.code = magic_handler.magic(code_w_magics, kernel, self)

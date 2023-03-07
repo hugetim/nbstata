@@ -5,9 +5,8 @@ __all__ = ['print_kernel', 'StataMagics']
 
 # %% ../nbs/09_magics.ipynb 3
 from .misc_utils import print_red
-from .config import set_graph_format
 from .stata import obs_count, macro_expand
-from .stata_session import warn_re_unclosed_comment_block_if_needed
+from .stata_session import warn_re_unclosed_comment_block_if_needed, update_graph_config
 import nbstata.browse as browse
 from fastcore.basics import patch_to
 import re
@@ -163,10 +162,8 @@ def _get_new_settings(code):
 
 # %% ../nbs/09_magics.ipynb 26
 def _process_new_settings(settings, kernel):
-    kernel.config.update(settings)
-    kernel.config.display_and_clear_update_errors()
-    if 'graph_format' in settings:
-        set_graph_format(kernel.config.env['graph_format'])
+    kernel.nbstata_config.update(settings)
+    update_graph_config(kernel.nbstata_config)
 
 # %% ../nbs/09_magics.ipynb 27
 @patch_to(StataMagics)

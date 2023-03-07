@@ -51,9 +51,9 @@ class PyStataKernel(IPythonKernel):
 # %% ../nbs/14_kernel.ipynb 7
 @patch_to(PyStataKernel)
 def init_session(self):
-    self.config = Config()
+    self.nbstata_config = Config()
     self.stata_session = StataSession()
-    self.stata_session.init_stata(self.config)
+    self.stata_session.init_stata(self.nbstata_config)
     self.completions = CompletionsManager(self.stata_session)
     self.inspect_output = ""
     self.stata_ready = True
