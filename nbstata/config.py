@@ -93,11 +93,11 @@ def launch_stata(path=None, edition=None, splash=True):
     """
     We modify stata_setup to make splash screen optional
     """
-    if path == None or edition == None:
-        path_found, edition_found = find_dir_edition()
-        path = path_found if path==None else path
-        edition = edition_found if edition==None else edition
     try:
+        if path == None or edition == None:
+            path_found, edition_found = find_dir_edition()
+            path = path_found if path==None else path
+            edition = edition_found if edition==None else edition
         set_pystata_path(path)
     except OSError as err:
         pass
@@ -157,9 +157,13 @@ class Config:
         self.errors = []
         self.config_path = None
         self._process_config_file()
-        if self.env['stata_dir'] == None or self.env['edition'] == None:     
-            stata_dir, stata_ed = find_dir_edition()     
-            self.env.update({'stata_dir': stata_dir, 'edition': stata_ed})
+        if self.env['stata_dir'] == None or self.env['edition'] == None:
+            try:    
+                stata_dir, stata_ed = find_dir_edition()     
+            except OSError:
+                pass
+            else:
+                self.env.update({'stata_dir': stata_dir, 'edition': stata_ed})
 
     def _process_config_file(self):
         global_config_path = Path(os.path.join(sys.prefix, 'etc', 'nbstata.conf'))
