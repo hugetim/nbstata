@@ -4,6 +4,7 @@
 __all__ = ['print_kernel', 'StataMagics']
 
 # %% ../nbs/09_magics.ipynb 3
+from .config import Config
 from .misc_utils import print_red
 from .stata import obs_count, macro_expand
 from .stata_session import warn_re_unclosed_comment_block_if_needed, update_graph_config
@@ -41,6 +42,7 @@ class StataMagics():
         '%help': '{} [-h] command_or_topic_name',
         '%set': '{} [-h] key = value',
         '%%set': '{} [-h]\nkey1 = value1\n[key2 = value2]\n[...]',
+        '%status': '',
         '%%quietly': '',
         '%%noecho': '',
         '%%echo': '',
@@ -70,6 +72,10 @@ class StataMagics():
     def magic_delimit(self, code, kernel, cell):
         delim = ';' if kernel.stata_session.sc_delimiter else 'cr'
         print_kernel(f'Current Stata command delimiter: {delim}', kernel)
+        return ''
+    
+    def magic_status(self, code, kernel, cell):
+        kernel.nbstata_config.display_status()
         return ''
 
 # %% ../nbs/09_magics.ipynb 6
@@ -218,7 +224,7 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
         expanded_code = macro_expand(code)
         df = browse.headtail_get_df(*browse.headtail_df_params(
-            expanded_code, obs_count(), kernel.env['missing'], tail=tail
+            expanded_code, obs_count(), kernel.nbstata_config.env['missing'], tail=tail
         ))
         self._headtail_html(df, kernel)
     except Exception as e:

@@ -238,3 +238,10 @@ class Config:
         for message in self.errors:
             print_red(message)
         self.errors = []
+        
+    def display_status(self):
+        import pystata
+        pystata.config.status()
+        print(f"""
+      echo                   {self.env['echo']}
+      missing                {self.env['missing']}""")
