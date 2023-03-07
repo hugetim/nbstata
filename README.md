@@ -55,7 +55,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/766814e4-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/4bee9f89-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -74,9 +74,6 @@ and
 The `/nbs` directory is where edits to the source code should be made.
 (The python code is then exported to the `/nbdev` library folder.) The
 one exception is `install.py`.
-
-The [@patch_to](https://fastcore.fast.ai/basics.html#patch_to) decorator
-is occasionally used to break up class definitions into separate cells.
 
 For more, see
 [CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md).
