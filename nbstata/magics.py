@@ -190,26 +190,40 @@ def magic_set(self, code, kernel, cell):
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
-    if kernel.perspective_enabled is None:
-        kernel.perspective_enabled = browse.perspective_is_enabled()
-    if not kernel.perspective_enabled:
-        return browse.browse_not_enabled(kernel)
     try:
+        import ipydatagrid
         expanded_code = macro_expand(code)
-        params = browse.browse_df_params(expanded_code, obs_count())
+        params = browse.browse_df_params(
+            expanded_code, obs_count(), kernel.nbstata_config.env['missing'],
+        )
         sformat = params[-1]
-        df = browse.get_df(*params)
-        browse.display_perspective(df, sformat)
+        df = browse.get_df(*params).reset_index().rename(columns={'index': '_n'})
+        g = grid.DataGrid(df, index_name="_n", editable=False, selection_mode='cell')
+        g.grid_style = {
+            "background_color": "rgb(255, 255, 255)",
+            "header_background_color": "rgb(243, 243, 243)",
+            "header_grid_line_color": "rgb(229, 229, 229)",
+            "vertical_grid_line_color": "rgb(229, 229, 229)",
+            "horizontal_grid_line_color": "rgb(229, 229, 229)",
+            "selection_fill_color": "rgb(59, 135, 195, .25)", # 206, 225, 240
+            "selection_border_color": "rgb(229, 229, 229)",
+            "header_selection_fill_color": "rgb(99, 99, 99, .25)", #216
+            "header_selection_border_color": "rgb(229, 229, 229)",
+            "cursor_fill_color": "rgb(255, 255, 255, 0)",
+            "cursor_border_color": "rgb(40, 40, 40)",
+            "scroll_shadow": {'size': 0},
+        }
+        display(g)
     except Exception as e:
         print_kernel(f"Browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 32
+# %% ../nbs/09_magics.ipynb 33
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/09_magics.ipynb 33
+# %% ../nbs/09_magics.ipynb 34
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -218,7 +232,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/09_magics.ipynb 34
+# %% ../nbs/09_magics.ipynb 35
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -231,19 +245,19 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'Tail' if tail else 'Head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 35
+# %% ../nbs/09_magics.ipynb 36
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 36
+# %% ../nbs/09_magics.ipynb 37
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 38
+# %% ../nbs/09_magics.ipynb 39
 @patch_to(StataMagics)
 def magic_help(self,code,kernel,cell):
     """Show help file from stata.com/help.cgi?\{\}"""

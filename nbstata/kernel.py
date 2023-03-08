@@ -41,7 +41,6 @@ class PyStataKernel(IPythonKernel):
         super().__init__(**kwargs)
         self.stata_ready = False
         self.shell.execution_count = 0
-        self.perspective_enabled = None
         self.inspect_output = "Stata not yet initialized."
         try:
             self.init_session()
