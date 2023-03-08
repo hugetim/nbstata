@@ -191,14 +191,14 @@ def magic_set(self, code, kernel, cell):
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
     try:
-        import ipydatagrid
+        from ipydatagrid import DataGrid
         expanded_code = macro_expand(code)
         params = browse.browse_df_params(
             expanded_code, obs_count(), kernel.nbstata_config.env['missing'],
         )
         sformat = params[-1]
-        df = browse.get_df(*params).reset_index().rename(columns={'index': '_n'})
-        g = grid.DataGrid(df, index_name="_n", editable=False, selection_mode='cell')
+        df = browse.get_df(*params)
+        g = DataGrid(df, index_name="", editable=False, selection_mode='cell')
         g.grid_style = {
             "background_color": "rgb(255, 255, 255)",
             "header_background_color": "rgb(243, 243, 243)",
