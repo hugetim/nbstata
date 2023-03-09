@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['matchparts', 'in_range', 'parse_browse_magic', 'get_df', 'headtail_df_params', 'headtail_get_df', 'browse_df_params',
-           'display_df_as_ipydatagrid']
+           'set_ipydatagrid_height', 'display_df_as_ipydatagrid']
 
 # %% ../nbs/07_browse.ipynb 3
 from .misc_utils import print_red
@@ -196,30 +196,44 @@ def browse_df_params(code, count, missing_config):
     return obs_range, var, stata_if_code, missingval, valuelabel, sformat
 
 # %% ../nbs/07_browse.ipynb 52
+def set_ipydatagrid_height():
+    from IPython.core.display import HTML
+    display(HTML("<style>div.jp-Notebook .datagrid-container {min-height: 448px; }</style>"))
+
+# %% ../nbs/07_browse.ipynb 53
 def display_df_as_ipydatagrid(df):
     from ipydatagrid import DataGrid, TextRenderer
     i_renderer = TextRenderer(horizontal_alignment="right", font="11px monospace", background_color="rgb(243, 243, 243)")
     d_renderer = TextRenderer(horizontal_alignment="right", font="11px monospace")
     h_renderer = TextRenderer(horizontal_alignment="center", font="11px monospace")
     column_widths = {}
-    temp_head = df.head(23)
+    temp_head = df.head(20)
     char_px_width = 6.05
+    def name_width(name_len):
+        if name_len <= 15:
+            return 43 + char_px_width*name_len
+        elif name_len > 22 or name_len%2 == 0:
+            return 43 + char_px_width*15.3
+        else:
+            return 43 + char_px_width*14.3
+            
     for name in list(df):
         column_widths[name] = max(
-            43+char_px_width*min(15.3, len(name)),
-            20+char_px_width*max((len(str(value)) for value in temp_head[name])),
+            name_width(len(name)),
+            20 + char_px_width*max((len(str(value)) for value in temp_head[name])),
         )
-    column_widths[""] = 20+char_px_width*len(str(max(df.index.values)))
+    column_widths[" "] = 20 + char_px_width*len(str(max(df.index.values)))
     g = DataGrid(df,
-                 index_name="",
+                 index_name=" ",
                  editable=False,
                  selection_mode='cell',
                  base_row_size=21,
                  auto_fit_columns=False,
                  default_renderer=d_renderer,
                  header_renderer=h_renderer,
-                 renderers={"": i_renderer},
+                 renderers={" ": i_renderer},
                  column_widths=column_widths,
+                 layout={"height": "100%"},
                 )
     g.grid_style = {
         "background_color": "rgb(255, 255, 255)",

@@ -40,6 +40,7 @@ class PyStataKernel(IPythonKernel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stata_ready = False
+        self.ipydatagrid_height_set = False
         self.shell.execution_count = 0
         self.inspect_output = "Stata not yet initialized."
         try:
