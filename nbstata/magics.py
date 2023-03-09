@@ -246,68 +246,79 @@ def magic_tail(self, code, kernel, cell):
 
 # %% ../nbs/09_magics.ipynb 39
 @patch_to(StataMagics)
-def magic_help(self,code,kernel,cell):
+def _get_help_html(self, code):
+    reply = urllib.request.urlopen(self.html_help.format(code))
+    html = reply.read().decode("utf-8")
+
+    # Remove excessive extra lines (Note css: "white-space: pre-wrap")
+    edited_html = html.replace("<p>\n", "<p>")
+    soup = bs(edited_html, 'html.parser')
+
+    # Set root for links to https://www.stata.com
+    for a in soup.find_all('a', href=True):
+        href = a.get('href')
+        match = re.search(r'{}(.*?)#'.format(code), href)
+        if match:
+            hrelative = href.find('#')
+            a['href'] = href[hrelative:]
+        elif not href.startswith('http'):
+            link = a['href']
+            match = re.search(r'/help.cgi\?(.+)$', link)
+            # URL encode bad characters like %
+            if match:
+                link = '/help.cgi?'
+                link += urllib.parse.quote_plus(match.group(1))
+            a['href'] = urllib.parse.urljoin(self.html_base, link)
+            a['target'] = '_blank'
+
+    # Remove header 'Stata 15 help for ...'
+    soup.find('h2').decompose()
+
+    # Remove Stata help menu
+    soup.find('div', id='menu').decompose()
+
+    # Remove Copyright notice
+    copyright = soup.find(string=re.compile(r".*Copyright.*", flags=re.DOTALL))
+    copyright.find_parent("table").decompose()
+
+    # Remove last hrule
+    soup.find_all('hr')[-1].decompose()
+    
+    # Remove last br
+    soup.find_all('br')[-1].decompose()
+    
+    # Remove last empty paragraph, empty space
+    empty_paragraphs = soup.find_all('p', string="")
+    if str(empty_paragraphs[-1]) == "<p></p>":
+        empty_paragraphs[-1].decompose()
+
+    # Set all the backgrounds to transparent
+    for color in ['#ffffff', '#FFFFFF']:
+        for bg in ['bgcolor', 'background', 'background-color']:
+            for tag in soup.find_all(attrs={bg: color}):
+                if tag.get(bg):
+                    tag[bg] = 'transparent'
+
+    # Set html
+    css = soup.find('style', {'type': 'text/css'})
+    with open(self.csshelp_default, 'r') as default:
+        css.string = default.read()
+
+    return str(soup)
+
+# %% ../nbs/09_magics.ipynb 40
+@patch_to(StataMagics)
+def magic_help(self, code, kernel, cell):
     """Show help file from stata.com/help.cgi?\{\}"""
     try:
-        reply = urllib.request.urlopen(self.html_help.format(code))
-        html = reply.read().decode("utf-8")
-        soup = bs(html, 'html.parser')
-
-        # Set root for links to https://www.stata.com
-        for a in soup.find_all('a', href=True):
-            href = a.get('href')
-            match = re.search(r'{}(.*?)#'.format(code), href)
-            if match:
-                hrelative = href.find('#')
-                a['href'] = href[hrelative:]
-            elif not href.startswith('http'):
-                link = a['href']
-                match = re.search(r'/help.cgi\?(.+)$', link)
-                # URL encode bad characters like %
-                if match:
-                    link = '/help.cgi?'
-                    link += urllib.parse.quote_plus(match.group(1))
-                a['href'] = urllib.parse.urljoin(self.html_base, link)
-                a['target'] = '_blank'
-
-        # Remove header 'Stata 15 help for ...'
-        soup.find('h2').decompose()
-
-        # Remove Stata help menu
-        soup.find('div', id='menu').decompose()
-
-        # Remove Copyright notice
-        tags = ['a', 'font']
-        for tag in tags:
-            copyright = soup.find(tag, text='Copyright')
-            if copyright:
-                copyright.find_parent("table").decompose()
-                break
-
-        # Remove last hrule
-        soup.find_all('hr')[-1].decompose()
-
-        # Set all the backgrounds to transparent
-        for color in ['#ffffff', '#FFFFFF']:
-            for bg in ['bgcolor', 'background', 'background-color']:
-                for tag in soup.find_all(attrs={bg: color}):
-                    if tag.get(bg):
-                        tag[bg] = 'transparent'
-
-        # Set html
-        css = soup.find('style', {'type': 'text/css'})
-        with open(self.csshelp_default, 'r') as default:
-            css.string = default.read()
-
         fallback = 'This front-end cannot display HTML help.'
         resp = {
             'data': {
-                'text/html': str(soup),
+                'text/html': self._get_help_html(code),
                 'text/plain': fallback},
             'metadata': {}}
         kernel.send_response(kernel.iopub_socket, 'display_data', resp)
     except (urllib.error.HTTPError, urllib.error.URLError) as e:
         msg = "Failed to fetch HTML help.\r\n{0}"
         print_kernel(msg.format(e), kernel)
-
     return ''
