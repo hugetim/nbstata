@@ -191,29 +191,13 @@ def magic_set(self, code, kernel, cell):
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
     try:
-        from ipydatagrid import DataGrid
         expanded_code = macro_expand(code)
         params = browse.browse_df_params(
             expanded_code, obs_count(), kernel.nbstata_config.env['missing'],
         )
         sformat = params[-1]
         df = browse.get_df(*params)
-        g = DataGrid(df, index_name="", editable=False, selection_mode='cell')
-        g.grid_style = {
-            "background_color": "rgb(255, 255, 255)",
-            "header_background_color": "rgb(243, 243, 243)",
-            "header_grid_line_color": "rgb(229, 229, 229)",
-            "vertical_grid_line_color": "rgb(229, 229, 229)",
-            "horizontal_grid_line_color": "rgb(229, 229, 229)",
-            "selection_fill_color": "rgb(59, 135, 195, .25)", # 206, 225, 240
-            "selection_border_color": "rgb(229, 229, 229)",
-            "header_selection_fill_color": "rgb(99, 99, 99, .25)", #216
-            "header_selection_border_color": "rgb(229, 229, 229)",
-            "cursor_fill_color": "rgb(255, 255, 255, 0)",
-            "cursor_border_color": "rgb(40, 40, 40)",
-            "scroll_shadow": {'size': 0},
-        }
-        display(g)
+        browse.display_df_as_ipydatagrid(df)
     except Exception as e:
         print_kernel(f"Browse failed.\r\n{e}", kernel)
     return ''
