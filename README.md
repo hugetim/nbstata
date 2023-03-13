@@ -60,17 +60,21 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/fe0a83ec-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/f00c88c4-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
 \[1\] Stata [dynamic
 documents](https://www.stata.com/manuals/rptdynamicdocumentsintro.pdf)
-can do this part, but with a very different, less interactive workflow.
-(See also: [markstat](https://grodri.github.io/markstat/),
+can do this part, just with a less interactive workflow. (See also:
+[markstat](https://grodri.github.io/markstat/),
 [stmd](https://www.ssc.wisc.edu/~hemken/Stataworkshops/stmd/Usage/stmdusage.html),
 and
 [Statamarkdown](https://ssc.wisc.edu/~hemken/Stataworkshops/Statamarkdown/stata-and-r-markdown.html))
+Using `nbstata` with
+[Quarto](https://www.statalist.org/forums/forum/general-stata-discussion/general/1703835-ado-files-and-literate-programming)
+instead gives you a similar workflow, with greater flexibility of
+output.
 
 ## Contributing
 
