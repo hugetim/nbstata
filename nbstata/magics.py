@@ -24,6 +24,24 @@ def print_kernel(msg, kernel):
     kernel.send_response(kernel.iopub_socket, 'stream', stream_content)
 
 # %% ../nbs/09_magics.ipynb 5
+def _construct_abbrev_dict():
+    def _all_abbrevs(full_command, shortest_abbrev):
+        for j in range(len(shortest_abbrev), len(full_command)):
+            yield full_command[0:j]
+    out = {}
+    abbrev_list = [
+        ('browse', 'br'),
+        ('quietly', 'q'),
+        ('help', 'h'),
+    ]
+    for full_command, shortest_abbrev in abbrev_list:
+        out.update(
+            {abbrev: full_command
+             for abbrev in _all_abbrevs(full_command, shortest_abbrev)}
+        )
+    return out
+
+# %% ../nbs/09_magics.ipynb 7
 class StataMagics():
     """Class for handling magics"""
     html_base = "https://www.stata.com"
@@ -47,6 +65,8 @@ class StataMagics():
         '%%noecho': '',
         '%%echo': '',
     }
+    
+    abbrev_dict = _construct_abbrev_dict()
     
     csshelp_default = resource_filename(
         'nbstata', 'css/_StataKernelHelpDefault.css'
@@ -78,7 +98,19 @@ class StataMagics():
         kernel.nbstata_config.display_status()
         return ''
 
-# %% ../nbs/09_magics.ipynb 6
+# %% ../nbs/09_magics.ipynb 8
+@patch_to(StataMagics)
+def _unabbrev_magic_name(self, raw_name):
+    last_percent = raw_name.rfind('%')
+    percent_part = raw_name[:last_percent+1]
+    raw_name_part = raw_name[last_percent+1:]
+    if raw_name_part in self.abbrev_dict:
+        name_part = self.abbrev_dict[raw_name_part]
+    else:
+        name_part = raw_name_part
+    return percent_part + name_part
+
+# %% ../nbs/09_magics.ipynb 11
 def _parse_magic_name_code(match):
     v = match.groupdict()
     for k in v:
@@ -87,12 +119,13 @@ def _parse_magic_name_code(match):
     code = v['code'].strip()
     return name, code
 
-# %% ../nbs/09_magics.ipynb 7
+# %% ../nbs/09_magics.ipynb 12
 @patch_to(StataMagics)
 def _parse_code_for_magic(self, code):
     match = self.magic_regex.match(code.strip())
     if match:
-        name, mcode = _parse_magic_name_code(match)
+        raw_name, mcode = _parse_magic_name_code(match)
+        name = self._unabbrev_magic_name(raw_name)
         if name in {'%quietly', '%noecho', '%echo'}:
             print_red(
                 f"Warning: The correct syntax for a cell magic is '%{name}', not '{name}'. "
@@ -117,7 +150,7 @@ def _parse_code_for_magic(self, code):
     else:
         return None, code
 
-# %% ../nbs/09_magics.ipynb 15
+# %% ../nbs/09_magics.ipynb 19
 @patch_to(StataMagics)
 def _do_magic(self, name, code, kernel, cell):
     if code.startswith('-h') or code.startswith('--help'):
@@ -126,7 +159,7 @@ def _do_magic(self, name, code, kernel, cell):
     else:
         return getattr(self, "magic_" + name.lstrip('%'))(code, kernel, cell)
 
-# %% ../nbs/09_magics.ipynb 16
+# %% ../nbs/09_magics.ipynb 20
 @patch_to(StataMagics)
 def magic(self, code, kernel, cell):
     try:
@@ -141,7 +174,7 @@ def magic(self, code, kernel, cell):
             code = self._do_magic(name, code, kernel, cell)
     return code        
 
-# %% ../nbs/09_magics.ipynb 17
+# %% ../nbs/09_magics.ipynb 21
 def _formatted_local_list(local_dict):
     std_len = 14
     str_reps = []
@@ -152,14 +185,14 @@ def _formatted_local_list(local_dict):
             str_reps.append(f"{n}:\n{' '*std_len}  {local_dict[n]}")
     return "\n".join(str_reps)
 
-# %% ../nbs/09_magics.ipynb 20
+# %% ../nbs/09_magics.ipynb 24
 @patch_to(StataMagics)
 def magic_locals(self, code, kernel, cell):
     local_dict = kernel.stata_session.get_local_dict()
     print_kernel(_formatted_local_list(local_dict), kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 22
+# %% ../nbs/09_magics.ipynb 26
 def _get_new_settings(code):
     parser = ConfigParser(
         empty_lines_in_values=False,
@@ -169,12 +202,12 @@ def _get_new_settings(code):
     parser.read_string("[set]\n" + code.strip())        
     return dict(parser.items('set'))
 
-# %% ../nbs/09_magics.ipynb 26
+# %% ../nbs/09_magics.ipynb 30
 def _process_new_settings(settings, kernel):
     kernel.nbstata_config.update(settings)
     update_graph_config(kernel.nbstata_config)
 
-# %% ../nbs/09_magics.ipynb 27
+# %% ../nbs/09_magics.ipynb 31
 @patch_to(StataMagics)
 def magic_set(self, code, kernel, cell):
     try:
@@ -189,7 +222,7 @@ def magic_set(self, code, kernel, cell):
         _process_new_settings(settings, kernel)
         warn_re_unclosed_comment_block_if_needed(code)
 
-# %% ../nbs/09_magics.ipynb 29
+# %% ../nbs/09_magics.ipynb 33
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
@@ -205,12 +238,12 @@ def magic_browse(self, code, kernel, cell):
         print_kernel(f"Browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 33
+# %% ../nbs/09_magics.ipynb 37
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/09_magics.ipynb 34
+# %% ../nbs/09_magics.ipynb 38
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -219,7 +252,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/09_magics.ipynb 35
+# %% ../nbs/09_magics.ipynb 39
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -232,19 +265,19 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'Tail' if tail else 'Head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 36
+# %% ../nbs/09_magics.ipynb 40
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 37
+# %% ../nbs/09_magics.ipynb 41
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 39
+# %% ../nbs/09_magics.ipynb 43
 @patch_to(StataMagics)
 def _get_help_html(self, code):
     reply = urllib.request.urlopen(self.html_help.format(code))
@@ -306,7 +339,7 @@ def _get_help_html(self, code):
 
     return str(soup)
 
-# %% ../nbs/09_magics.ipynb 40
+# %% ../nbs/09_magics.ipynb 44
 @patch_to(StataMagics)
 def magic_help(self, code, kernel, cell):
     """Show help file from stata.com/help.cgi?\{\}"""
