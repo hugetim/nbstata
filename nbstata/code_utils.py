@@ -109,7 +109,7 @@ def ending_sc_delimiter(code, sc_delimiter=False):
 
 # %% ../nbs/04_code_utils.ipynb 44
 # Detect Multiple whitespace
-multi_regex = re.compile(r' +')
+multi_regex = re.compile(r'(?P<char>\S) +')
 
 def standardize_code(code, sc_delimiter=False):
     """Remove comments spanning multiple lines and replace custom delimiters"""
@@ -118,27 +118,28 @@ def standardize_code(code, sc_delimiter=False):
     # After removing multi-line comments, which could include "#delimit;"
     code = _replace_delimiter(code, sc_delimiter) 
     
-    # Replace multiple whitespace with one
-    code = multi_regex.sub(' ',code)
+    # Replace multiple interior whitespace with one
+    code = multi_regex.sub('\g<char> ',code)
     
-    # Delete blank lines and whitespace at start and end of lines
+    # Delete blank lines and whitespace at end of lines
     code_lines = code.splitlines()
     std_lines = []
     for code_line in code_lines:
-        cs = code_line.strip()
+        cs = code_line.rstrip()
         if cs:
             std_lines.append(cs)
     return '\n'.join(std_lines)
 
-# %% ../nbs/04_code_utils.ipynb 56
+# %% ../nbs/04_code_utils.ipynb 57
 def _startswith_stata_abbrev(string, full_command, shortest_abbrev):
     for j in range(len(shortest_abbrev), len(full_command)+1):
         if string.startswith(full_command[0:j] + ' '):
             return True
     return False
 
-# %% ../nbs/04_code_utils.ipynb 58
+# %% ../nbs/04_code_utils.ipynb 59
 def _remove_prefixes(std_code_line):
+    std_code_line = std_code_line.lstrip()
     if (_startswith_stata_abbrev(std_code_line, 'quietly', 'qui')
         or std_code_line.startswith('capture ')
         or _startswith_stata_abbrev(std_code_line, 'noisily', 'n')):
@@ -146,7 +147,7 @@ def _remove_prefixes(std_code_line):
     else:
         return std_code_line
 
-# %% ../nbs/04_code_utils.ipynb 60
+# %% ../nbs/04_code_utils.ipynb 63
 def ending_code_version(code, sc_delimiter=False, code_version=None, stata_version='17.0'):
     if 'version' not in code:
         return code_version
@@ -154,7 +155,7 @@ def ending_code_version(code, sc_delimiter=False, code_version=None, stata_versi
     for std_code_line in reversed(std_code.splitlines()):
         if 'version ' not in std_code_line:
             continue
-        m = re.match(r'\Aversion ([0-9]+(?:\.[0-9][0-9]?)?)\Z', _remove_prefixes(std_code_line))
+        m = re.match(r'\A\s*version ([0-9]+(?:\.[0-9][0-9]?)?)\Z', _remove_prefixes(std_code_line))
         if m:
             _version = Decimal(m.group(1)).normalize()
             if Decimal('1') <= _version <= Decimal(stata_version):
@@ -162,24 +163,24 @@ def ending_code_version(code, sc_delimiter=False, code_version=None, stata_versi
                 break
     return code_version
 
-# %% ../nbs/04_code_utils.ipynb 64
+# %% ../nbs/04_code_utils.ipynb 67
 pre = (
     r'(cap(t|tu|tur|ture)?'
     r'|qui(e|et|etl|etly)?'
     r'|n(o|oi|ois|oisi|oisil|oisily)?)')
 kwargs = {'flags': re.MULTILINE}
 local_def_in = re.compile(
-    r"(^({0} )*(loc(a|al)?|tempname|tempvar|tempfile|gettoken|token(i|iz|ize)?|levelsof)\s)|st_local\(".format(pre),
+    r"(^\s*({0} )*(loc(a|al)?|tempname|tempvar|tempfile|gettoken|token(i|iz|ize)?|levelsof)\s)|st_local\(".format(pre),
     **kwargs,
 ).search
 
-# %% ../nbs/04_code_utils.ipynb 66
+# %% ../nbs/04_code_utils.ipynb 69
 preserve_restore_in = re.compile(
     r"(^({0} )*(preserve|restore)[,\s]?\.*?$)|(;({0} )*(preserve|restore)[,\s]?\.*?$)".format(pre),
     **kwargs,
 ).search
 
-# %% ../nbs/04_code_utils.ipynb 69
+# %% ../nbs/04_code_utils.ipynb 72
 def is_start_of_program_block(std_code_line):
     cs = _remove_prefixes(std_code_line)
     _starts_program = (_startswith_stata_abbrev(cs, 'program', 'pr')
@@ -188,7 +189,7 @@ def is_start_of_program_block(std_code_line):
             or (cs in {'mata', 'mata:'})
             or (cs in {'python', 'python:'}))
 
-# %% ../nbs/04_code_utils.ipynb 71
+# %% ../nbs/04_code_utils.ipynb 74
 def _prog_blocks(std_code_lines):
     next_block_lines = []
     in_program = False
@@ -210,7 +211,7 @@ def _prog_blocks(std_code_lines):
 def _block(block_lines, is_prog):
     return {"is_prog": is_prog, "std_code": '\n'.join(block_lines)}
 
-# %% ../nbs/04_code_utils.ipynb 72
+# %% ../nbs/04_code_utils.ipynb 75
 def break_out_prog_blocks(code, sc_delimiter=False):
     std_code_lines = standardize_code(code, sc_delimiter).splitlines()
     return list(_prog_blocks(std_code_lines))
