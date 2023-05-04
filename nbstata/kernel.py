@@ -61,8 +61,8 @@ def init_session(self):
 # %% ../nbs/14_kernel.ipynb 8
 _missing_stata_message = (
     "pystata path not found\n"
-    "A Stata 17 installation is required to use the nbstata Stata kernel. "
-    "If you already have Stata 17 installed, "
+    "A Stata 17+ installation is required to use the nbstata Stata kernel. "
+    "If you already have Stata 17+ installed, "
     "please specify its path in your configuration file."
 )
 
