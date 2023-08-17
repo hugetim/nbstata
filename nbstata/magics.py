@@ -45,9 +45,6 @@ def _construct_abbrev_dict():
 # %% ../nbs/09_magics.ipynb 7
 class StataMagics():
     """Class for handling magics"""
-    html_base = "https://www.stata.com"
-    html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
-
     magic_regex = re.compile(
         r'\A\*?(?P<magic>%%?\w+?)(?P<code>[\s,]+.*?)?\Z', flags=re.DOTALL + re.MULTILINE)
 
@@ -157,13 +154,13 @@ def _parse_code_for_magic(self, code):
 # %% ../nbs/09_magics.ipynb 19
 @patch_to(StataMagics)
 def _do_magic(self, name, code, kernel, cell):
-    if code.startswith('-h') or code.startswith('--help'):
+    if code.startswith('-h') or code.startswith('--help') or (name == "%help" and (not code or code.isspace())):
         print_kernel(self.available_magics[name].format(name), kernel)
         return ''
     else:
         return getattr(self, "magic_" + name.lstrip('%'))(code, kernel, cell)
 
-# %% ../nbs/09_magics.ipynb 20
+# %% ../nbs/09_magics.ipynb 21
 @patch_to(StataMagics)
 def magic(self, code, kernel, cell):
     try:
@@ -178,7 +175,7 @@ def magic(self, code, kernel, cell):
             code = self._do_magic(name, code, kernel, cell)
     return code        
 
-# %% ../nbs/09_magics.ipynb 21
+# %% ../nbs/09_magics.ipynb 22
 def _formatted_local_list(local_dict):
     std_len = 14
     str_reps = []
@@ -189,14 +186,14 @@ def _formatted_local_list(local_dict):
             str_reps.append(f"{n}:\n{' '*std_len}  {local_dict[n]}")
     return "\n".join(str_reps)
 
-# %% ../nbs/09_magics.ipynb 24
+# %% ../nbs/09_magics.ipynb 25
 @patch_to(StataMagics)
 def magic_locals(self, code, kernel, cell):
     local_dict = kernel.stata_session.get_local_dict()
     print_kernel(_formatted_local_list(local_dict), kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 26
+# %% ../nbs/09_magics.ipynb 27
 def _get_new_settings(code):
     parser = ConfigParser(
         empty_lines_in_values=False,
@@ -206,12 +203,12 @@ def _get_new_settings(code):
     parser.read_string("[set]\n" + code.strip())        
     return dict(parser.items('set'))
 
-# %% ../nbs/09_magics.ipynb 30
+# %% ../nbs/09_magics.ipynb 31
 def _process_new_settings(settings, kernel):
     kernel.nbstata_config.update(settings)
     kernel.nbstata_config.update_graph_config()
 
-# %% ../nbs/09_magics.ipynb 31
+# %% ../nbs/09_magics.ipynb 32
 @patch_to(StataMagics)
 def magic_set(self, code, kernel, cell):
     try:
@@ -226,7 +223,7 @@ def magic_set(self, code, kernel, cell):
         _process_new_settings(settings, kernel)
         warn_re_unclosed_comment_block_if_needed(code)
 
-# %% ../nbs/09_magics.ipynb 33
+# %% ../nbs/09_magics.ipynb 34
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
@@ -242,7 +239,7 @@ def magic_browse(self, code, kernel, cell):
         print_kernel(f"browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 34
+# %% ../nbs/09_magics.ipynb 35
 class Frame():
     """Class for generating Stata select_var for getAsDict"""
     def __init__(self, framename):
@@ -263,7 +260,7 @@ class Frame():
         orig_frame = sfi.Frame.connect(self.original_framename)
         orig_frame.changeToCWF()
 
-# %% ../nbs/09_magics.ipynb 35
+# %% ../nbs/09_magics.ipynb 36
 def _parse_frame_prefix(code):
     pattern = re.compile(
         r'\A(?P<frame>\w+)[ \t]*(?:\:[ \t]*(?P<code>.*?))?\Z', flags=re.DOTALL)
@@ -277,7 +274,7 @@ def _parse_frame_prefix(code):
     main_code = v['code'].strip()
     return framename, main_code
 
-# %% ../nbs/09_magics.ipynb 37
+# %% ../nbs/09_magics.ipynb 38
 @patch_to(StataMagics)
 def magic_frbrowse(self, code, kernel, cell):
     """Display frame interactively."""
@@ -289,12 +286,12 @@ def magic_frbrowse(self, code, kernel, cell):
         print_kernel(f"frbrowse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 41
+# %% ../nbs/09_magics.ipynb 42
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/09_magics.ipynb 42
+# %% ../nbs/09_magics.ipynb 43
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -303,7 +300,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/09_magics.ipynb 43
+# %% ../nbs/09_magics.ipynb 44
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -316,31 +313,31 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'tail' if tail else 'head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 44
+# %% ../nbs/09_magics.ipynb 45
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 45
+# %% ../nbs/09_magics.ipynb 46
 @patch_to(StataMagics)
 def magic_frhead(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_frheadtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 46
+# %% ../nbs/09_magics.ipynb 47
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 47
+# %% ../nbs/09_magics.ipynb 48
 @patch_to(StataMagics)
 def magic_frtail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_frheadtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 48
+# %% ../nbs/09_magics.ipynb 49
 @patch_to(StataMagics)
 def _magic_frheadtail(self, code, kernel, cell, tail):
     """Display frame interactively."""
@@ -352,10 +349,12 @@ def _magic_frheadtail(self, code, kernel, cell, tail):
         print_kernel(f"{'tail' if tail else 'head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 50
+# %% ../nbs/09_magics.ipynb 51
 @patch_to(StataMagics)
 def _get_help_html(self, code):
-    reply = urllib.request.urlopen(self.html_help.format(code))
+    html_base = "https://www.stata.com"
+    html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
+    reply = urllib.request.urlopen(html_help.format(code))
     html = reply.read().decode("utf-8")
 
     # Remove excessive extra lines (Note css: "white-space: pre-wrap")
@@ -376,11 +375,13 @@ def _get_help_html(self, code):
             if match:
                 link = '/help.cgi?'
                 link += urllib.parse.quote_plus(match.group(1))
-            a['href'] = urllib.parse.urljoin(self.html_base, link)
+            a['href'] = urllib.parse.urljoin(html_base, link)
             a['target'] = '_blank'
 
     # Remove header 'Stata 15 help for ...'
-    soup.find('h2').decompose()
+    stata_header = soup.find('h2')
+    if stata_header:
+        stata_header.decompose()
 
     # Remove Stata help menu
     soup.find('div', id='menu').decompose()
@@ -414,19 +415,21 @@ def _get_help_html(self, code):
 
     return str(soup)
 
-# %% ../nbs/09_magics.ipynb 51
+# %% ../nbs/09_magics.ipynb 52
 @patch_to(StataMagics)
 def magic_help(self, code, kernel, cell):
     """Show help file from stata.com/help.cgi?\{\}"""
     try:
+        html_help = self._get_help_html(code)
+    except Exception as e: # original: (urllib.error.HTTPError, urllib.error.URLError)
+        msg = "Failed to fetch HTML help.\r\n{0}"
+        print_kernel(msg.format(e), kernel)
+    else:
         fallback = 'This front-end cannot display HTML help.'
         resp = {
             'data': {
-                'text/html': self._get_help_html(code),
+                'text/html': html_help,
                 'text/plain': fallback},
             'metadata': {}}
         kernel.send_response(kernel.iopub_socket, 'display_data', resp)
-    except (urllib.error.HTTPError, urllib.error.URLError) as e:
-        msg = "Failed to fetch HTML help.\r\n{0}"
-        print_kernel(msg.format(e), kernel)
     return ''
