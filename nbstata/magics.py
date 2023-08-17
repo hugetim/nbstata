@@ -7,7 +7,7 @@ __all__ = ['print_kernel', 'StataMagics', 'Frame']
 from .config import Config
 from .misc_utils import print_red
 from .stata import obs_count, macro_expand, get_global
-from .stata_session import warn_re_unclosed_comment_block_if_needed, update_graph_config
+from .stata_session import warn_re_unclosed_comment_block_if_needed
 import nbstata.browse as browse
 from fastcore.basics import patch_to
 import re
@@ -209,7 +209,7 @@ def _get_new_settings(code):
 # %% ../nbs/09_magics.ipynb 30
 def _process_new_settings(settings, kernel):
     kernel.nbstata_config.update(settings)
-    update_graph_config(kernel.nbstata_config)
+    kernel.nbstata_config.update_graph_config()
 
 # %% ../nbs/09_magics.ipynb 31
 @patch_to(StataMagics)

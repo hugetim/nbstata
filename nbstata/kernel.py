@@ -43,19 +43,15 @@ class PyStataKernel(IPythonKernel):
         self.ipydatagrid_height_set = False
         self.shell.execution_count = 0
         self.inspect_output = "Stata not yet initialized."
-        try:
-            self.init_session()
-        except ModuleNotFoundError as err:
-            pass # wait for first do_execute so error message can be displayed under cell
+        self.nbstata_config = Config()
+        self.stata_session = StataSession()
+        self.completions = CompletionsManager(self.stata_session)
+        self.inspect_output = ""
 
 # %% ../nbs/14_kernel.ipynb 7
 @patch_to(PyStataKernel)
 def init_session(self):
-    self.nbstata_config = Config()
-    self.stata_session = StataSession()
-    self.stata_session.init_stata(self.nbstata_config)
-    self.completions = CompletionsManager(self.stata_session)
-    self.inspect_output = ""
+    self.nbstata_config.init_stata()
     self.stata_ready = True
 
 # %% ../nbs/14_kernel.ipynb 8
@@ -119,7 +115,7 @@ def do_execute(self, code, silent,
     """Execute Stata code cell"""
     if not self.stata_ready:
         try:
-            self.init_session()
+            self.init_session() # do this here so config error messages displayed in notebook, in addition to ModuleNotFound
         except ModuleNotFoundError as err:
             return _handle_stata_import_error(err, silent, self.execution_count)
     self.shell.execution_count += 1
@@ -166,9 +162,12 @@ def do_is_complete(self, code):
 @patch_to(PyStataKernel)
 def do_inspect(self, code, cursor_pos, detail_level=0, omit_sections=()):
     """Display Stata 'describe' output regardless of cursor position"""
-    if not self.inspect_output:
-        self.inspect_output = get_inspect(code, cursor_pos, detail_level, omit_sections)
-    data = {'text/plain': self.inspect_output}
+    if self.stata_ready:
+        if not self.inspect_output:
+            self.inspect_output = get_inspect(code, cursor_pos, detail_level, omit_sections)
+        data = {'text/plain': self.inspect_output}
+    else:
+        data = {}
     return {"status": "ok", "data": data, "metadata": {}, "found": True}
 
 # %% ../nbs/14_kernel.ipynb 25
