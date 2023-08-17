@@ -213,10 +213,15 @@ class Config:
             )
             
     def update(self, env, init=False, error_header="%set error(s):"):
-        allowed_settings = self.env if init else set(self.env)-{'stata_dir','edition'}
+        init_only_settings = {'stata_dir','edition','splash'}
+        allowed_settings = self.env if init else set(self.env)-init_only_settings
         for key in list(env):
             if key not in allowed_settings:
-                self.errors.append(f"    '{key}' is not a valid setting.")
+                explanation = (
+                    "is only allowed in a configuration file." if key in init_only_settings
+                    else "is not a valid setting."
+                )
+                self.errors.append(f"    '{key}' {explanation}")
                 env.pop(key)
             elif (
                 (key in self.valid_values_of and env[key] not in self.valid_values_of[key])
