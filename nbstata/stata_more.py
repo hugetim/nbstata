@@ -99,9 +99,9 @@ def run_as_program(std_non_prog_code, prog_def_option_code=""):
         run_direct_cleaned(_program_define_code, quietly=True)
         run_direct(_program_name, quietly=False, inline=True, echo=False)
     finally:
-        run_single(f"quietly program drop {_program_name}", show_exc_warning=False)
+        run_single(f"capture program drop {_program_name}", show_exc_warning=False)
 
-# %% ../nbs/03_stata_more.ipynb 63
+# %% ../nbs/03_stata_more.ipynb 65
 def diverted_stata_output(std_code, runner=None):
     if runner is None:
         runner = functools.partial(run_direct, quietly=False, inline=True, echo=False)
@@ -114,7 +114,7 @@ def diverted_stata_output(std_code, runner=None):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 69
+# %% ../nbs/03_stata_more.ipynb 71
 def diverted_stata_output_quicker(std_non_prog_code):
     with redirect_stdout(StringIO()) as diverted:
         code = f"return add\ncapture log off\n{std_non_prog_code}\ncapture log on"""
@@ -126,7 +126,7 @@ def diverted_stata_output_quicker(std_non_prog_code):
         out = diverted.getvalue()
     return out
 
-# %% ../nbs/03_stata_more.ipynb 74
+# %% ../nbs/03_stata_more.ipynb 76
 def var_from_varlist(varlist, stfr=None):
     if stfr:
         var_code = varlist.strip()
@@ -150,7 +150,7 @@ def var_from_varlist(varlist, stfr=None):
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
-# %% ../nbs/03_stata_more.ipynb 84
+# %% ../nbs/03_stata_more.ipynb 86
 def local_names():
     run_single("""\
         mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""",
@@ -159,13 +159,13 @@ def local_names():
     set_local('temp_nbstata_all_locals', "")
     return out.split()
 
-# %% ../nbs/03_stata_more.ipynb 88
+# %% ../nbs/03_stata_more.ipynb 90
 def get_local_dict(_local_names=None):
     if _local_names is None:
         _local_names = local_names()
     return {n: get_local(n) for n in _local_names}
 
-# %% ../nbs/03_stata_more.ipynb 90
+# %% ../nbs/03_stata_more.ipynb 92
 def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
