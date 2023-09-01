@@ -50,10 +50,10 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
     if sformat:
         for v in list(df.columns):
             if hdl.isVarTypeString(v) or (valuelabel and missingval==np.NaN
-                                          and pd.api.types.is_string_dtype(df[v])):
+                                          and not pd.api.types.is_numeric_dtype(df[v])):
                 continue
             v_format = hdl.getVarFormat(v)
-            if missingval != np.NaN and pd.api.types.is_string_dtype(df[v]):
+            if missingval != np.NaN and not pd.api.types.is_numeric_dtype(df[v]):
                 def format_value(x):
                     return stata_formatted(x, v_format).lstrip() if type(x)!=str else x
             else:
