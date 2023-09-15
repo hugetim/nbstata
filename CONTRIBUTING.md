@@ -21,6 +21,8 @@ After making changes to the `/nbs` notebooks, you should run [nbdev_prepare](htt
 
 (You may also make limited changes directly to the `.py` files in the `/nbstata` folder, in which case you should sync those changes back to the notebooks with [nbdev_update](https://nbdev.fast.ai/api/sync.html).)
 
+ReviewNB gives us visual diffs for notebooks and enables PR comments specific to a cell: https://app.reviewnb.com/hugetim/nbstata/ (free account needed to login)
+
 ## Do you want to contribute to the documentation?
 * Docs are automatically created from the notebooks in the `/nbs` folder.
 * You can preview the docs locally by running [nbdev_preview](https://nbdev.fast.ai/tutorials/tutorial.html#preview-your-docs). While in preview mode, you can make updates to notebooks and they will be reflected (after a small delay) in your browser.
