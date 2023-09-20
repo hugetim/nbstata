@@ -17,22 +17,23 @@ from configparser import ConfigParser, NoSectionError
 # %% ../nbs/01_config.ipynb 7
 def _win_find_path():
     import winreg
+    dirs = [r'C:\Program Files\Stata19',
+            r'C:\Program Files\Stata18',
+            r'C:\Program Files\Stata17']
+    for _dir in dirs:
+        path = Path(_dir)
+        if os.path.exists(path):
+            executables = [exe for exe in path.glob("Stata*.exe") if exe not in set(path.glob("Stata*_old.exe"))]
+            if executables:
+                return str(executables[0])
+    # Otherwise, try old way
     reg = winreg.ConnectRegistry(None, winreg.HKEY_CLASSES_ROOT)
-    subkeys = [r'Stata17Do\shell\do\command',
-                r'Stata18Do\shell\do\command',
-                r'Stata19Do\shell\do\command']
-
-    fpath = ''
-    for subkey in subkeys:
-        try:
-            key = winreg.OpenKey(reg, subkey)
-            fpath = winreg.QueryValue(key, None).split('"')[1]
-        except FileNotFoundError:
-            pass
-        if fpath:
-            break
-
-    return fpath
+    subkey = r'Stata17Do\shell\do\command'
+    try:
+        key = winreg.OpenKey(reg, subkey)
+        return winreg.QueryValue(key, None).split('"')[1]
+    except FileNotFoundError:
+        return ''
 
 # %% ../nbs/01_config.ipynb 9
 def _mac_find_path():
