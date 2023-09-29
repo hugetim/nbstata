@@ -28,5 +28,4 @@ ReviewNB gives us visual diffs for notebooks and enables PR comments specific to
 * You can preview the docs locally by running [nbdev_preview](https://nbdev.fast.ai/tutorials/tutorial.html#preview-your-docs). While in preview mode, you can make updates to notebooks and they will be reflected (after a small delay) in your browser.
 
 ## Specifics to be aware of
-* There is one `.py` file not derived from the notebooks: install.py
 * The [@patch_to](https://fastcore.fast.ai/basics.html#patch_to) decorator is occasionally used to break up class definitions into separate cells.

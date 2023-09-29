@@ -59,7 +59,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
   - rich text:
     1.  lists
     2.  **Headings**
-    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/b7f3a71a-1-image-2.png">
+    3.  <img align="left" width="54" height="18.6" src="index_files/figure-commonmark/226326ec-1-image-2.png">
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
@@ -80,8 +80,7 @@ output.
 `nbstata` is being developed using
 [nbdev](https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/#whats-nbdev).
 The `/nbs` directory is where edits to the source code should be made.
-(The python code is then exported to the `/nbdev` library folder.) The
-one exception is `install.py`.
+(The python code is then exported to the `/nbdev` library folder.)
 
 For more, see
 [CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md).
