@@ -46,7 +46,7 @@ def install_conf(conf_file,gen_file=False):
     # By avoiding an import of .config until we need it, we can
     # complete the installation process in virtual environments
     # without needing this submodule nor its downstream imports.
-    from .config import find_dir_edition
+    from nbstata.config import find_dir_edition
     try:
         stata_dir,stata_ed = find_dir_edition()
     except OSError as err:
@@ -115,5 +115,5 @@ def main(argv=None):
         install_conf(conf_file,args.conf_file)
 
 # %% ../nbs/15_install.ipynb 7
-if __name__ == "__main__" and not IN_NOTEBOOK:
+if __name__ == "__main__" and not IN_NOTEBOOK and not os.getenv('CONTINUOUS_INTEGRATION'):
     main()
