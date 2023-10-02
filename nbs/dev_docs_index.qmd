@@ -21,6 +21,7 @@ listing:
     - 12_inspect.ipynb
     - 13_cell.ipynb
     - 14_kernel.ipynb
+    - 15_install.ipynb
 ---
 For information on how to help improve the `nbstata` code, see: [CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md)
 

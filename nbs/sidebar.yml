@@ -22,3 +22,4 @@ website:
           - 12_inspect.ipynb
           - 13_cell.ipynb
           - 14_kernel.ipynb
+          - 15_install.ipynb
