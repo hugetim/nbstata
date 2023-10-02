@@ -164,7 +164,7 @@ class Config:
     
     @property
     def splash(self):
-        return False if self.env['splash']=='False' else True
+        return False if self.env['splash'] == 'False' else True
     
     @property
     def noecho(self):
@@ -180,7 +180,7 @@ class Config:
         self._update_backup_graph_size()
         self.config_path = None
         self._process_config_file()
-        if self.env['stata_dir'] == None or self.env['edition'] == None:
+        if self.env['stata_dir'] is None or self.env['edition'] is None:
             try:    
                 stata_dir, stata_ed = find_dir_edition()     
             except OSError:
@@ -202,14 +202,9 @@ class Config:
     def _get_config_env(self, cpath):
         try:
             settings = _get_config_settings(cpath)
-        except configparser.ParsingError:
+        except configparser.Error as err:
             print_red(f"Configuration error in {cpath}:\n"
-                      "    invalid syntax")
-        except configparser.DuplicateOptionError:
-            print_red(f"Configuration error in {cpath}:\n"
-                      "    attempted to set the same thing twice")
-        except configparser.Error:
-            print_red(f"Configuration error in {cpath}")
+                      f"    {str(err)}")
         else:
             self.config_path = str(cpath)
             self.update(
