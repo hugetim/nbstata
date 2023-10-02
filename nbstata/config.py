@@ -83,9 +83,10 @@ def _find_path(_dir=None):
 # %% ../nbs/01_config.ipynb 15
 def _edition(stata_exe):
     edition = 'be'
-    for e in ('se','mp'):
+    for e in ('be', 'se', 'mp'):
         if stata_exe.find(e) > -1:
             edition = e
+            break
     return edition
 
 # %% ../nbs/01_config.ipynb 17
