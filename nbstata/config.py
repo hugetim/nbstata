@@ -12,7 +12,7 @@ import platform
 from shutil import which
 from pathlib import Path
 from packaging import version
-from configparser import ConfigParser, NoSectionError
+import configparser
 
 # %% ../nbs/01_config.ipynb 7
 def _win_find_path():
@@ -84,8 +84,9 @@ def _edition(stata_exe):
     return edition
 
 # %% ../nbs/01_config.ipynb 17
-def find_dir_edition(path=None):
-    stata_path = path if path is not None else _find_path()
+def find_dir_edition(stata_path=None):
+    if stata_path is None:
+        stata_path = _find_path()
     if not stata_path:
         raise OSError("Stata path not found.")
     stata_dir = str(os.path.dirname(stata_path))
@@ -93,49 +94,50 @@ def find_dir_edition(path=None):
     return stata_dir, _edition(stata_exe)
 
 # %% ../nbs/01_config.ipynb 21
-def set_pystata_path(path=None):
-    path, _ = find_dir_edition(path)
-    if not os.path.isdir(path):
-        raise OSError(path + ' is invalid')
-    if not os.path.isdir(os.path.join(path, 'utilities')):
-        raise OSError(path + " is not Stata's installation path")
-    sys.path.append(os.path.join(path, 'utilities'))
+def set_pystata_path(stata_dir=None):
+    if stata_dir is None:
+        stata_dir, _ = find_dir_edition()
+    if not os.path.isdir(stata_dir):
+        raise OSError(f'Specified stata_dir, "{stata_dir}", is not a valid directory path')
+    if not os.path.isdir(os.path.join(stata_dir, 'utilities')):
+        raise OSError(f'Specified stata_dir, "{stata_dir}", is not Stata\'s installation path')
+    sys.path.append(os.path.join(stata_dir, 'utilities'))
 
-# %% ../nbs/01_config.ipynb 24
-def launch_stata(path=None, edition=None, splash=True):
+# %% ../nbs/01_config.ipynb 25
+def launch_stata(stata_dir=None, edition=None, splash=True):
     """
     We modify stata_setup to make splash screen optional
     """
-    try:
-        if path == None or edition == None:
-            path_found, edition_found = find_dir_edition()
-            path = path_found if path==None else path
-            edition = edition_found if edition==None else edition
-        set_pystata_path(path)
-    except OSError as err:
-        pass
+    if stata_dir is None or edition is None:
+        path_found, edition_found = find_dir_edition()
+        stata_dir = path_found if stata_dir is None else stata_dir
+        edition = edition_found if edition is None else edition
+    set_pystata_path(stata_dir)
     import pystata
-    if version.parse(pystata.__version__) >= version.parse("0.1.1"):
-        # Splash message control is a new feature of pystata-0.1.1
-        pystata.config.init(edition,splash=splash)
-    else:
-        pystata.config.init(edition)
+    try:
+        if version.parse(pystata.__version__) >= version.parse("0.1.1"):
+            # Splash message control is a new feature of pystata-0.1.1
+            pystata.config.init(edition, splash=splash)
+        else:
+            pystata.config.init(edition)
+    except FileNotFoundError as err:
+        raise OSError(f'Specified edition, "{edition}", is not present at "{stata_dir}"')
 
-# %% ../nbs/01_config.ipynb 29
+# %% ../nbs/01_config.ipynb 30
 def set_graph_format(gformat):
     import pystata
     if gformat == 'pystata':
         gformat = 'svg' # pystata default
     pystata.config.set_graph_format(gformat)
 
-# %% ../nbs/01_config.ipynb 31
+# %% ../nbs/01_config.ipynb 32
 def _set_graph_size(width, height):
     import pystata
     pystata.config.set_graph_size(width, height)
 
-# %% ../nbs/01_config.ipynb 34
+# %% ../nbs/01_config.ipynb 35
 def _get_config_settings(cpath):
-    parser = ConfigParser(
+    parser = configparser.ConfigParser(
         empty_lines_in_values=False,
         comment_prefixes=('*','//'),
         inline_comment_prefixes=('//',),
@@ -143,7 +145,7 @@ def _get_config_settings(cpath):
     parser.read(str(cpath))
     return dict(parser.items('nbstata'))
 
-# %% ../nbs/01_config.ipynb 35
+# %% ../nbs/01_config.ipynb 36
 class Config:
     env = {'stata_dir': None,
            'edition': 'be',
@@ -200,13 +202,13 @@ class Config:
     def _get_config_env(self, cpath):
         try:
             settings = _get_config_settings(cpath)
-        except ParsingError:
+        except configparser.ParsingError:
             print_red(f"Configuration error in {cpath}:\n"
                       "    invalid syntax")
-        except DuplicateOptionError:
+        except configparser.DuplicateOptionError:
             print_red(f"Configuration error in {cpath}:\n"
                       "    attempted to set the same thing twice")
-        except ConfigParserError:
+        except configparser.Error:
             print_red(f"Configuration error in {cpath}")
         else:
             self.config_path = str(cpath)
@@ -252,7 +254,7 @@ class Config:
       echo                   {self.env['echo']}
       missing                {self.env['missing']}""")
 
-# %% ../nbs/01_config.ipynb 43
+# %% ../nbs/01_config.ipynb 44
 @patch_to(Config)
 def set_graph_size(self, init=False):
     try:
@@ -269,7 +271,7 @@ def set_graph_size(self, init=False):
                       f"is now ({self.env['graph_width']}, {self.env['graph_height']}).")
             self._update_backup_graph_size()
 
-# %% ../nbs/01_config.ipynb 49
+# %% ../nbs/01_config.ipynb 50
 @patch_to(Config)
 def update_graph_config(self, init=False):
     graph_format = self.env['graph_format']
@@ -278,7 +280,7 @@ def update_graph_config(self, init=False):
     set_graph_format(graph_format)
     self.set_graph_size(init)
 
-# %% ../nbs/01_config.ipynb 51
+# %% ../nbs/01_config.ipynb 52
 @patch_to(Config)
 def init_stata(self):
     launch_stata(self.env['stata_dir'],
