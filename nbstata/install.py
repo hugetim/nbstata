@@ -115,5 +115,6 @@ def main(argv=None):
         install_conf(conf_file,args.conf_file)
 
 # %% ../nbs/15_install.ipynb 7
-if __name__ == "__main__" and not IN_NOTEBOOK and not os.getenv('CONTINUOUS_INTEGRATION'):
+#|eval: false
+if __name__ == "__main__" and not IN_NOTEBOOK:
     main()
