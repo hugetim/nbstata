@@ -43,7 +43,6 @@ class PyStataKernel(IPythonKernel):
         self.ipydatagrid_height_set = False
         self.shell.execution_count = 0
         self.inspect_output = "Stata not yet initialized."
-        self.nbstata_config = Config()
         self.stata_session = StataSession()
         self.completions = CompletionsManager(self.stata_session)
         self.inspect_output = ""
@@ -51,6 +50,7 @@ class PyStataKernel(IPythonKernel):
 # %% ../nbs/14_kernel.ipynb 7
 @patch_to(PyStataKernel)
 def init_session(self):
+    self.nbstata_config = Config()
     self.nbstata_config.init_stata()
     self.stata_ready = True
 
