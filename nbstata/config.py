@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = ['find_dir_edition', 'find_edition', 'set_pystata_path', 'launch_stata', 'set_graph_format', 'Config']
 
-# %% ../nbs/01_config.ipynb 6
+# %% ../nbs/01_config.ipynb 5
 from .misc_utils import print_red
 from fastcore.basics import patch_to
 import os
@@ -14,7 +14,7 @@ from pathlib import Path
 from packaging import version
 import configparser
 
-# %% ../nbs/01_config.ipynb 7
+# %% ../nbs/01_config.ipynb 8
 def _win_find_path(_dir=None):
     import winreg
     if _dir is None:
@@ -38,7 +38,7 @@ def _win_find_path(_dir=None):
     except FileNotFoundError:
         return ''
 
-# %% ../nbs/01_config.ipynb 9
+# %% ../nbs/01_config.ipynb 10
 def _mac_find_path(_dir=None):
     """
     Attempt to find Stata path on macOS when not on user's PATH.
@@ -60,7 +60,7 @@ def _mac_find_path(_dir=None):
         except StopIteration:
             return ''
 
-# %% ../nbs/01_config.ipynb 11
+# %% ../nbs/01_config.ipynb 12
 def _other_find_path():
     for i in ['stata-mp', 'stata-se', 'stata']:
         stata_path = which(i)
@@ -68,7 +68,7 @@ def _other_find_path():
             return stata_path
     return ''
 
-# %% ../nbs/01_config.ipynb 13
+# %% ../nbs/01_config.ipynb 14
 def _find_path(_dir=None):
     if os.getenv('CONTINUOUS_INTEGRATION'):
         print('WARNING: Running as CI; Stata path not set correctly')
@@ -80,7 +80,7 @@ def _find_path(_dir=None):
         path = _mac_find_path(_dir)
     return path if path else _other_find_path()
 
-# %% ../nbs/01_config.ipynb 15
+# %% ../nbs/01_config.ipynb 16
 def _edition(stata_exe):
     edition = 'be'
     for e in ('be', 'se', 'mp'):
@@ -89,7 +89,7 @@ def _edition(stata_exe):
             break
     return edition
 
-# %% ../nbs/01_config.ipynb 17
+# %% ../nbs/01_config.ipynb 18
 def find_dir_edition(stata_path=None):
     if stata_path is None:
         stata_path = _find_path()
@@ -99,13 +99,13 @@ def find_dir_edition(stata_path=None):
     stata_exe = str(os.path.basename(stata_path)).lower()
     return stata_dir, _edition(stata_exe)
 
-# %% ../nbs/01_config.ipynb 19
+# %% ../nbs/01_config.ipynb 20
 def find_edition(stata_dir):
     stata_path = _find_path(stata_dir)
     stata_exe = str(os.path.basename(stata_path)).lower()
     return _edition(stata_exe)
 
-# %% ../nbs/01_config.ipynb 23
+# %% ../nbs/01_config.ipynb 25
 def set_pystata_path(stata_dir=None):
     if stata_dir is None:
         stata_dir, _ = find_dir_edition()
@@ -115,7 +115,7 @@ def set_pystata_path(stata_dir=None):
         raise OSError(f'Specified stata_dir, "{stata_dir}", is not Stata\'s installation path')
     sys.path.append(os.path.join(stata_dir, 'utilities'))
 
-# %% ../nbs/01_config.ipynb 27
+# %% ../nbs/01_config.ipynb 29
 def launch_stata(stata_dir=None, edition=None, splash=True):
     """
     We modify stata_setup to make splash screen optional
@@ -136,19 +136,19 @@ def launch_stata(stata_dir=None, edition=None, splash=True):
     except FileNotFoundError as err:
         raise OSError(f'Specified edition, "{edition}", is not present at "{stata_dir}"')
 
-# %% ../nbs/01_config.ipynb 32
+# %% ../nbs/01_config.ipynb 35
 def set_graph_format(gformat):
     import pystata
     if gformat == 'pystata':
         gformat = 'svg' # pystata default
     pystata.config.set_graph_format(gformat)
 
-# %% ../nbs/01_config.ipynb 34
+# %% ../nbs/01_config.ipynb 37
 def _set_graph_size(width, height):
     import pystata
     pystata.config.set_graph_size(width, height)
 
-# %% ../nbs/01_config.ipynb 37
+# %% ../nbs/01_config.ipynb 41
 def _get_config_settings(cpath):
     parser = configparser.ConfigParser(
         empty_lines_in_values=False,
@@ -158,8 +158,9 @@ def _get_config_settings(cpath):
     parser.read(str(cpath))
     return dict(parser.items('nbstata'))
 
-# %% ../nbs/01_config.ipynb 38
+# %% ../nbs/01_config.ipynb 42
 class Config:
+    "nbstata configuration"
     env = {'stata_dir': None,
            'edition': None,
            'graph_format': 'png',
@@ -193,12 +194,11 @@ class Config:
         self.errors = []
         self._update_backup_graph_size()
         self.config_path = None
-        self._process_config_file()
 
     def _update_backup_graph_size(self):
         self.backup_graph_size = {key: self.env[key] for key in {'graph_width', 'graph_height'}}
                 
-    def _process_config_file(self):
+    def process_config_file(self):
         global_config_path = Path(os.path.join(sys.prefix, 'etc', 'nbstata.conf'))
         user_config_path = Path('~/.nbstata.conf').expanduser()
         for cpath in (user_config_path, global_config_path):      
@@ -256,7 +256,7 @@ class Config:
       echo                   {self.env['echo']}
       missing                {self.env['missing']}""")
 
-# %% ../nbs/01_config.ipynb 46
+# %% ../nbs/01_config.ipynb 50
 @patch_to(Config)
 def set_graph_size(self, init=False):
     try:
@@ -273,7 +273,7 @@ def set_graph_size(self, init=False):
                       f"is now ({self.env['graph_width']}, {self.env['graph_height']}).")
             self._update_backup_graph_size()
 
-# %% ../nbs/01_config.ipynb 52
+# %% ../nbs/01_config.ipynb 56
 @patch_to(Config)
 def update_graph_config(self, init=False):
     graph_format = self.env['graph_format']
@@ -282,7 +282,7 @@ def update_graph_config(self, init=False):
     set_graph_format(graph_format)
     self.set_graph_size(init)
 
-# %% ../nbs/01_config.ipynb 54
+# %% ../nbs/01_config.ipynb 58
 @patch_to(Config)
 def init_stata(self):
     launch_stata(self.env['stata_dir'],
