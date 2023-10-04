@@ -14,7 +14,7 @@ import re
 import urllib
 from pkg_resources import resource_filename
 from bs4 import BeautifulSoup as bs
-from configparser import ConfigParser, ParsingError, DuplicateOptionError, Error as ConfigParserError
+import configparser
 
 # %% ../nbs/09_magics.ipynb 4
 def print_kernel(msg, kernel):
@@ -195,35 +195,40 @@ def magic_locals(self, code, kernel, cell):
 
 # %% ../nbs/09_magics.ipynb 27
 def _get_new_settings(code):
-    parser = ConfigParser(
+    parser = configparser.ConfigParser(
         empty_lines_in_values=False,
         comment_prefixes=('*','//', '/*'), # '/*': to not cause error when commenting out for Stata purposes only
         inline_comment_prefixes=('//',),
     )
-    parser.read_string("[set]\n" + code.strip())        
+    parser.read_string("[set]\n" + code.strip(), source="set")
     return dict(parser.items('set'))
 
 # %% ../nbs/09_magics.ipynb 31
+def _clean_error_message(err_str):
+    return (err_str
+            .replace("While reading from 'set'", "")
+            .replace(" in section 'set' already exists", " already set above")
+            .replace("Source contains ", "")
+            .replace(" 'set'\n", "\n")
+           )
+
+# %% ../nbs/09_magics.ipynb 32
 def _process_new_settings(settings, kernel):
     kernel.nbstata_config.update(settings)
     kernel.nbstata_config.update_graph_config()
 
-# %% ../nbs/09_magics.ipynb 32
+# %% ../nbs/09_magics.ipynb 33
 @patch_to(StataMagics)
 def magic_set(self, code, kernel, cell):
     try:
         settings = _get_new_settings(code)
-    except ParsingError:
-        print_red("set error: invalid syntax")
-    except DuplicateOptionError:
-        print_red("set error: attempted to set the same thing twice")
-    except ConfigParserError:
-        print_red("set error")
+    except configparser.Error as err:
+        print_red(f"set error:\n    {_clean_error_message(str(err))}")
     else:
         _process_new_settings(settings, kernel)
         warn_re_unclosed_comment_block_if_needed(code)
 
-# %% ../nbs/09_magics.ipynb 34
+# %% ../nbs/09_magics.ipynb 38
 @patch_to(StataMagics)
 def magic_browse(self, code, kernel, cell):
     """Display data interactively."""
@@ -239,7 +244,7 @@ def magic_browse(self, code, kernel, cell):
         print_kernel(f"browse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 35
+# %% ../nbs/09_magics.ipynb 39
 class Frame():
     """Class for generating Stata select_var for getAsDict"""
     def __init__(self, framename):
@@ -260,7 +265,7 @@ class Frame():
         orig_frame = sfi.Frame.connect(self.original_framename)
         orig_frame.changeToCWF()
 
-# %% ../nbs/09_magics.ipynb 36
+# %% ../nbs/09_magics.ipynb 40
 def _parse_frame_prefix(code):
     pattern = re.compile(
         r'\A(?P<frame>\w+)[ \t]*(?:\:[ \t]*(?P<code>.*?))?\Z', flags=re.DOTALL)
@@ -274,7 +279,7 @@ def _parse_frame_prefix(code):
     main_code = v['code'].strip()
     return framename, main_code
 
-# %% ../nbs/09_magics.ipynb 38
+# %% ../nbs/09_magics.ipynb 42
 @patch_to(StataMagics)
 def magic_frbrowse(self, code, kernel, cell):
     """Display frame interactively."""
@@ -286,12 +291,12 @@ def magic_frbrowse(self, code, kernel, cell):
         print_kernel(f"frbrowse failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 42
+# %% ../nbs/09_magics.ipynb 46
 def _get_html_data(df):
     html = df.convert_dtypes().to_html(notebook=True)
     return {'text/html': html}
 
-# %% ../nbs/09_magics.ipynb 43
+# %% ../nbs/09_magics.ipynb 47
 @patch_to(StataMagics)
 def _headtail_html(self, df, kernel):
     content = {
@@ -300,7 +305,7 @@ def _headtail_html(self, df, kernel):
     }
     kernel.send_response(kernel.iopub_socket, 'display_data', content)
 
-# %% ../nbs/09_magics.ipynb 44
+# %% ../nbs/09_magics.ipynb 48
 @patch_to(StataMagics)
 def _magic_headtail(self, code, kernel, cell, tail=False):
     try:
@@ -313,31 +318,31 @@ def _magic_headtail(self, code, kernel, cell, tail=False):
         print_kernel(f"{'tail' if tail else 'head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 45
+# %% ../nbs/09_magics.ipynb 49
 @patch_to(StataMagics)
 def magic_head(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 46
+# %% ../nbs/09_magics.ipynb 50
 @patch_to(StataMagics)
 def magic_frhead(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_frheadtail(code, kernel, cell, tail=False)
 
-# %% ../nbs/09_magics.ipynb 47
+# %% ../nbs/09_magics.ipynb 51
 @patch_to(StataMagics)
 def magic_tail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_headtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 48
+# %% ../nbs/09_magics.ipynb 52
 @patch_to(StataMagics)
 def magic_frtail(self, code, kernel, cell):
     """Display data in a nicely-formatted table."""
     return self._magic_frheadtail(code, kernel, cell, tail=True)
 
-# %% ../nbs/09_magics.ipynb 49
+# %% ../nbs/09_magics.ipynb 53
 @patch_to(StataMagics)
 def _magic_frheadtail(self, code, kernel, cell, tail):
     """Display frame interactively."""
@@ -349,7 +354,7 @@ def _magic_frheadtail(self, code, kernel, cell, tail):
         print_kernel(f"{'tail' if tail else 'head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb 51
+# %% ../nbs/09_magics.ipynb 55
 @patch_to(StataMagics)
 def _get_help_html(self, code):
     html_base = "https://www.stata.com"
@@ -415,7 +420,7 @@ def _get_help_html(self, code):
 
     return str(soup)
 
-# %% ../nbs/09_magics.ipynb 52
+# %% ../nbs/09_magics.ipynb 56
 @patch_to(StataMagics)
 def magic_help(self, code, kernel, cell):
     """Show help file from stata.com/help.cgi?\{\}"""
