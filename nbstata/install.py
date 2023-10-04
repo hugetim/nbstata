@@ -132,7 +132,7 @@ def main(argv=None):
         args.user = True
 
     install_kernel_spec(user=args.user, prefix=args.prefix)
-    conf_path = _conf_path(user=args.user, prefix=args.prefix)
+    conf_path = _conf_path(user=args.user, prefix=sys.prefix)
     create_conf_if_needed(conf_path, conf_file_requested=args.conf_file)
 
 # %% ../nbs/15_install.ipynb 15
