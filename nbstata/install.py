@@ -38,6 +38,18 @@ def install_kernel_spec(user=True, prefix=None):
         KernelSpecManager().install_kernel_spec(td, 'nbstata', user=user, prefix=prefix)
 
 # %% ../nbs/15_install.ipynb 6
+def _find_stata():
+    # By avoiding an import of .config until we need it, we can
+    # complete the installation process in virtual environments
+    # without needing this submodule nor its downstream imports.
+    from nbstata.config import find_dir_edition
+    try:
+        stata_dir, stata_ed = find_dir_edition()
+    except OSError as err:
+        stata_dir, stata_ed = "", ""
+    return stata_dir, stata_ed
+
+# %% ../nbs/15_install.ipynb 7
 def _conf_default(stata_dir='', stata_ed=''):
     from nbstata.config import Config
     conf_default = dedent(
@@ -53,30 +65,6 @@ def _conf_default(stata_dir='', stata_ed=''):
     return conf_default
 
 # %% ../nbs/15_install.ipynb 8
-def _conf_path(user, prefix):
-    from nbstata.config import old_user_config_path, xdg_user_config_path
-    if user:
-        alt_conf_path = old_user_config_path()
-        if alt_conf_path.is_file():
-            return alt_conf_path
-        else:
-            return xdg_user_config_path()
-    else:
-        return Path(os.path.join(prefix, 'etc/nbstata.conf'))
-
-# %% ../nbs/15_install.ipynb 10
-def _find_stata():
-    # By avoiding an import of .config until we need it, we can
-    # complete the installation process in virtual environments
-    # without needing this submodule nor its downstream imports.
-    from nbstata.config import find_dir_edition
-    try:
-        stata_dir, stata_ed = find_dir_edition()
-    except OSError as err:
-        stata_dir, stata_ed = "", ""
-    return stata_dir, stata_ed
-    
-    
 def create_conf_if_needed(conf_path, conf_file_requested=True):
     """Create config file if requested or if Stata not found automatically"""
     if conf_path.is_file():
@@ -102,16 +90,29 @@ def create_conf_if_needed(conf_path, conf_file_requested=True):
         print("Configuration file created at:")
         print(str(conf_path))
     except Exception as err:
-        print("Attempt to create a configuration file failed.\n{str(err)}")
+        print(f"Attempt to create a configuration file at {str(conf_path)} failed.")
+        raise(err)
 
-# %% ../nbs/15_install.ipynb 11
+# %% ../nbs/15_install.ipynb 10
 def _is_root():
     try:
         return os.geteuid() == 0
     except AttributeError:
         return False # assume not an admin on non-Unix platforms
 
-# %% ../nbs/15_install.ipynb 13
+# %% ../nbs/15_install.ipynb 12
+def _conf_path(user, prefix):
+    from nbstata.config import old_user_config_path, xdg_user_config_path
+    if user:
+        alt_conf_path = old_user_config_path()
+        if alt_conf_path.is_file():
+            return alt_conf_path
+        else:
+            return xdg_user_config_path()
+    else:
+        return Path(os.path.join(prefix, 'etc/nbstata.conf'))
+
+# %% ../nbs/15_install.ipynb 14
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--user', action='store_true',
@@ -134,7 +135,7 @@ def main(argv=None):
     conf_path = _conf_path(user=args.user, prefix=args.prefix)
     create_conf_if_needed(conf_path, conf_file_requested=args.conf_file)
 
-# %% ../nbs/15_install.ipynb 14
+# %% ../nbs/15_install.ipynb 15
 #|eval: false
 if __name__ == "__main__" and not IN_NOTEBOOK:
     main()
