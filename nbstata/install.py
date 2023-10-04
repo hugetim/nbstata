@@ -72,6 +72,9 @@ def install_conf(conf_file,gen_file=False):
         print("Creating configuration file at:")
         print(str(conf_file))
         try:
+            conf_dir = Path(os.path.dirname(conf_file))
+            if not conf_dir.is_dir():
+                os.makedirs(conf_dir)
             with conf_file.open('w') as f:
                 f.write(conf_default)
         except:
@@ -105,14 +108,19 @@ def main(argv=None):
 
     install_my_kernel_spec(user=args.user, prefix=args.prefix)
     if args.user:
-        conf_file = Path('~/.nbstata.conf').expanduser()
+        from nbstata.config import old_user_config_path, xdg_user_config_path
+        alt_conf_path = old_user_config_path()
+        if alt_conf_path.is_file():
+            conf_file = alt_conf_path
+        else:
+            conf_file = xdg_user_config_path()
     else:
-        conf_dir = os.path.join(args.prefix,'etc')
-        if not Path(os.path.join(args.prefix,'etc')).is_dir():
-            os.mkdir(conf_dir)
-        conf_file = Path(os.path.join(conf_dir,'nbstata.conf'))
+        conf_file = Path(os.path.join(args.prefix,'etc/nbstata.conf'))
     if not conf_file.is_file():
         install_conf(conf_file,args.conf_file)
+    elif args.conf_file:
+        print("Configuration file already exists at:")
+        print(str(conf_file))
 
 # %% ../nbs/15_install.ipynb 7
 #|eval: false
