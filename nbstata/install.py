@@ -63,9 +63,12 @@ def install_conf(conf_file,gen_file=False):
     [nbstata]
     stata_dir = {}
     edition = {}
-    graph_format = png
-    echo = None
     splash = False
+    graph_format = png
+    graph_width = 5.5in
+    graph_height = 4in
+    echo = None
+    missing = .
     """.format(stata_dir,stata_ed))
 
     if gen_file:
