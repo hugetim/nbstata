@@ -262,7 +262,8 @@ class Config:
         pystata.config.status()
         print(f"""
       echo                   {self.env['echo']}
-      missing                {self.env['missing']}""")
+      missing                {self.env['missing']}
+      config file path       {self.config_path}""")
 
 # %% ../nbs/01_config.ipynb 53
 @patch_to(Config)
