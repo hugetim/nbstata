@@ -172,11 +172,11 @@ class Config:
     "nbstata configuration"
     env = {'stata_dir': None,
            'edition': None,
+            'splash': 'False',
            'graph_format': 'png',
            'graph_width': '5.5in',
            'graph_height': '4in',
            'echo': 'None',
-           'splash': 'False',
            'missing': '.',
           }
     valid_values_of = dict(
