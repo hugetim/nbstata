@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="5.500in" height="4.000in" viewBox="0 0 3960 2880">
+	<desc>Stata Graph - Graph</desc>
+	<rect x="0" y="0" width="3960" height="2880" style="fill:#EAF2F3;stroke:none"/>
+	<rect x="0.00" y="0.00" width="3959.88" height="2880.00" style="fill:#EAF2F3"/>
+	<rect x="2.88" y="2.88" width="3954.12" height="2874.24" style="fill:none;stroke:#EAF2F3;stroke-opacity:0.00;stroke-width:5.76"/>
+	<rect x="130.80" y="275.35" width="3728.22" height="2359.37" style="fill:#FFFFFF"/>
+	<rect x="133.68" y="278.23" width="3722.46" height="2353.61" style="fill:none;stroke:#FFFFFF;stroke-width:5.76"/>
+	<circle cx="942.98" cy="617.78" r="47.51" style="fill:#1A476F"/>
+	<circle cx="942.98" cy="617.78" r="43.19" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="658.14" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">O</text>
+	<circle cx="1656.15" cy="617.78" r="43.19" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1785.71" y="658.14" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">Oh</text>
+	<circle cx="2369.32" cy="617.78" r="34.89" style="fill:#1A476F"/>
+	<circle cx="2369.32" cy="617.78" r="30.57" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="2498.88" y="658.14" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">o</text>
+	<circle cx="3082.49" cy="617.78" r="30.57" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="3212.06" y="658.14" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">oh</text>
+	<polygon points="875.73,896.84 942.98,829.60 1010.22,896.84 942.98,964.09" style="fill:#1A476F"/>
+	<polygon points="881.84,896.84 942.98,835.71 1004.11,896.84 942.98,957.98" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="937.20" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">D</text>
+	<polygon points="1595.01,896.84 1656.15,835.71 1717.28,896.84 1656.15,957.98" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1785.71" y="937.20" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">Dh</text>
+	<polygon points="2320.02,896.84 2369.32,847.55 2418.62,896.84 2369.32,946.14" style="fill:#1A476F"/>
+	<polygon points="2326.13,896.84 2369.32,853.66 2412.51,896.84 2369.32,940.03" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="2498.88" y="937.20" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">d</text>
+	<polygon points="3039.30,896.84 3082.49,853.66 3125.68,896.84 3082.49,940.03" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="3212.06" y="937.20" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">dh</text>
+	<polygon points="942.98,1109.73 885.66,1209.00 1000.29,1209.00" style="fill:#1A476F"/>
+	<polygon points="942.98,1118.37 893.14,1204.68 992.81,1204.68" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="1216.27" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">T</text>
+	<polygon points="1656.15,1118.37 1606.31,1204.68 1705.98,1204.68" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1785.71" y="1216.27" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">Th</text>
+	<polygon points="2369.32,1124.08 2324.43,1201.82 2414.20,1201.82" style="fill:#1A476F"/>
+	<polygon points="2369.32,1132.72 2331.91,1197.50 2406.72,1197.50" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="2498.88" y="1216.27" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">t</text>
+	<polygon points="3082.49,1132.72 3045.09,1197.50 3119.89,1197.50" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="3212.06" y="1216.27" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">th</text>
+	<rect x="895.47" y="1407.46" width="95.02" height="95.02" style="fill:#1A476F"/>
+	<rect x="899.79" y="1411.78" width="86.38" height="86.38" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="1495.33" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">S</text>
+	<rect x="1612.96" y="1411.78" width="86.38" height="86.38" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1785.71" y="1495.33" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">Sh</text>
+	<rect x="2334.43" y="1420.09" width="69.77" height="69.77" style="fill:#1A476F"/>
+	<rect x="2338.75" y="1424.41" width="61.13" height="61.13" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="2498.88" y="1495.33" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">s</text>
+	<rect x="3051.92" y="1424.41" width="61.13" height="61.13" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="3212.06" y="1495.33" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">sh</text>
+	<line x1="899.79" y1="1734.04" x2="986.16" y2="1734.04" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<line x1="942.98" y1="1777.23" x2="942.98" y2="1690.85" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="1774.40" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">+</text>
+	<line x1="1625.58" y1="1734.04" x2="1686.71" y2="1734.04" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<line x1="1656.15" y1="1764.61" x2="1656.15" y2="1703.47" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1785.71" y="1774.40" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">smplus</text>
+	<line x1="2338.78" y1="1764.58" x2="2399.86" y2="1703.50" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<line x1="2399.86" y1="1764.58" x2="2338.78" y2="1703.50" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="2498.88" y="1774.40" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">X</text>
+	<line x1="3060.88" y1="1755.65" x2="3104.10" y2="1712.43" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<line x1="3104.10" y1="1755.65" x2="3060.88" y2="1712.43" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="3212.06" y="1774.40" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">x</text>
+	<path d="M921.38 2013.10 L942.98 1969.92 L964.57 2013.10 Z M942.98 2013.10 L942.98 2056.29" style="fill:#1A476F;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="2053.46" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">A</text>
+	<path d="M1627.35 2013.10 L1656.15 1969.92 L1684.94 2013.10 M1656.15 1969.92 L1656.15 2056.29" stroke-linecap="round" stroke-linejoin="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1785.71" y="2053.46" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">a</text>
+	<path d="M2319.48 1955.56 L2369.32 2041.88 L2419.15 1955.56" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="2498.88" y="2053.46" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">V</text>
+	<path d="M3045.09 1969.92 L3082.49 2034.70 L3119.89 1969.92" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="3212.06" y="2053.46" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">v</text>
+	<line x1="942.98" y1="2335.48" x2="942.98" y2="2249.10" stroke-linecap="round" style="fill:none;stroke:#1A476F;stroke-width:8.64"/>
+	<text x="1072.54" y="2332.65" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">|</text>
+	<circle cx="1656.15" cy="2292.29" r="1.00" style="fill:#1A476F;stroke:none"/>
+	<text x="1785.71" y="2332.65" style="font-family:'Helvetica';font-size:115.21px;fill:#1A476f">p</text>
+	<line x1="130.80" y1="2634.72" x2="130.80" y2="275.35" style="stroke:#000000;stroke-width:5.76"/>
+	<line x1="130.80" y1="2634.72" x2="3859.02" y2="2634.72" style="stroke:#000000;stroke-width:5.76"/>
+	<text x="148.13" y="2737.89" style="font-family:'Helvetica';font-size:79.94px;fill:#000000">(symbols shown at larger than default size)</text>
+	<text x="1994.97" y="215.98" style="font-family:'Helvetica';font-size:139.96px;fill:#1E2D53" text-anchor="middle">Symbol palette</text>
+</svg>
