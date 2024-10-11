@@ -3,15 +3,16 @@
 # %% auto 0
 __all__ = ['run_direct_cleaned', 'run_sfi', 'SelectVar', 'IndexVar', 'run_as_program', 'diverted_stata_output',
            'diverted_stata_output_quicker', 'var_from_varlist', 'local_names', 'get_local_dict',
-           'locals_code_from_dict']
+           'locals_code_from_dict', 'user_expression']
 
 # %% ../nbs/03_stata_more.ipynb 4
 from .misc_utils import print_red
-from .stata import run_direct, run_single, get_local, set_local, drop_var
+from .stata import run_direct, run_single, get_local, set_local, drop_var, stata_formatted
 from textwrap import dedent
 import functools
 from contextlib import redirect_stdout
 from io import StringIO
+import re
 
 # %% ../nbs/03_stata_more.ipynb 8
 def run_direct_cleaned(cmds, quietly=False, echo=False, inline=True):
@@ -170,3 +171,12 @@ def locals_code_from_dict(preexisting_local_dict):
     local_defs = (f"""local {name} `"{preexisting_local_dict[name]}"'"""
                   for name in preexisting_local_dict)
     return "\n".join(local_defs)
+
+# %% ../nbs/03_stata_more.ipynb 98
+def user_expression(input_str):
+    run_single("tempname output")
+    try:
+        run_single(f"local `output': display {input_str}")
+    except SyntaxError as e:
+        raise SyntaxError(f"Invalid Stata '[%fmt] [=]exp' display expression: {input_str}")
+    return get_local(get_local("output"))
