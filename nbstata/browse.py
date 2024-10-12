@@ -81,7 +81,7 @@ def _parse_browse_magic_syntax(code):
             program drop {_program_name}
             """).strip()
     except Exception as e:
-        run_single(f"capture program drop {_program_name}", show_exc_warning=True)
+        run_sfi(f"capture program drop {_program_name}")
         raise(e)
     return output.replace("\n> ", "") #[c.strip() for c in var_code.split() if c] if var_code else None
 

@@ -64,7 +64,7 @@ class SelectVar():
         if condition:
             self.varname = sfi.SFIToolkit.getTempName()
             cmd = f"quietly gen {self.varname} = cond({condition},1,0)"
-            run_single(cmd, show_exc_warning=False)
+            run_single(cmd)
 
     def clear(self):
         """Remove temporary select_var from Stata dataset"""
@@ -83,7 +83,7 @@ class IndexVar:
     def __enter__(self):
         import sfi
         self.idx_var = sfi.SFIToolkit.getTempName()
-        run_single(f"gen {self.idx_var} = _n", show_exc_warning=False)
+        run_single(f"gen {self.idx_var} = _n")
         return self.idx_var
     
     def __exit__(self, exc_type, exc_value, exc_tb):
@@ -102,7 +102,7 @@ def run_as_program(std_non_prog_code, prog_def_option_code=""):
         run_direct_cleaned(_program_define_code, quietly=True)
         run_direct(_program_name, quietly=False, inline=True, echo=False)
     finally:
-        run_single(f"capture program drop {_program_name}", show_exc_warning=False)
+        run_single(f"capture program drop {_program_name}")
 
 # %% ../nbs/03_stata_more.ipynb 65
 def diverted_stata_output(std_code, runner=None):
@@ -149,15 +149,14 @@ def var_from_varlist(varlist, stfr=None):
                 program drop {_program_name}
                 """).strip()
         except Exception as e:
-            run_single(f"capture program drop {_program_name}", show_exc_warning=True)
+            run_sfi(f"capture program drop {_program_name}")
             raise(e)
     return [c.strip() for c in var_code.split() if c] if var_code else None
 
 # %% ../nbs/03_stata_more.ipynb 86
 def local_names():
     run_single("""\
-        mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""",
-        show_exc_warning=False)
+        mata : st_local("temp_nbstata_all_locals", invtokens(st_dir("local", "macro", "*")'))""")
     out = get_local('temp_nbstata_all_locals')
     set_local('temp_nbstata_all_locals', "")
     return out.split()
@@ -180,5 +179,6 @@ def user_expression(input_str):
     try:
         run_single(f"local `output': display {input_str}")
     except SyntaxError as e:
-        raise SyntaxError(f"Invalid Stata '[%fmt] [=]exp' display expression: {input_str}")
+        combined_message = f"{str(e)}\nInvalid Stata '[%fmt] [=]exp' display expression: {input_str}"
+        raise SyntaxError(combined_message)
     return get_local(get_local("output"))

@@ -4,10 +4,12 @@
 
 # %% auto 0
 __all__ = ['get_local', 'set_local', 'get_global', 'get_scalar', 'stata_formatted', 'variable_names', 'drop_var', 'obs_count',
-           'pwd', 'macro_expand', 'run_direct', 'run_single', 'resolve_macro']
+           'pwd', 'macro_expand', 'run_direct', 'run_single']
 
 # %% ../nbs/02_stata.ipynb 5
 from .misc_utils import print_red
+from contextlib import redirect_stdout
+from io import StringIO
 
 # %% ../nbs/02_stata.ipynb 9
 def get_local(name):
@@ -66,27 +68,11 @@ def run_direct(cmds, quietly=False, echo=False, inline=True):
     return pystata.stata.run(cmds, quietly, echo, inline)
 
 # %% ../nbs/02_stata.ipynb 43
-def run_single(cmd, echo=False, show_exc_warning=True):
+def run_single(cmd, echo=False):
     import sfi
     try:
         sfi.SFIToolkit.stata(cmd, echo)
     except Exception as e:
-        sfi.SFIToolkit.stata("", echo)
-        raise e
-#         if show_exc_warning:
-#             print_red(f"Warning: run_single (sfi.SFIToolkit.stata) error: {repr(e)}\n"
-#                       "Re-running code with run_direct.")
-#         run_direct(cmd, echo=echo)
-
-# %% ../nbs/02_stata.ipynb 60
-def resolve_macro(macro):
-    macro = macro.strip()
-    if macro.startswith("`") and macro.endswith("'"):
-        macro = get_local(macro[1:-1])
-    elif macro.startswith("$_"):
-        macro = get_local(macro[2:])
-    elif macro.startswith("${") and macro.endswith("}"):
-        macro = get_global(macro[2:-1])
-    elif macro.startswith("$"):
-        macro = get_global(macro[1:])
-    return macro
+        with redirect_stdout(StringIO()) as diverted:
+            sfi.SFIToolkit.stata("", echo)
+        raise SyntaxError(diverted.getvalue())

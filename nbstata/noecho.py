@@ -46,7 +46,7 @@ def _after_local_dict():
 def _restore_locals_and_clear_sreturn():
     for lname, value in _after_local_dict().items():
         set_local(lname, value)
-    run_single("sreturn clear", show_exc_warning=False)
+    run_single("sreturn clear")
 
 # %% ../nbs/05_noecho.ipynb 22
 def run_as_program_w_locals(std_code, local_dict=None):
