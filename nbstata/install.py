@@ -32,9 +32,12 @@ def install_kernel_spec(user=True, prefix=None):
         with open(os.path.join(td, 'kernel.json'), 'w') as f:
             json.dump(kernel_json, f, sort_keys=True)
 
-        # Copy logo to tempdir to be installed with kernelspec
+        # Copy logo and quarto_startup_cell to tempdir to be installed with kernelspec
         logo_path = resources.files('nbstata').joinpath('logo-64x64.png')
         copyfile(logo_path, os.path.join(td, 'logo-64x64.png'))
+        
+        qsc_path = resources.files('nbstata').joinpath('quarto_setup_cell')
+        copyfile(qsc_path, os.path.join(td, 'quarto_setup_cell'))
 
         print('Installing Jupyter kernel spec')
         KernelSpecManager().install_kernel_spec(td, 'nbstata', user=user, prefix=prefix)
