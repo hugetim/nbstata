@@ -8,6 +8,7 @@ __all__ = ['PyStataKernel', 'print_stata_error']
 # %% ../nbs/14_kernel.ipynb 4
 from .config import Config
 from .misc_utils import print_red
+from .stata import set_global
 from .stata_more import user_expression
 from .inspect import get_inspect
 from .stata_session import StataSession
@@ -40,6 +41,14 @@ class PyStataKernel(IPythonKernel):
         },
     ]
 
+    # for communication from Quarto
+    def comm_open(self, stream, ident, msg):
+        msg = msg['content']
+        if msg['target_name'] == "quarto_kernel_setup":
+            for key, value in msg['data']['options']['params'].items():
+                set_global(key, value)
+            # here, msg['data']['options'] has all quarto setup options
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stata_ready = False
@@ -50,6 +59,7 @@ class PyStataKernel(IPythonKernel):
         self.stata_session = StataSession()
         self.completions = CompletionsManager(self.stata_session)
         self.inspect_output = ""
+        self.shell_handlers['comm_open'] = self.comm_open
 
 # %% ../nbs/14_kernel.ipynb 8
 @patch_to(PyStataKernel)
@@ -161,6 +171,18 @@ def do_execute(self, code, silent,
             return _handle_stata_import_error(err, silent, self.execution_count)
         
     self.shell.execution_count += 1
+    is_setup_cell = code.strip() == "56ed7992-3715-4d16-a6c0-e5f98c12799d"       
+    if is_setup_cell:
+        code = ""
+        # If this is a setup cell, quarto will ignore the output
+        # (except for the metadata). Still, `execute_result` needs
+        # something to send, so we send an empty string
+        self.send_response(self.iopub_socket, 'execute_result', {
+            'data': {"text/plain": ""}, 
+            'metadata': {'quarto': {'daemonize': False}},
+            'execution_count': self.shell.execution_count,
+            })
+    
     code_cell = Cell(self, code, silent)
     try:
         code_cell.run()
