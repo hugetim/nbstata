@@ -205,9 +205,9 @@ def set_ipydatagrid_height():
 # %% ../nbs/07_browse.ipynb 53
 def display_df_as_ipydatagrid(df):
     from ipydatagrid import DataGrid, TextRenderer
-    i_renderer = TextRenderer(horizontal_alignment="right", font="11px monospace", background_color="rgb(243, 243, 243)")
-    d_renderer = TextRenderer(horizontal_alignment="right", font="11px monospace")
-    h_renderer = TextRenderer(horizontal_alignment="center", font="11px monospace")
+    i_renderer = TextRenderer(horizontal_alignment="right", background_color="rgb(243, 243, 243)")
+    d_renderer = TextRenderer(horizontal_alignment="right")
+    h_renderer = TextRenderer(horizontal_alignment="center")
     column_widths = {}
     temp_head = df.head(20)
     char_px_width = 6.05
@@ -235,7 +235,7 @@ def display_df_as_ipydatagrid(df):
                  header_renderer=h_renderer,
                  renderers={" ": i_renderer},
                  column_widths=column_widths,
-                 layout={"height": "100%"},
+                 #layout={"height": "100%"},
                 )
     g.grid_style = {
         "background_color": "rgb(255, 255, 255)",
@@ -249,6 +249,6 @@ def display_df_as_ipydatagrid(df):
         "header_selection_border_color": "rgb(229, 229, 229)",
         "cursor_fill_color": "rgb(255, 255, 255, 0)",
         "cursor_border_color": "rgb(40, 40, 40)",
-        "scroll_shadow": {'size': 0},
+        "scroll_shadow": {'size': 0, 'color1': "white", 'color2': "white", 'color3': "white"},
     }
     display(g)
