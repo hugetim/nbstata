@@ -203,7 +203,7 @@ def set_ipydatagrid_height():
     display(HTML("<style>div.jp-Notebook .datagrid-container {min-height: 448px; }</style>"))
 
 # %% ../nbs/07_browse.ipynb 53
-def display_df_as_ipydatagrid(df):
+def display_df_as_ipydatagrid(df, auto_height=True):
     from ipydatagrid import DataGrid, TextRenderer
     i_renderer = TextRenderer(horizontal_alignment="right", background_color="rgb(243, 243, 243)")
     d_renderer = TextRenderer(horizontal_alignment="right")
@@ -225,18 +225,20 @@ def display_df_as_ipydatagrid(df):
             20 + char_px_width*max((len(str(value)) for value in temp_head[name])),
         )
     column_widths[" "] = 20 + char_px_width*len(str(max(df.index.values)))
-    g = DataGrid(df,
-                 index_name=" ",
-                 editable=False,
-                 selection_mode='cell',
-                 base_row_size=21,
-                 auto_fit_columns=False,
-                 default_renderer=d_renderer,
-                 header_renderer=h_renderer,
-                 renderers={" ": i_renderer},
-                 column_widths=column_widths,
-                 #layout={"height": "100%"},
-                )
+    g_kwargs = dict(
+        index_name=" ",
+        editable=False,
+        selection_mode='cell',
+        base_row_size=21,
+        auto_fit_columns=False,
+        default_renderer=d_renderer,
+        header_renderer=h_renderer,
+        renderers={" ": i_renderer},
+        column_widths=column_widths,
+    )
+    if auto_height:
+        g_kwargs['layout'] = {"height": "100%"}
+    g = DataGrid(df, **g_kwargs)
     g.grid_style = {
         "background_color": "rgb(255, 255, 255)",
         "header_background_color": "rgb(243, 243, 243)",
