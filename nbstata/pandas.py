@@ -38,7 +38,7 @@ def _simple_dataframe_from_stata(stfr, var, valuelabel, missingval):
 
 # %% ../nbs/06_pandas.ipynb 20
 def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval, sformat):
-    import numpy as np
+    from numpy import nan
     import pandas as pd
     import sfi
     hdl = sfi.Data if stfr is None else sfi.Frame.connect(stfr)
@@ -51,11 +51,11 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
         df = _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval)
     if sformat:
         for v in list(df.columns):
-            if hdl.isVarTypeString(v) or (valuelabel and missingval==np.NaN
+            if hdl.isVarTypeString(v) or (valuelabel and missingval==nan
                                           and not pd.api.types.is_numeric_dtype(df[v])):
                 continue
             v_format = hdl.getVarFormat(v)
-            if missingval != np.NaN and not pd.api.types.is_numeric_dtype(df[v]):
+            if missingval != nan and not pd.api.types.is_numeric_dtype(df[v]):
                 def format_value(x):
                     return stata_formatted(x, v_format).lstrip() if type(x)!=str else x
             else:
@@ -66,14 +66,14 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
 
 # %% ../nbs/06_pandas.ipynb 21
 def better_pdataframe_from_data(var=None, obs=None, selectvar=None, valuelabel=False, missingval=None, sformat=False):
-    import numpy as np
+    from numpy import nan
     if missingval is None:
-        missingval = np.NaN
+        missingval = nan
     return better_dataframe_from_stata(None, var, obs, selectvar, valuelabel, missingval, sformat)
 
 # %% ../nbs/06_pandas.ipynb 22
 def better_pdataframe_from_frame(stfr, var=None, obs=None, selectvar=None, valuelabel=False, missingval=None, sformat=False):
-    import numpy as np
+    from numpy import nan
     if missingval is None:
-        missingval = np.NaN
+        missingval = nan
     return better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingval, sformat)

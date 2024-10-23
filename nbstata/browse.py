@@ -115,12 +115,12 @@ def parse_browse_magic(code):
 
 # %% ../nbs/07_browse.ipynb 26
 def _parse_df_params(code, count, browse=False, tail=False):
-    import numpy as np
+    from numpy import inf
     N, var, if_code, in_code, nolabels, noformat = parse_browse_magic(code)
     sformat = not noformat
     valuelabel = not nolabels
 
-    N_max = np.inf if browse else 5
+    N_max = inf if browse else 5
     if N is not None:
         if browse:
             print_red("Warning: '%browse [N]' syntax is deprecated "
@@ -161,9 +161,9 @@ def get_df(obs_range, var, stata_if_code, missingval, valuelabel, sformat):
 
 # %% ../nbs/07_browse.ipynb 29
 def headtail_df_params(code, count, missing_config, tail=False):
-    import numpy as np
+    from numpy import nan
     custom_missingval = missing_config != 'pandas'
-    missingval = missing_config if custom_missingval else np.NaN
+    missingval = missing_config if custom_missingval else nan
     obs_range, var, stata_if_code, valuelabel, sformat = (
         _parse_df_params(code, count, tail=tail)
     )
@@ -189,9 +189,9 @@ def headtail_get_df(obs_range, var, stata_if_code, missingval, valuelabel, sform
 
 # %% ../nbs/07_browse.ipynb 44
 def browse_df_params(code, count, missing_config):
-    import numpy as np
+    from numpy import nan
     custom_missingval = missing_config != 'pandas'
-    missingval = missing_config if custom_missingval else np.NaN
+    missingval = missing_config if custom_missingval else nan
     obs_range, var, stata_if_code, valuelabel, sformat = (
         _parse_df_params(code, count, browse=True)
     )
