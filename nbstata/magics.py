@@ -241,7 +241,7 @@ def magic_browse(self, code, kernel, cell):
         )
         sformat = params[-1]
         df = browse.get_df(*params)
-        browse.display_df_as_ipydatagrid(df)
+        browse.display_df_as_ipydatagrid(df, kernel.nbstata_config.browse_auto_height)
     except Exception as e:
         print_kernel(f"browse failed.\r\n{e}", kernel)
     return ''

@@ -174,24 +174,30 @@ class Config:
     "nbstata configuration"
     env = {'stata_dir': None,
            'edition': None,
-            'splash': 'False',
+           'splash': 'False',
            'graph_format': 'png',
            'graph_width': '5.5in',
            'graph_height': '4in',
            'echo': 'None',
            'missing': '.',
+           'browse_auto_height': 'True',
           }
     valid_values_of = dict(
         edition={None, 'mp', 'se', 'be'},
         graph_format={'pystata', 'svg', 'png', 'pdf'},
         echo={'True', 'False', 'None'},
         splash={'True', 'False'},
+        browse_auto_height={'True', 'False'},
     )
     
     @property
     def splash(self):
         return False if self.env['splash'] == 'False' else True
     
+    @property
+    def browse_auto_height(self):
+        return False if self.env['browse_auto_height'] == 'False' else True
+      
     @property
     def noecho(self):
         return self.env['echo'] == 'None'
@@ -200,6 +206,15 @@ class Config:
     def echo(self):
         return self.env['echo'] == 'True'
     
+    def display_status(self):
+        import pystata
+        pystata.config.status()
+        print(f"""
+      echo                   {self.env['echo']}
+      missing                {self.env['missing']}
+      browse_auto_height     {self.env['browse_auto_height']}
+      config file path       {self.config_path}""")
+
     def __init__(self):
         """First check if a configuration file exists. If not, try `find_dir_edition`."""
         self.errors = []
@@ -258,14 +273,6 @@ class Config:
         for message in self.errors:
             print_red(message)
         self.errors = []
-        
-    def display_status(self):
-        import pystata
-        pystata.config.status()
-        print(f"""
-      echo                   {self.env['echo']}
-      missing                {self.env['missing']}
-      config file path       {self.config_path}""")
 
 # %% ../nbs/01_config.ipynb 53
 @patch_to(Config)
