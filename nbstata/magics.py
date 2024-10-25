@@ -166,7 +166,7 @@ def _do_magic(self, name, code, kernel, cell):
 @patch_to(StataMagics)
 def magic(self, code, kernel, cell):
     try:
-        if not kernel.ipydatagrid_height_set:
+        if kernel.nbstata_config.browse_auto_height and not kernel.ipydatagrid_height_set:
             browse.set_ipydatagrid_height()
             kernel.ipydatagrid_height_set = True
         name, code = self._parse_code_for_magic(code)
