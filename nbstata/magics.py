@@ -361,7 +361,8 @@ def _magic_frheadtail(self, code, kernel, cell, tail):
 def _get_help_html(self, code):
     html_base = "https://www.stata.com"
     html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
-    reply = urllib.request.urlopen(html_help.format(code))
+    url_safe_code = urllib.parse.quote(code)
+    reply = urllib.request.urlopen(html_help.format(url_safe_code))
     html = reply.read().decode("utf-8")
 
     # Remove excessive extra lines (Note css: "white-space: pre-wrap")
