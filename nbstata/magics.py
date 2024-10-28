@@ -362,7 +362,9 @@ def _get_help_html(self, code):
     html_base = "https://www.stata.com"
     html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
     url_safe_code = urllib.parse.quote(code)
-    reply = urllib.request.urlopen(html_help.format(url_safe_code))
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+    request = urllib.request.Request(html_help.format(url_safe_code), headers=headers)
+    reply = urllib.request.urlopen(request)
     html = reply.read().decode("utf-8")
 
     # Remove excessive extra lines (Note css: "white-space: pre-wrap")
