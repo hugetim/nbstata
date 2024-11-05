@@ -1,0 +1,23 @@
+[
+  {
+    "listing": "/dev_docs_index.html",
+    "items": [
+      "/misc_utils.html",
+      "/config.html",
+      "/stata.html",
+      "/stata_more.html",
+      "/code_utils.html",
+      "/noecho.html",
+      "/pandas.html",
+      "/browse.html",
+      "/stata_session.html",
+      "/magics.html",
+      "/completion_env.html",
+      "/completions.html",
+      "/inspect.html",
+      "/cell.html",
+      "/kernel.html",
+      "/install.html"
+    ]
+  }
+]
