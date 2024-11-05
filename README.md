@@ -5,7 +5,7 @@
 
  
 
-`nbstata` is a [Jupyter
+*nbstata* is a [Jupyter
 kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) for
 [Stata](https://www.stata.com/why-use-stata/) built on top of
 [pystata](https://www.stata.com/python/pystata18/index.html).
@@ -23,12 +23,12 @@ a single document. Though it is named after the three core programming
 languages it supports (Julia, Python, and R), it can be used with with a
 wide variety of languages.
 
-`nbstata` allows you to create Stata notebooks (as opposed to [using
+*nbstata* allows you to create Stata notebooks (as opposed to [using
 Stata within a *Python*
 notebook](https://www.stata.com/python/pystata18/notebook/Example2.html),
 which is needlessly clunky if you are working primarily with Stata).
 
-### Key nbstata features
+### Key *nbstata* features
 
 - [x] [Easy
   setup](https://hugetim.github.io/nbstata/user_guide.html#install)
@@ -45,6 +45,17 @@ which is needlessly clunky if you are working primarily with Stata).
   comments)
 - [x] Quarto [inline
   code](https://quarto.org/docs/computations/inline-code.html) support
+
+The video below demonstrates using Stata in a Jupyter notebook. In
+addition to the
+[NBClassic](https://nbclassic.readthedocs.io/en/stable/notebook.html)
+application shown there, *nbstata* can also be used with
+[JupyterLab](https://jupyterlab.readthedocs.io/en/stable/getting_started/overview.html),
+[VS
+Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks),
+or [Quarto](https://quarto.org/).
+
+<img align="center" width="650" src="https://kylebarron.dev/stata_kernel/img/jupyter_notebook_example.gif?raw=true" alt="Animated GIF demoing major Stata kernel features">
 
 ### What can you do with Stata notebooks…
 
@@ -64,20 +75,9 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
-The video below demonstrates using Stata in a Jupyter notebook. In
-addition to the
-[NBClassic](https://nbclassic.readthedocs.io/en/stable/notebook.html)
-application shown there, `nbstata` can also be used with
-[JupyterLab](https://jupyterlab.readthedocs.io/en/stable/getting_started/overview.html),
-[VS
-Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks),
-or [Quarto](https://quarto.org/).
-
-<img align="center" width="650" src="https://kylebarron.dev/stata_kernel/img/jupyter_notebook_example.gif" alt="Animated GIF demoing major Stata kernel features">
-
 ## Contributing
 
-`nbstata` is being developed using
+*nbstata* is being developed using
 [nbdev](https://nbdev.fast.ai/blog/posts/2022-07-28-nbdev2/#whats-nbdev).
 The `/nbs` directory is where edits to the source code should be made.
 (The python code is then exported to the `/nbdev` library folder.)
@@ -87,12 +87,12 @@ For more, see
 
 ## Acknowledgements
 
-Kyle Barron authored the original `stata_kernel`, which works for older
+Kyle Barron authored the original *stata_kernel*, which works for older
 versions of Stata. Vinci Chow created a Stata kernel that instead uses
 [pystata](https://www.stata.com/python/pystata18/), which first became
-available with Stata 17. `nbstata` was originally derived from his
-[pystata-kernel](https://github.com/ticoneva/pystata-kernel), but much
-of the docs and newer features are derived from `stata_kernel`.
+available with Stata 17. *nbstata* was originally derived from his
+[*pystata-kernel*](https://github.com/ticoneva/pystata-kernel), but much
+of the docs and newer features are derived from *stata_kernel*.
 
 [^1]: Stata [dynamic
     documents](https://www.stata.com/manuals/rptdynamicdocumentsintro.pdf)
@@ -101,7 +101,7 @@ of the docs and newer features are derived from `stata_kernel`.
     [stmd](https://www.ssc.wisc.edu/~hemken/Stataworkshops/stmd/Usage/stmdusage.html),
     and
     [Statamarkdown](https://ssc.wisc.edu/~hemken/Stataworkshops/Statamarkdown/stata-and-r-markdown.html))
-    Using `nbstata` with
+    Using *nbstata* with
     [Quarto](https://www.statalist.org/forums/forum/general-stata-discussion/general/1703835-ado-files-and-literate-programming)
     instead gives you a similar workflow, with greater flexibility of
     output.

@@ -23,7 +23,7 @@ listing:
     - 14_kernel.ipynb
     - 15_install.ipynb
 ---
-For information on how to help improve the `nbstata` code, see: [CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md)
+For information on how to help improve the *nbstata* code, see: [CONTRIBUTING.md](https://github.com/hugetim/nbstata/blob/master/CONTRIBUTING.md)
 
 The main dependencies among the principal nbstata modules:
 ```{mermaid}
