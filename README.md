@@ -53,7 +53,7 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
 
 - Exploratory analysis that is both:
   - interactive
-  - preserved for future reference/editing  
+  - preserved for future reference/editing
 - Present results in a way that interweaves:[^1]
   - code
   - results (including graphs)
@@ -73,7 +73,7 @@ application shown there, `nbstata` can also be used with
 Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks),
 or [Quarto](https://quarto.org/).
 
-<img align="center" width="650" src="https://kylebarron.dev/stata_kernel/img/jupyter_notebook_example.gif" alt="Animated demo showing major Stata kernel features in a Jupyter notebook">
+<img align="center" width="650" src="https://kylebarron.dev/stata_kernel/img/jupyter_notebook_example.gif" alt="Animated GIF demoing major Stata kernel features">
 
 ## Contributing
 
