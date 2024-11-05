@@ -55,7 +55,7 @@ application shown there, *nbstata* can also be used with
 Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks),
 or [Quarto](https://quarto.org/).
 
-<img align="center" width="650" src="https://kylebarron.dev/stata_kernel/img/jupyter_notebook_example.gif?raw=true" alt="Animated GIF demoing major Stata kernel features">
+<img align="center" width="650" src="https://github.com/kylebarron/stata_kernel/raw/master/docs/src/img/jupyter_notebook_example.gif" alt="Animated GIF demoing major Stata kernel features">
 
 ### What can you do with Stata notebooks…
 
