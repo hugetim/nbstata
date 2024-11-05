@@ -9,3 +9,6 @@ website:
     right:
       - icon: github
         href: "https://github.com/hugetim/nbstata"
+format:
+  html:  
+    reference-location: section
