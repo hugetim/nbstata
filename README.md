@@ -41,11 +41,13 @@ which is needlessly clunky if you are working primarily with Stata).
   code](https://quarto.org/docs/computations/inline-code.html) support
 
 Users of Stata 17 or 18.0 also get these features only built-in natively
-to Stata 18.5+: - Displays Stata output without the redundant ‘echo’ of
-(multi-line) commands - Autocompletion for variables, macros, matrices,
-and file paths - Interactive/richtext help files accessible within
-notebook - `#delimit ;` interactive support (along with all types of
-comments)
+to Stata 18.5+:
+
+- Displays Stata output without the redundant ‘echo’ of (multi-line)
+  commands
+- Autocompletion for variables, macros, matrices, and file paths
+- Interactive/richtext help files accessible within notebook
+- `#delimit ;` interactive support (along with all types of comments)
 
 The video below demonstrates using Stata in a Jupyter notebook. In
 addition to the
