@@ -33,18 +33,19 @@ which is needlessly clunky if you are working primarily with Stata).
 - [x] [Easy
   setup](https://hugetim.github.io/nbstata/user_guide.html#install)
 - [x] Works with Stata 17+ (only).
-- [x] Displays Stata output without the redundant ‘echo’ of (multi-line)
-  commands
-- [x] Autocompletion for variables, macros, matrices, and file paths
 - [x] DataGrid widget with `browse`-like capabilities (e.g., interactive
   filtering)
 - [x] Variable and data properties available in a ‘contextual help’ side
   panel
-- [x] Interactive/richtext help files accessible within notebook
-- [x] `#delimit ;` interactive support (along with all types of
-  comments)
 - [x] Quarto [inline
   code](https://quarto.org/docs/computations/inline-code.html) support
+
+Users of Stata 17 or 18.0 also get these features only built-in natively
+to Stata 18.5+: - Displays Stata output without the redundant ‘echo’ of
+(multi-line) commands - Autocompletion for variables, macros, matrices,
+and file paths - Interactive/richtext help files accessible within
+notebook - `#delimit ;` interactive support (along with all types of
+comments)
 
 The video below demonstrates using Stata in a Jupyter notebook. In
 addition to the
