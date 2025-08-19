@@ -428,7 +428,7 @@ def _get_help_html(self, code):
 # %% ../nbs/09_magics.ipynb 56
 @patch_to(StataMagics)
 def magic_help(self, code, kernel, cell):
-    """Show help file from stata.com/help.cgi?\{\}"""
+    r"""Show help file from stata.com/help.cgi?{}"""
     try:
         html_help = self._get_help_html(code)
     except Exception as e: # original: (urllib.error.HTTPError, urllib.error.URLError)
