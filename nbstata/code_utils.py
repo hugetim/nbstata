@@ -118,7 +118,7 @@ def standardize_code(code, sc_delimiter=False):
     code = _replace_delimiter(code, sc_delimiter) 
     
     # Replace multiple interior whitespace with one
-    code = multi_regex.sub('\g<char> ',code)
+    code = multi_regex.sub(r'\g<char> ',code)
     
     # Delete blank lines and whitespace at end of lines
     code_lines = code.splitlines()
