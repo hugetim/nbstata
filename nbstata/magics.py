@@ -14,7 +14,7 @@ import nbstata.browse as browse
 from fastcore.basics import patch_to
 import re
 import urllib
-from pkg_resources import resource_filename
+from ._resources import resource_path
 from bs4 import BeautifulSoup as bs
 import configparser
 
@@ -71,7 +71,7 @@ class StataMagics():
     
     abbrev_dict = _construct_abbrev_dict()
     
-    csshelp_default = resource_filename(
+    csshelp_default = resource_path(
         'nbstata', 'css/_StataKernelHelpDefault.css'
     )
 
