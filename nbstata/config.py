@@ -46,23 +46,25 @@ def _win_find_path(_dir=None):
 def _mac_find_path(_dir=None):
     """
     Attempt to find Stata path on macOS when not on user's PATH.
-    Modified from stata_kernel's original to only location "Applications/Stata". 
+    Modified from stata_kernel's original to "/Applications/StataNow" and "/Applications/Stata".
 
     Returns:
         (str): Path to Stata. Empty string if not found.
     """
     if _dir is None:
-        _dir = '/Applications/Stata'
-    path = Path(_dir)
-    if not os.path.exists(path):
-        return ''
+        dirs = [r'/Applications/StataNow',
+                r'/Applications/Stata']
     else:
-        try:
-            # find the application with the suffix .app
-            # example path: /Applications/Stata/StataMP.app
-            return str(next(path.glob("Stata*.app")))
-        except StopIteration:
-            return ''
+        dirs = [_dir]    
+    for this_dir in dirs:
+        path = Path(this_dir)
+        if os.path.exists(path):
+            try:
+                # find the application with the suffix .app
+                # example path: /Applications/Stata/StataMP.app
+                return str(next(path.glob("Stata*.app")))
+            except StopIteration:
+                return ''
 
 # %% ../nbs/01_config.ipynb 12
 def _other_find_path():
