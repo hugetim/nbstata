@@ -22,6 +22,7 @@ def _win_find_path(_dir=None):
     if _dir is None:
         dirs = [r'C:\Program Files\StataNow19',
                 r'C:\Program Files\Stata19',
+                r'C:\Program Files\StataNow18',
                 r'C:\Program Files\Stata18',
                 r'C:\Program Files\Stata17']
     else:
