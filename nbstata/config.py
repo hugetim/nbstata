@@ -114,12 +114,13 @@ def find_edition(stata_dir):
 
 # %% ../nbs/01_config.ipynb 25
 def set_pystata_path(stata_dir=None):
+    stata_dir = stata_dir.strip('"\'')
     if stata_dir is None:
         stata_dir, _ = find_dir_edition()
     if not os.path.isdir(stata_dir):
-        raise OSError(f'Specified stata_dir, "{stata_dir}", is not a valid directory path')
+        raise OSError(f'Specified stata_dir, {stata_dir}, is not a valid directory path')
     if not os.path.isdir(os.path.join(stata_dir, 'utilities')):
-        raise OSError(f'Specified stata_dir, "{stata_dir}", is not Stata\'s installation path')
+        raise OSError(f'Specified stata_dir, {stata_dir}, is not Stata\'s installation path')
     sys.path.append(os.path.join(stata_dir, 'utilities'))
 
 # %% ../nbs/01_config.ipynb 29
