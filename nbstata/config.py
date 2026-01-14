@@ -155,17 +155,22 @@ def _set_graph_size(width, height):
     import pystata
     pystata.config.set_graph_size(width, height)
 
-# %% ../nbs/01_config.ipynb 41
+# %% ../nbs/01_config.ipynb 42
 def _get_config_settings(cpath):
     parser = configparser.ConfigParser(
         empty_lines_in_values=False,
         comment_prefixes=('*','//'),
         inline_comment_prefixes=('//',),
     )
-    parser.read(str(cpath))
-    return {k: v.strip('"\'') for k, v in parser.items('nbstata')}
+    try:
+        parser.read(str(cpath))
+    except configparser.Error as err:
+        print_red(f"Configuration error in {cpath}:\n"
+                    f"    {str(err)}")
+    else:
+        return {k: v.strip('"\'') for k, v in parser.items('nbstata')}
 
-# %% ../nbs/01_config.ipynb 43
+# %% ../nbs/01_config.ipynb 45
 def xdg_user_config_path():
     xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
     return xdg_config_home / 'nbstata/nbstata.conf'
@@ -173,7 +178,7 @@ def xdg_user_config_path():
 def old_user_config_path():
     return Path('~/.nbstata.conf').expanduser()
 
-# %% ../nbs/01_config.ipynb 46
+# %% ../nbs/01_config.ipynb 51
 class Config:
     "nbstata configuration"
     env = {'stata_dir': None,
@@ -237,12 +242,8 @@ class Config:
                 break
             
     def _get_config_env(self, cpath):
-        try:
-            settings = _get_config_settings(cpath)
-        except configparser.Error as err:
-            print_red(f"Configuration error in {cpath}:\n"
-                      f"    {str(err)}")
-        else:
+        settings = _get_config_settings(cpath)
+        if settings is not None: # no config parsing errors
             self.config_path = str(cpath)
             self.update(
                 settings, 
@@ -279,7 +280,7 @@ class Config:
             print_red(message)
         self.errors = []
 
-# %% ../nbs/01_config.ipynb 56
+# %% ../nbs/01_config.ipynb 63
 @patch_to(Config)
 def set_graph_size(self, init=False):
     try:
@@ -296,7 +297,7 @@ def set_graph_size(self, init=False):
                       f"is now ({self.env['graph_width']}, {self.env['graph_height']}).")
             self._update_backup_graph_size()
 
-# %% ../nbs/01_config.ipynb 62
+# %% ../nbs/01_config.ipynb 69
 @patch_to(Config)
 def update_graph_config(self, init=False):
     graph_format = self.env['graph_format']
@@ -305,7 +306,7 @@ def update_graph_config(self, init=False):
     set_graph_format(graph_format)
     self.set_graph_size(init)
 
-# %% ../nbs/01_config.ipynb 64
+# %% ../nbs/01_config.ipynb 71
 @patch_to(Config)
 def init_stata(self):
     launch_stata(self.env['stata_dir'],
