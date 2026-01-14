@@ -20,7 +20,9 @@ import configparser
 # %% ../nbs/01_config.ipynb 8
 def _win_find_path(_dir=None):
     if _dir is None:
-        dirs = [r'C:\Program Files\Stata19',
+        dirs = [r'C:\Program Files\StataNow19',
+                r'C:\Program Files\Stata19',
+                r'C:\Program Files\StataNow18',
                 r'C:\Program Files\Stata18',
                 r'C:\Program Files\Stata17']
     else:
@@ -45,23 +47,25 @@ def _win_find_path(_dir=None):
 def _mac_find_path(_dir=None):
     """
     Attempt to find Stata path on macOS when not on user's PATH.
-    Modified from stata_kernel's original to only location "Applications/Stata". 
+    Modified from stata_kernel's original to "/Applications/StataNow" and "/Applications/Stata".
 
     Returns:
         (str): Path to Stata. Empty string if not found.
     """
     if _dir is None:
-        _dir = '/Applications/Stata'
-    path = Path(_dir)
-    if not os.path.exists(path):
-        return ''
+        dirs = [r'/Applications/StataNow',
+                r'/Applications/Stata']
     else:
-        try:
-            # find the application with the suffix .app
-            # example path: /Applications/Stata/StataMP.app
-            return str(next(path.glob("Stata*.app")))
-        except StopIteration:
-            return ''
+        dirs = [_dir]    
+    for this_dir in dirs:
+        path = Path(this_dir)
+        if os.path.exists(path):
+            try:
+                # find the application with the suffix .app
+                # example path: /Applications/Stata/StataMP.app
+                return str(next(path.glob("Stata*.app")))
+            except StopIteration:
+                return ''
 
 # %% ../nbs/01_config.ipynb 12
 def _other_find_path():
@@ -151,17 +155,22 @@ def _set_graph_size(width, height):
     import pystata
     pystata.config.set_graph_size(width, height)
 
-# %% ../nbs/01_config.ipynb 41
+# %% ../nbs/01_config.ipynb 42
 def _get_config_settings(cpath):
     parser = configparser.ConfigParser(
         empty_lines_in_values=False,
         comment_prefixes=('*','//'),
         inline_comment_prefixes=('//',),
     )
-    parser.read(str(cpath))
-    return dict(parser.items('nbstata'))
+    try:
+        parser.read(str(cpath))
+    except configparser.Error as err:
+        print_red(f"Configuration error in {cpath}:\n"
+                    f"    {str(err)}")
+    else:
+        return {k: v.strip('"\'') for k, v in parser.items('nbstata')}
 
-# %% ../nbs/01_config.ipynb 42
+# %% ../nbs/01_config.ipynb 45
 def xdg_user_config_path():
     xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
     return xdg_config_home / 'nbstata/nbstata.conf'
@@ -169,7 +178,7 @@ def xdg_user_config_path():
 def old_user_config_path():
     return Path('~/.nbstata.conf').expanduser()
 
-# %% ../nbs/01_config.ipynb 45
+# %% ../nbs/01_config.ipynb 51
 class Config:
     "nbstata configuration"
     env = {'stata_dir': None,
@@ -217,6 +226,7 @@ class Config:
 
     def __init__(self):
         """First check if a configuration file exists. If not, try `find_dir_edition`."""
+        self.env = Config.env.copy()
         self.errors = []
         self._update_backup_graph_size()
         self.config_path = None
@@ -232,12 +242,8 @@ class Config:
                 break
             
     def _get_config_env(self, cpath):
-        try:
-            settings = _get_config_settings(cpath)
-        except configparser.Error as err:
-            print_red(f"Configuration error in {cpath}:\n"
-                      f"    {str(err)}")
-        else:
+        settings = _get_config_settings(cpath)
+        if settings is not None: # no config parsing errors
             self.config_path = str(cpath)
             self.update(
                 settings, 
@@ -274,7 +280,7 @@ class Config:
             print_red(message)
         self.errors = []
 
-# %% ../nbs/01_config.ipynb 53
+# %% ../nbs/01_config.ipynb 63
 @patch_to(Config)
 def set_graph_size(self, init=False):
     try:
@@ -291,7 +297,7 @@ def set_graph_size(self, init=False):
                       f"is now ({self.env['graph_width']}, {self.env['graph_height']}).")
             self._update_backup_graph_size()
 
-# %% ../nbs/01_config.ipynb 59
+# %% ../nbs/01_config.ipynb 69
 @patch_to(Config)
 def update_graph_config(self, init=False):
     graph_format = self.env['graph_format']
@@ -300,7 +306,7 @@ def update_graph_config(self, init=False):
     set_graph_format(graph_format)
     self.set_graph_size(init)
 
-# %% ../nbs/01_config.ipynb 61
+# %% ../nbs/01_config.ipynb 71
 @patch_to(Config)
 def init_stata(self):
     launch_stata(self.env['stata_dir'],

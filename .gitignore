@@ -150,3 +150,5 @@ checklink/cookies.txt
 
 # Quarto
 .quarto
+
+uv.lock

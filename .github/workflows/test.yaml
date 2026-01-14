@@ -1,9 +1,31 @@
-name: CI
-on:  [workflow_dispatch, pull_request, push]
-permissions:
-  contents: read
+name: Run tests on supported versions of Python
+
+on:
+  push:
+#    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
-    steps: [uses: fastai/workflows/nbdev-ci@master]
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies and run tests
+      run: |
+        uv sync --all-extras
+    
+    - name: Run tests in uv virtual environment using nbdev
+      run: |
+        uv run nbdev_test

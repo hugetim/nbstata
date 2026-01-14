@@ -138,6 +138,6 @@ def main(argv=None):
     create_conf_if_needed(conf_path, conf_file_requested=args.conf_file)
 
 # %% ../nbs/15_install.ipynb 15
-#|eval: false
+#| eval: false
 if __name__ == "__main__" and not IN_NOTEBOOK:
     main()

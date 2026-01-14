@@ -4,3 +4,7 @@ include CONTRIBUTING.md
 include README.md
 recursive-include nbstata *
 recursive-exclude * __pycache__
+global-include *.md
+global-include *.json
+global-include *.txt
+# Keep pkg data wheel-friendly alongside include-package-data in pyproject.toml

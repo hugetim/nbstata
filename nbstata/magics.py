@@ -14,7 +14,7 @@ import nbstata.browse as browse
 from fastcore.basics import patch_to
 import re
 import urllib
-from pkg_resources import resource_filename
+from importlib.resources import files
 from bs4 import BeautifulSoup as bs
 import configparser
 
@@ -71,9 +71,7 @@ class StataMagics():
     
     abbrev_dict = _construct_abbrev_dict()
     
-    csshelp_default = resource_filename(
-        'nbstata', 'css/_StataKernelHelpDefault.css'
-    )
+    csshelp_default = files('nbstata').joinpath('css', '_StataKernelHelpDefault.css')
 
     def magic_quietly(self, code, kernel, cell):
         """Suppress all display for the current cell."""
@@ -420,8 +418,7 @@ def _get_help_html(self, code):
 
     # Set html
     css = soup.find('style', {'type': 'text/css'})
-    with open(self.csshelp_default, 'r') as default:
-        css.string = default.read()
+    css.string = self.csshelp_default.read_text()
 
     return str(soup)
 
