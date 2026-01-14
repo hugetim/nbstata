@@ -114,13 +114,12 @@ def find_edition(stata_dir):
 
 # %% ../nbs/01_config.ipynb 25
 def set_pystata_path(stata_dir=None):
-    stata_dir = stata_dir.strip('"\'')
     if stata_dir is None:
         stata_dir, _ = find_dir_edition()
     if not os.path.isdir(stata_dir):
-        raise OSError(f'Specified stata_dir, {stata_dir}, is not a valid directory path')
+        raise OSError(f'Specified stata_dir, "{stata_dir}", is not a valid directory path')
     if not os.path.isdir(os.path.join(stata_dir, 'utilities')):
-        raise OSError(f'Specified stata_dir, {stata_dir}, is not Stata\'s installation path')
+        raise OSError(f'Specified stata_dir, "{stata_dir}", is not Stata\'s installation path')
     sys.path.append(os.path.join(stata_dir, 'utilities'))
 
 # %% ../nbs/01_config.ipynb 29
@@ -164,9 +163,9 @@ def _get_config_settings(cpath):
         inline_comment_prefixes=('//',),
     )
     parser.read(str(cpath))
-    return dict(parser.items('nbstata'))
+    return {k: v.strip('"\'') for k, v in parser.items('nbstata')}
 
-# %% ../nbs/01_config.ipynb 42
+# %% ../nbs/01_config.ipynb 43
 def xdg_user_config_path():
     xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
     return xdg_config_home / 'nbstata/nbstata.conf'
@@ -174,7 +173,7 @@ def xdg_user_config_path():
 def old_user_config_path():
     return Path('~/.nbstata.conf').expanduser()
 
-# %% ../nbs/01_config.ipynb 45
+# %% ../nbs/01_config.ipynb 46
 class Config:
     "nbstata configuration"
     env = {'stata_dir': None,
@@ -222,6 +221,7 @@ class Config:
 
     def __init__(self):
         """First check if a configuration file exists. If not, try `find_dir_edition`."""
+        self.env = Config.env.copy()
         self.errors = []
         self._update_backup_graph_size()
         self.config_path = None
@@ -279,7 +279,7 @@ class Config:
             print_red(message)
         self.errors = []
 
-# %% ../nbs/01_config.ipynb 53
+# %% ../nbs/01_config.ipynb 56
 @patch_to(Config)
 def set_graph_size(self, init=False):
     try:
@@ -296,7 +296,7 @@ def set_graph_size(self, init=False):
                       f"is now ({self.env['graph_width']}, {self.env['graph_height']}).")
             self._update_backup_graph_size()
 
-# %% ../nbs/01_config.ipynb 59
+# %% ../nbs/01_config.ipynb 62
 @patch_to(Config)
 def update_graph_config(self, init=False):
     graph_format = self.env['graph_format']
@@ -305,7 +305,7 @@ def update_graph_config(self, init=False):
     set_graph_format(graph_format)
     self.set_graph_size(init)
 
-# %% ../nbs/01_config.ipynb 61
+# %% ../nbs/01_config.ipynb 64
 @patch_to(Config)
 def init_stata(self):
     launch_stata(self.env['stata_dir'],

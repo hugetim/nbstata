@@ -78,11 +78,6 @@ interface](https://www.stata.com/features/overview/graphical-user-interface/)?
     4.  [links](https://hugetim.github.io/nbstata/)
     5.  math: $y_{it}=\beta_0+\varepsilon_{it}$
 
-### nbstata Python and Stata version compatibility
-
-* Stata 17 users can run nbstata under Python 3.10, 3.11, 3.12, and 3.13 but not under Python 3.14.
-* Stata 18, 18.5, 19, and 19.5 users can run nbstata under Python 3.10, 3.11, 3.12, 3.13, and 3.14. To run nbstata under Python 3.14 users need to update their version of Stata to the 12 November 2025 revision (or later). To see your version of Stata's revision date issue in Stata either `about` or `display c(born_date)`.
-
 ## Contributing
 
 *nbstata* is being developed using
