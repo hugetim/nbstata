@@ -156,7 +156,15 @@ def _set_graph_size(width, height):
     pystata.config.set_graph_size(width, height)
 
 # %% ../nbs/01_config.ipynb 42
-def _get_config_settings(cpath):
+def xdg_user_config_path():
+    xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
+    return xdg_config_home / 'nbstata/nbstata.conf'
+
+def old_user_config_path():
+    return Path('~/.nbstata.conf').expanduser()
+
+# %% ../nbs/01_config.ipynb 46
+def _get_settings_from_config_file(cpath):
     parser = configparser.ConfigParser(
         empty_lines_in_values=False,
         comment_prefixes=('*','//'),
@@ -169,14 +177,6 @@ def _get_config_settings(cpath):
                     f"    {str(err)}")
     else:
         return {k: v.strip('"\'') for k, v in parser.items('nbstata')}
-
-# %% ../nbs/01_config.ipynb 45
-def xdg_user_config_path():
-    xdg_config_home = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config'))
-    return xdg_config_home / 'nbstata/nbstata.conf'
-
-def old_user_config_path():
-    return Path('~/.nbstata.conf').expanduser()
 
 # %% ../nbs/01_config.ipynb 51
 class Config:
@@ -199,31 +199,6 @@ class Config:
         browse_auto_height={'True', 'False'},
     )
     
-    @property
-    def splash(self):
-        return False if self.env['splash'] == 'False' else True
-    
-    @property
-    def browse_auto_height(self):
-        return False if self.env['browse_auto_height'] == 'False' else True
-      
-    @property
-    def noecho(self):
-        return self.env['echo'] == 'None'
-    
-    @property
-    def echo(self):
-        return self.env['echo'] == 'True'
-    
-    def display_status(self):
-        import pystata
-        pystata.config.status()
-        print(f"""
-      echo                   {self.env['echo']}
-      missing                {self.env['missing']}
-      browse_auto_height     {self.env['browse_auto_height']}
-      config file path       {self.config_path}""")
-
     def __init__(self):
         """First check if a configuration file exists. If not, try `find_dir_edition`."""
         self.env = Config.env.copy()
@@ -237,11 +212,11 @@ class Config:
         global_config_path = Path(os.path.join(sys.prefix, 'etc', 'nbstata.conf'))
         for cpath in (xdg_user_config_path(), old_user_config_path(), global_config_path):      
             if cpath.is_file():
-                self._get_config_env(cpath)
+                self._update_env_from_config_file(cpath)
                 break
             
-    def _get_config_env(self, cpath):
-        settings = _get_config_settings(cpath)
+    def _update_env_from_config_file(self, cpath):
+        settings = _get_settings_from_config_file(cpath)
         if settings is not None: # no config parsing errors
             self.config_path = str(cpath)
             self.update(
@@ -278,6 +253,31 @@ class Config:
                     f"Reverting to: {key} = {self.env[key]}"
                 )
         return key_errors
+
+    def display_status(self):
+        import pystata
+        pystata.config.status()
+        print(f"""
+      echo                   {self.env['echo']}
+      missing                {self.env['missing']}
+      browse_auto_height     {self.env['browse_auto_height']}
+      config file path       {self.config_path}""")
+      
+    @property
+    def splash(self):
+        return False if self.env['splash'] == 'False' else True
+    
+    @property
+    def browse_auto_height(self):
+        return False if self.env['browse_auto_height'] == 'False' else True
+      
+    @property
+    def noecho(self):
+        return self.env['echo'] == 'None'
+    
+    @property
+    def echo(self):
+        return self.env['echo'] == 'True'
 
 # %% ../nbs/01_config.ipynb 63
 @patch_to(Config)
