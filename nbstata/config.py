@@ -227,7 +227,6 @@ class Config:
     def __init__(self):
         """First check if a configuration file exists. If not, try `find_dir_edition`."""
         self.env = Config.env.copy()
-        self.errors = []
         self._update_backup_graph_size()
         self.config_path = None
 
@@ -252,33 +251,33 @@ class Config:
             )
             
     def update(self, env, init=False, error_header="%set error(s):"):
-        init_only_settings = {'stata_dir','edition','splash'}
-        allowed_settings = self.env if init else set(self.env)-init_only_settings
+        key_errors = self._key_value_errors(env, init)
+        if key_errors:
+            print_red(error_header)
+            for key, error_message in key_errors.items():
+                print_red(error_message)
+                env.pop(key)
+        for key in set(env)-{'graph_width', 'graph_height'}:
+            if not init: print(f"{key} was {self.env[key]}, is now {env[key]}")
+        self.env.update(env)
+
+    def _key_value_errors(self, env, init):
+        key_errors = {}
+        init_only_settings = {'stata_dir', 'edition', 'splash'}
+        allowed_settings = set(self.env) if init else set(self.env)-init_only_settings
         for key in list(env):
             if key not in allowed_settings:
                 explanation = (
                     "is only allowed in a configuration file." if key in init_only_settings
                     else "is not a valid setting."
                 )
-                self.errors.append(f"    '{key}' {explanation}")
-                env.pop(key)
+                key_errors[key] = f"    '{key}' {explanation}"
             elif key in self.valid_values_of and env[key] not in self.valid_values_of[key]:
-                self.errors.append(
+                key_errors[key] = (
                     f"    '{key}' configuration invalid: '{env[key]}' is not a valid value. "
                     f"Reverting to: {key} = {self.env[key]}"
                 )
-                env.pop(key)
-        self._display_and_clear_update_errors(error_header)
-        for key in set(env)-{'graph_width', 'graph_height'}:
-            if not init: print(f"{key} was {self.env[key]}, is now {env[key]}")
-        self.env.update(env)
-  
-    def _display_and_clear_update_errors(self, error_header):
-        if self.errors:
-            print_red(error_header)
-        for message in self.errors:
-            print_red(message)
-        self.errors = []
+        return key_errors
 
 # %% ../nbs/01_config.ipynb 63
 @patch_to(Config)
