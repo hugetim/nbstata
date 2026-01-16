@@ -37,6 +37,9 @@ dependencies = [
 # Mirrors the documented CLI usage: python -m nbstata.install
 nbstata-install = "nbstata.install:main"
 
+[project.entry-points.nbdev]
+nbstata = "nbstata._modidx:d"
+
 [tool.setuptools]
 include-package-data = true
 packages = { find = { where = ["."], include = ["nbstata*"] } }

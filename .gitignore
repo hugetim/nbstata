@@ -151,4 +151,7 @@ checklink/cookies.txt
 # Quarto
 .quarto
 
+# Claude
+.claude/
+
 uv.lock
