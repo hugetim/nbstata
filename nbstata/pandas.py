@@ -33,7 +33,8 @@ def _simple_dataframe_from_stata(stfr, var, valuelabel, missingval):
         df = stata.pdataframe_from_data(var=var, valuelabel=valuelabel, missingval=missingval)
     else:
         df = stata.pdataframe_from_frame(stfr, var=var, valuelabel=valuelabel, missingval=missingval)
-    df.index += 1
+    if df is not None:
+        df.index += 1
     return df
 
 # %% ../nbs/06_pandas.ipynb #a0853b2e
@@ -49,7 +50,7 @@ def better_dataframe_from_stata(stfr, var, obs, selectvar, valuelabel, missingva
         if hdl.getObsTotal() <= 0:
             return pd.DataFrame()
         df = _better_dataframe(hdl, var, obs, selectvar, valuelabel, missingval)
-    if sformat:
+    if df is not None and sformat:
         for v in list(df.columns):
             if hdl.isVarTypeString(v) or (valuelabel and missingval==nan
                                           and not pd.api.types.is_numeric_dtype(df[v])):

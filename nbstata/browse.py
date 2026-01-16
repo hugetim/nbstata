@@ -100,7 +100,7 @@ def parse_browse_magic(code):
     N = None
     m = re.match(r"\A(?P<N>[0-9]+)?[\s]*(?P<remainder>.*?)\Z", code.strip())
     if m is None:
-        raise ValueError(f"syntax error: this magic must be in a code by itself on a single line")
+        raise ValueError(f"syntax error: this magic must be in a code cell by itself on a single line")
     if m.group('N'):
         N = int(m.group('N'))
     code_minus_N = m.group('remainder')
@@ -205,6 +205,9 @@ def set_ipydatagrid_height():
 # %% ../nbs/07_browse.ipynb #a34fa37d
 def display_df_as_ipydatagrid(df, auto_height=True):
     from ipydatagrid import DataGrid, TextRenderer
+    if df is None or df.empty:
+        print("No observations.")
+        return
     i_renderer = TextRenderer(horizontal_alignment="right", background_color="rgb(243, 243, 243)")
     d_renderer = TextRenderer(horizontal_alignment="right")
     h_renderer = TextRenderer(horizontal_alignment="center")

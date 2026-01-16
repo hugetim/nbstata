@@ -237,7 +237,6 @@ def magic_browse(self, code, kernel, cell):
         params = browse.browse_df_params(
             expanded_code, obs_count(), kernel.nbstata_config.env['missing'],
         )
-        sformat = params[-1]
         df = browse.get_df(*params)
         browse.display_df_as_ipydatagrid(df, kernel.nbstata_config.browse_auto_height)
     except Exception as e:
@@ -246,7 +245,7 @@ def magic_browse(self, code, kernel, cell):
 
 # %% ../nbs/09_magics.ipynb #5dc8d35d
 class Frame():
-    """Class for generating Stata select_var for getAsDict"""
+    """Context manager class akin to Stata's `frame` prefix"""
     def __init__(self, framename):
         self.original_framename = get_global('c(frame)')
         self.framename = framename
