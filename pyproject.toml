@@ -7,5 +7,10 @@ name="nbstata"
 requires-python=">=3.10"
 dynamic = [ "keywords", "description", "version", "dependencies", "optional-dependencies", "readme", "license", "authors", "classifiers", "entry-points", "scripts", "urls"]
 
+[dependency-groups]
+dev = [
+  "nbdev>=2.4.6",
+]
+
 [tool.uv]
 cache-keys = [{ file = "pyproject.toml" }, { file = "settings.ini" }, { file = "setup.py" }]
