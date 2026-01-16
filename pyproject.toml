@@ -1,58 +1,11 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name="nbstata"
-version = "0.8.4"
-description = "A Jupyter kernel for Stata built on pystata"
-readme = "README.md"
 requires-python=">=3.10"
-license = { text = "GPL-3.0-only" }
-authors = [{ name = "Tim Huegerich" }]
-classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Programming Language :: Python :: 3.14",
-  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
-]
-# Keep runtime deps minimal; pystata is provided by Stata itself.
-dependencies = [
-  "bs4>=0.0.2",
-  "fastcore>=1.8.13",
-  "ipykernel>=6",
-  "jupyter-client>=7",
-  "nbclient>=0.10.2",
-  "nbformat>=5.10.4",
-  "numpy>=2.2.6",
-  "packaging>=23", # for Version parsing (instead of distutils/pkg_resources)
-  "pyyaml>=6.0.2",
-]
+dynamic = [ "keywords", "description", "version", "dependencies", "optional-dependencies", "readme", "license", "authors", "classifiers", "entry-points", "scripts", "urls"]
 
-[project.scripts]
-# Mirrors the documented CLI usage: python -m nbstata.install
-nbstata-install = "nbstata.install:main"
-
-[project.entry-points.nbdev]
-nbstata = "nbstata._modidx:d"
-
-[tool.setuptools]
-include-package-data = true
-packages = { find = { where = ["."], include = ["nbstata*"] } }
-
-# If you ship any data files within the package tree, ensure they're included.
-# You already have MANIFEST.in; include-package-data keeps wheels aligned.
-
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "-q"
-testpaths = ["nbs"]
-
-[dependency-groups]
-dev = [
-  "nbdev>=2.4.6",
-]
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "settings.ini" }, { file = "setup.py" }]
