@@ -7,24 +7,23 @@ Note: nbdev works on macOS, Linux, and most Unix-style operating systems. It wor
 
 Follow the [install nbdev](https://nbdev.fast.ai/tutorials/tutorial.html#installation) instructions, specifically:
 
-1. [Install jupyter notebook](https://nbdev.fast.ai/tutorials/tutorial.html#install-jupyter-notebook)
+1. [Install JupyterLab](https://nbdev.fast.ai/tutorials/tutorial.html#install-jupyterlab) (or [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks))
 2. [Install nbdev](https://nbdev.fast.ai/tutorials/tutorial.html#install-nbdev)
 3. [Install quarto](https://nbdev.fast.ai/tutorials/tutorial.html#install-quarto)
-4. After cloning the repository, run this command inside it: [nbdev_install_hooks](https://nbdev.fast.ai/tutorials/modular_nbdev.html#jupyter-git-integration)
-5. Run [nbdev_export](https://nbdev.fast.ai/tutorials/tutorial.html#install-quarto) inside the project directory
-6. Run [pip install -e '.[dev]'](https://nbdev.fast.ai/tutorials/tutorial.html#install-your-package) inside the project directory
+4. After cloning the repository, setup [hooks for git-friendly Jupyter notebooks](https://nbdev.fast.ai/tutorials/git_friendly_jupyter.html)
+5. Run [pip install -e '.[dev]'](https://nbdev.fast.ai/tutorials/tutorial.html#install-your-package) inside the project directory
 
-Visit [https://hugetim.github.io/nbstata/dev_docs_index.html](https://hugetim.github.io/nbstata/dev_docs_index.html) to get oriented.
+Visit [https://hugetim.github.io/nbstata/dev_docs_index.html](https://hugetim.github.io/nbstata/dev_docs_index.html) for an overview of the code structure.
 
 ## How to submit notebook PRs
-After making changes to the `/nbs` notebooks, you should run [nbdev_prepare](https://nbdev.fast.ai/tutorials/tutorial.html#prepare-your-changes) and make any necessary changes in order to pass all the tests.
+After making changes to the `/nbs` notebooks, run [nbdev_prepare](https://nbdev.fast.ai/tutorials/tutorial.html#prepare-your-changes) (and make any changes needed to pass all tests).
 
 (You may also make limited changes directly to the `.py` files in the `/nbstata` folder, in which case you should sync those changes back to the notebooks with [nbdev_update](https://nbdev.fast.ai/api/sync.html).)
 
 ReviewNB gives us visual diffs for notebooks and enables PR comments specific to a cell: https://app.reviewnb.com/hugetim/nbstata/ (free account needed to login)
 
-## Do you want to contribute to the documentation?
-* Docs are automatically created from the notebooks in the `/nbs` folder.
+## Want to contribute to the documentation?
+* The [docs website](https://hugetim.github.io/nbstata/) (and also README.md) is automatically created from the notebooks in the `/nbs` folder.
 * You can preview the docs locally by running [nbdev_preview](https://nbdev.fast.ai/tutorials/tutorial.html#preview-your-docs). While in preview mode, you can make updates to notebooks and they will be reflected (after a small delay) in your browser.
 
 ## Specifics to be aware of
