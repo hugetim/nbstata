@@ -70,8 +70,6 @@ class StataMagics():
     }
     
     abbrev_dict = _construct_abbrev_dict()
-    
-    csshelp_default = files('nbstata').joinpath('css', '_StataKernelHelpDefault.css')
 
     def magic_quietly(self, code, kernel, cell):
         """Suppress all display for the current cell."""
@@ -353,17 +351,8 @@ def _magic_frheadtail(self, code, kernel, cell, tail):
         print_kernel(f"{'tail' if tail else 'head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb #848db723
-@patch_to(StataMagics)
-def _get_help_html(self, code):
-    html_base = "https://www.stata.com"
-    html_help = urllib.parse.urljoin(html_base, "help.cgi?{}")
-    url_safe_code = urllib.parse.quote(code)
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
-    request = urllib.request.Request(html_help.format(url_safe_code), headers=headers)
-    reply = urllib.request.urlopen(request)
-    html = reply.read().decode("utf-8")
-
+# %% ../nbs/09_magics.ipynb #25848645
+def _process_raw_help_html(html, url_base, csshelp_default):
     # Remove excessive extra lines (Note css: "white-space: pre-wrap")
     edited_html = html.replace("<p>\n", "<p>")
     soup = bs(edited_html, 'html.parser')
@@ -382,7 +371,7 @@ def _get_help_html(self, code):
             if match:
                 link = '/help.cgi?'
                 link += urllib.parse.quote_plus(match.group(1))
-            a['href'] = urllib.parse.urljoin(html_base, link)
+            a['href'] = urllib.parse.urljoin(url_base, link)
             a['target'] = '_blank'
 
     # Remove header 'Stata 15 help for ...'
@@ -417,16 +406,27 @@ def _get_help_html(self, code):
 
     # Set html
     css = soup.find('style', {'type': 'text/css'})
-    css.string = self.csshelp_default.read_text()
+    css.string = csshelp_default.read_text()
 
     return str(soup)
+
+# %% ../nbs/09_magics.ipynb #848db723
+def _get_help_html(code):
+    csshelp_default = files('nbstata').joinpath('css', '_StataKernelHelpDefault.css')
+    url_base = "https://www.stata.com"
+    url_help = urllib.parse.urljoin(url_base, f"help.cgi?{urllib.parse.quote(code)}")
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+    request = urllib.request.Request(url_help, headers=headers)
+    reply = urllib.request.urlopen(request)
+    html = reply.read().decode("utf-8")
+    return _process_raw_help_html(html, url_base, csshelp_default)
 
 # %% ../nbs/09_magics.ipynb #d5b82d6c
 @patch_to(StataMagics)
 def magic_help(self, code, kernel, cell):
     r"""Show help file from stata.com/help.cgi?{}"""
     try:
-        html_help = self._get_help_html(code)
+        help_html = _get_help_html(code)
     except Exception as e: # original: (urllib.error.HTTPError, urllib.error.URLError)
         msg = "Failed to fetch HTML help.\r\n{0}"
         print_kernel(msg.format(e), kernel)
@@ -434,7 +434,7 @@ def magic_help(self, code, kernel, cell):
         fallback = 'This front-end cannot display HTML help.'
         resp = {
             'data': {
-                'text/html': html_help,
+                'text/html': help_html,
                 'text/plain': fallback},
             'metadata': {}}
         kernel.send_response(kernel.iopub_socket, 'display_data', resp)
