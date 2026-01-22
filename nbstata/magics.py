@@ -351,8 +351,8 @@ def _magic_frheadtail(self, code, kernel, cell, tail):
         print_kernel(f"{'tail' if tail else 'head'} failed.\r\n{e}", kernel)
     return ''
 
-# %% ../nbs/09_magics.ipynb #25848645
-def _process_raw_help_html(html, url_base, csshelp_default):
+# %% ../nbs/09_magics.ipynb #e96f85cf
+def _process_raw_help_html(html, code, url_base, help_css):
     # Remove excessive extra lines (Note css: "white-space: pre-wrap")
     edited_html = html.replace("<p>\n", "<p>")
     soup = bs(edited_html, 'html.parser')
@@ -376,25 +376,29 @@ def _process_raw_help_html(html, url_base, csshelp_default):
 
     # Remove header 'Stata 15 help for ...'
     stata_header = soup.find('h2')
-    if stata_header:
-        stata_header.decompose()
+    if stata_header: stata_header.decompose()
 
     # Remove Stata help menu
-    soup.find('div', id='menu').decompose()
+    menu_div = soup.find('div', id='menu')
+    if menu_div: menu_div.decompose()
 
     # Remove Copyright notice
     copyright = soup.find(string=re.compile(r".*Copyright.*", flags=re.DOTALL))
-    copyright.find_parent("table").decompose()
+    if copyright: 
+        copyright_table = copyright.find_parent("table")
+        if copyright_table: copyright_table.decompose()
 
     # Remove last hrule
-    soup.find_all('hr')[-1].decompose()
+    hrs = soup.find_all('hr')
+    if hrs: hrs[-1].decompose()
     
     # Remove last br
-    soup.find_all('br')[-1].decompose()
+    brs = soup.find_all('br')
+    if brs: brs[-1].decompose()
     
     # Remove last empty paragraph, empty space
     empty_paragraphs = soup.find_all('p', string="")
-    if str(empty_paragraphs[-1]) == "<p></p>":
+    if empty_paragraphs and str(empty_paragraphs[-1]) == "<p></p>":
         empty_paragraphs[-1].decompose()
 
     # Set all the backgrounds to transparent
@@ -406,20 +410,21 @@ def _process_raw_help_html(html, url_base, csshelp_default):
 
     # Set html
     css = soup.find('style', {'type': 'text/css'})
-    css.string = csshelp_default.read_text()
+    if css: css.string = help_css
 
     return str(soup)
 
 # %% ../nbs/09_magics.ipynb #848db723
 def _get_help_html(code):
-    csshelp_default = files('nbstata').joinpath('css', '_StataKernelHelpDefault.css')
+    csshelp_default = files('nbstata').joinpath('css', '_StataKernelHelpDefault.css').read_text()
     url_base = "https://www.stata.com"
-    url_help = urllib.parse.urljoin(url_base, f"help.cgi?{urllib.parse.quote(code)}")
+    url_code = urllib.parse.quote(code.replace(' ', '_'))
+    url_help = urllib.parse.urljoin(url_base, f"help.cgi?{url_code}")
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
     request = urllib.request.Request(url_help, headers=headers)
     reply = urllib.request.urlopen(request)
     html = reply.read().decode("utf-8")
-    return _process_raw_help_html(html, url_base, csshelp_default)
+    return _process_raw_help_html(html, url_code, url_base, csshelp_default)
 
 # %% ../nbs/09_magics.ipynb #d5b82d6c
 @patch_to(StataMagics)
@@ -427,7 +432,7 @@ def magic_help(self, code, kernel, cell):
     r"""Show help file from stata.com/help.cgi?{}"""
     try:
         help_html = _get_help_html(code)
-    except Exception as e: # original: (urllib.error.HTTPError, urllib.error.URLError)
+    except (urllib.error.HTTPError, urllib.error.URLError) as e:
         msg = "Failed to fetch HTML help.\r\n{0}"
         print_kernel(msg.format(e), kernel)
     else:
