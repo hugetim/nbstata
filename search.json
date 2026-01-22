@@ -1,0 +1,575 @@
+[
+  {
+    "objectID": "completions.html",
+    "href": "completions.html",
+    "title": "completions",
+    "section": "",
+    "text": "Adapted from the stata_kernel version.\n\nsource\n\nCompletionsManager\n\ndef CompletionsManager(\n    stata_session:StataSession\n):\n\n\nsource\n\n\nCompletionsManager.get_globals\n\ndef get_globals(\n    \n):\n\n\nsource\n\n\nCompletionsManager.get_file_paths\n\ndef get_file_paths(\n    chunk\n):\n\nGet file paths based on chunk Args: chunk (str): chunk of text after last space. Doesn’t include string punctuation characters Returns: (List[str]): folders and files at that location\n\nfrom nbstata.config import launch_stata\nfrom nbstata.stata_more import run_sfi\n\n\nlaunch_stata(splash=False)\ntest_stata = StataSession()\ntest_instance = CompletionsManager(test_stata)\ntest_instance.get_file_paths(\"0\")\n\n['00_misc_utils.ipynb',\n '01_config.ipynb',\n '02_stata.ipynb',\n '03_stata_more.ipynb',\n '04_code_utils.ipynb',\n '05_noecho.ipynb',\n '06_pandas.ipynb',\n '07_browse.ipynb',\n '08_stata_session.ipynb',\n '09_magics.ipynb']\n\n\n\nrun_sfi('global in_path \"../nbstata\"')\ntest_instance.stata_session.refresh_suggestions()\ntest_instance.get_file_paths(\"$in_path/com\")\n\n['$in_path/completion_env.py', '$in_path/completions.py']\n\n\n\nsource\n\n\nCompletionsManager.get\n\ndef get(\n    starts, env, rcomp\n):\n\nReturn environment-aware completions list.\n\nsource\n\n\nCompletionsManager.do\n\ndef do(\n    code, cursor_pos\n):\n\n\nfrom fastcore.test import test_eq\n\n\ndef completions_test_setup(code):\n    global test_instance\n    run_sfi(\"clear all\")\n    run_sfi(code)\n    test_instance.stata_session.clear_suggestions()\n    \n\ndef _complete(code, cursor_pos):\n    _, _, matches = test_instance.do(code, cursor_pos)\n    return matches\n\n\ncompletions_test_setup(\"gen var1 = 1\")\ncode = \"list va\"\ncursor_pos = 7\n\ntest_eq(\n    test_instance.env_helper.get_env(\n        code[:cursor_pos], code[cursor_pos:(cursor_pos + 2)],\n        False),\n    (0, 5, 'va', ''),\n) \ntest_eq(\n    _complete(code, cursor_pos),\n    ['var1'],\n)\n\n\ncompletions_test_setup('local test_local \"test value\"')\ntest_eq(\n    _complete(\"list `t\", 7),\n    [\"test_local'\"],\n)\nrun_sfi('local test_local \"\"')\n\n\ncompletions_test_setup('global test_global \"test value\"')\ntest_eq(\n    _complete(\"list ${tes}\", 10),\n    ['test_global'],\n)",
+    "crumbs": [
+      "Developer Docs",
+      "completions"
+    ]
+  },
+  {
+    "objectID": "noecho.html",
+    "href": "noecho.html",
+    "title": "noecho",
+    "section": "",
+    "text": "We can run multi-line Stata code as a Stata program to prevent the echo of commands. But this approach requires special care for handling both local macros and valid Stata code that cannot be run inside a Stata program.\n(Note: An alternative approach, prepending each Stata command with noisily and placing them inside a quietly block, was rejected at a certain point as more difficult overall, but it may be worth revisiting if unanticipated issues with the current run-as-program approach arise.)",
+    "crumbs": [
+      "Developer Docs",
+      "noecho"
+    ]
+  },
+  {
+    "objectID": "noecho.html#run-as-program-but-with-main-scope-locals",
+    "href": "noecho.html#run-as-program-but-with-main-scope-locals",
+    "title": "noecho",
+    "section": "Run as program but with main-scope locals",
+    "text": "Run as program but with main-scope locals\nWe aim to run Stata code inside a Stata program, yet handling locals as if the code were run normally (rather than inside the program scope).\nWe accomplish this by first grabbing any previously-defined locals (with stata_more.get_local_dict) and artificially defining their values at the start of the program (using stata_more.locals_code_from_dict).\nThen we also want to artificially transfer any locals created within the program to the outside scope. We do this by making the program an s-class program and storing any locals present at the end of the program via sreturn. These locals can then be quietly defined in the main scope after the program run has completed.\n\nsource\n\nrun_as_program_w_locals\n\ndef run_as_program_w_locals(\n    std_code, local_dict:NoneType=None\n):\n\n\nsm.run_sfi(dedent(\"\"\"\n    macro drop _all\n    local local1 = 1\n    local local2 \"two\"\n    local local3 `\"\"3\"\"' \"\"\"))\nrun_as_program_w_locals(\"\"\"disp `\"`local1' `local2' `local3'\"' \"\"\")\n\n1 two \"3\"\n\n\n\ncode = '''\\\nlocal test1 \"blah blah\"\nlocal test2 \"blah\"\n'''\nrun_as_program_w_locals(\"\"\"disp `\"`local1' `local2' `local3'\"' \\n\"\"\" + code)\ntest_eq(sm.get_local_dict(), \n        {'test2': 'blah',\n         'test1': 'blah blah',\n         'local1': '1',\n         'local2': 'two',\n         'local3': '\"3\"'})\n\n1 two \"3\"\n\n\n\nsource\n\n\nrun_non_prog_noecho\n\ndef run_non_prog_noecho(\n    std_non_prog_code, run_as_prog:function=&lt;function run_as_program_w_locals at 0x7f30bb175080&gt;\n):\n\nWe remove comments from single-line code to avoid the error that would otherwise result.\n\nrun_non_prog_noecho('disp \"test 1\"')\n\ntest 1\n\n\n\ntwo_lines_of_code = dedent('''\\\n    disp \"test 1\"\n    disp \"test 2\"\n    ''')\nrun_non_prog_noecho(two_lines_of_code)\n\ntest 1\ntest 2\n\n\n\nrun_non_prog_noecho('preserve\\ndisp \"test 1\"')\n\n(Note: Below code run with echo to enable preserve/restore functionality.)\n\n. preserve\n\n. disp \"test 1\"\ntest 1\n\n.",
+    "crumbs": [
+      "Developer Docs",
+      "noecho"
+    ]
+  },
+  {
+    "objectID": "noecho.html#run-any-stata-code-noecho",
+    "href": "noecho.html#run-any-stata-code-noecho",
+    "title": "noecho",
+    "section": "Run any Stata code noecho",
+    "text": "Run any Stata code noecho\nCertain valid Stata code (referred to here as prog_code because it defines Stata programs–or runs mata or python code blocks) cannot be run inside a Stata program, so we need to identify such code and run it separately.\n\nsource\n\nrun_prog_noecho\n\ndef run_prog_noecho(\n    std_prog_code\n):\n\nOther programs (that is, Stata’s program define, as well as mata or python blocks) cannot be defined/run within a Stata program, however. Instead, we will just run them directly, quietly to prevent echo, except for the case of mata programs, in which case quietly would block the output.\n\nprog_block_code = dedent(\"\"\"\\\n    program define display1\n        disp \"display1 output\"\n    end\n    \"\"\")\nrun_prog_noecho(prog_block_code)\nrun_single(\"display1\")\n\n\ndisplay1 output\n\n\n\npython_block_code = dedent(\"\"\"\\\n    python:\n    print(\"hello\")\n    end\n    \"\"\")\nrun_prog_noecho(python_block_code)\n\nhello\n\n\n\n\nmata_block_code = dedent(\"\"\"\\\n    mata:\n    display(\"hello\")\n    end\n    \"\"\")\nrun_prog_noecho(mata_block_code)\n\n\n. mata:\n------------------------------------------------- mata (type end to exit) -----\n: display(\"hello\")\nhello\n\n: end\n-------------------------------------------------------------------------------\n\n. \n\n\n\nsource\n\n\nrun_noecho\n\ndef run_noecho(\n    code, sc_delimiter:bool=False, run_as_prog:function=&lt;function run_as_program_w_locals at 0x7f30bb175080&gt;\n):\n\nAfter break_out_prog_blocks, run each prog and non-prog block noecho\n\nrun_noecho(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''))\n\n\n\nender output\n\n\n\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=run_as_program_w_locals)\n\n1 two \"3\"\n1 two \"3\" blah blah\n\n\n\ncode = \"\"\"\\\nlocal local1 \"foo\"\nlocal local2 \"bar\"\nlocal abcd \"foo bar\"\n\"\"\"\nrun_noecho(code, run_as_prog=run_as_program_w_locals)\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=run_as_program_w_locals)\n\nfoo bar \"3\"\nfoo bar \"3\" blah blah\n\n\n\nTest for Issue #25:\n\ncode2 = '''\\\n/*\nd'''\nrun_noecho(code2)\n\n\n\nTest for Issue #35:\n\nrun_single(\"sysuse auto, clear\")\ncode2 = '''\\\nsum price, ///\n    detail'''\nrun_noecho(code2)\n\n(1978 automobile data)\n\n                            Price\n-------------------------------------------------------------\n      Percentiles      Smallest\n 1%         3291           3291\n 5%         3748           3299\n10%         3895           3667       Obs                  74\n25%         4195           3748       Sum of wgt.          74\n\n50%       5006.5                      Mean           6165.257\n                        Largest       Std. dev.      2949.496\n75%         6342          13466\n90%        11385          13594       Variance        8699526\n95%        13466          14500       Skewness       1.653434\n99%        15906          15906       Kurtosis       4.819188",
+    "crumbs": [
+      "Developer Docs",
+      "noecho"
+    ]
+  },
+  {
+    "objectID": "stata.html",
+    "href": "stata.html",
+    "title": "stata",
+    "section": "",
+    "text": "sfi is Stata’s python API, originally intended for interacting with Stata from python within Stata. As such, it can only be imported with Stata running. pystata.stata.run enables running Stata code from python.\nFor one thing, using wrappers removes the need to constantly import pystata and/or sfi within functions elsewhere to avoid running afoul of CI tests in an environment without Stata installed.",
+    "crumbs": [
+      "Developer Docs",
+      "stata"
+    ]
+  },
+  {
+    "objectID": "stata.html#simple-wrappers",
+    "href": "stata.html#simple-wrappers",
+    "title": "stata",
+    "section": "Simple wrappers",
+    "text": "Simple wrappers\n\nsource\n\nget_local\n\ndef get_local(\n    name\n):\n\nhttps://www.stata.com/python/api17/Macro.html#sfi.Macro.getLocal\n\nsource\n\n\nset_local\n\ndef set_local(\n    name, value\n):\n\nhttps://www.stata.com/python/api17/Macro.html#sfi.Macro.setLocal\n\nsource\n\n\nget_global\n\ndef get_global(\n    name\n):\n\nhttps://www.stata.com/python/api17/Macro.html#sfi.Macro.getGlobal\n\nsource\n\n\nget_scalar\n\ndef get_scalar(\n    name\n):\n\nhttps://www.stata.com/python/api17/Scalar.html?highlight=scalar#sfi.Scalar.getValue\n\nsource\n\n\nstata_formatted\n\ndef stata_formatted(\n    value, s_format\n):\n\nhttps://www.stata.com/python/api17/SFIToolkit.html#sfi.SFIToolkit.formatValue\n\nsource\n\n\nvariable_names\n\ndef variable_names(\n    \n):\n\nvariable_names uses ‘getVarCount’ and ‘getVarName’: https://www.stata.com/python/api17/Data.html\n\nsfi.SFIToolkit.stata(\"quietly gen var1 = 1\")\nvariable_names()\n\n['var1']\n\n\n\nsource\n\n\ndrop_var\n\ndef drop_var(\n    name\n):\n\nhttps://www.stata.com/python/api17/Data.html#sfi.Data.dropVar\n\ndrop_var('var1')\nvariable_names()\n\n[]\n\n\n\nsource\n\n\nobs_count\n\ndef obs_count(\n    \n):\n\nCount the number of observations\nhttps://www.stata.com/python/api17/Data.html#sfi.Data.getObsTotal\n\nobs_count()\n\n0\n\n\n\nsource\n\n\npwd\n\ndef pwd(\n    \n):\n\nhttps://www.stata.com/python/api17/SFIToolkit.html#sfi.SFIToolkit.getWorkingDir\n\npwd()[-12:]\n\n'\\\\nbstata\\\\nbs'\n\n\n\nsource\n\n\nmacro_expand\n\ndef macro_expand(\n    s\n):\n\nhttps://www.stata.com/python/api17/SFIToolkit.html#sfi.SFIToolkit.macroExpand",
+    "crumbs": [
+      "Developer Docs",
+      "stata"
+    ]
+  },
+  {
+    "objectID": "stata.html#running-arbitrary-stata-code",
+    "href": "stata.html#running-arbitrary-stata-code",
+    "title": "stata",
+    "section": "Running arbitrary Stata code",
+    "text": "Running arbitrary Stata code\n\nsource\n\nrun_direct\n\ndef run_direct(\n    cmds, quietly:bool=False, echo:bool=False, inline:bool=True\n):\n\nrun_direct wraps the most flexible utility Stata provides to run Stata commands: pystata.stata.run\n\nrun_direct(\"\"\"\\\ndisp 1\ndisp 2\"\"\", echo=True)\n\n\n. disp 1\n1\n\n. disp 2\n2\n\n. \n\n\n\nsource\n\n\nrun_single\n\ndef run_single(\n    cmd, echo:bool=False\n):\n\nrun_single uses an sfi function for running a single command that is notably faster than pystata.stata.run but is less versatile and appears less resilient to errors: https://www.stata.com/python/api17/SFIToolkit.html#sfi.SFIToolkit.stata\n\nimport sfi, pystata\n\n\nwith Timer():\n    sfi.SFIToolkit.stata(\"disp 0\")\nwith Timer():\n    pystata.stata.run(\"disp 0\")\n\n0\nElapsed time: 0.0001 seconds\n0\nElapsed time: 0.0585 seconds\n\n\nFor example, it cannot display graphs, silently quashing them instead:\n\nsfi.SFIToolkit.stata(\"sysuse lifeexp, clear\")\nsfi.SFIToolkit.stata(\"scatter gnppc lexp\")\n\n(Life expectancy, 1998)\n\n\n\nrun_direct(\"scatter gnppc lexp\", echo=True)\n\n. scatter gnppc lexp\n\n\n\n\n\n\n\n\n\nEven worse, a subsequent run of sfi.SFIToolkit.stata can be affected by a previous error:\n\ntry:\n    sfi.SFIToolkit.stata(\"disp 1 \\n disp 2\")\nexcept Exception as e:\n    print(repr(e))\n\nSyntaxError('failed to execute the specified Stata command')\n\n\n\nsfi.SFIToolkit.stata('disp \"1b\"')\n\n1\n invalid name\n1b\n\n\nBut an intervening blank run seems to set things right:\n\ntry:\n    sfi.SFIToolkit.stata(\"disp 1 \\n disp 2\")\nexcept Exception:\n    sfi.SFIToolkit.stata(\"\")\n\n1\n invalid name\n\n\n\nsfi.SFIToolkit.stata('disp \"1b\"')\n\n1b\n\n\nSo run_single should only be used with care. For when it is used, in case of error-causing input code, it executes sfi.SFIToolkit.stata again (with stdout redirected) to prevent the effects of the error from persisting.\n\nwith ExceptionExpected(ex=SyntaxError):\n    run_single(\"disp 1 \\n disp 2\")\n\n\nrun_single('disp \"1b\"')\n\n1b",
+    "crumbs": [
+      "Developer Docs",
+      "stata"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "nbstata: a new Stata kernel",
+    "section": "",
+    "text": "nbstata is a Jupyter kernel for Stata built on top of pystata.\nFor the User Guide, click here.",
+    "crumbs": [
+      "nbstata: a new Stata kernel"
+    ]
+  },
+  {
+    "objectID": "index.html#what-is-jupyter",
+    "href": "index.html#what-is-jupyter",
+    "title": "nbstata: a new Stata kernel",
+    "section": "What is Jupyter?",
+    "text": "What is Jupyter?\nA Jupyter notebook allows you to combine interactive code and results with Markdown in a single document. Though it is named after the three core programming languages it supports (Julia, Python, and R), it can be used with with a wide variety of languages.\nnbstata allows you to create Stata notebooks (as opposed to using Stata within a Python notebook, which is needlessly clunky if you are working primarily with Stata).\n\nKey nbstata features\n\nEasy setup\nWorks with Stata 17+ (only).\nDataGrid widget with browse-like capabilities (e.g., interactive filtering)\nVariable and data properties available in a ‘contextual help’ side panel\nQuarto inline code support\n\nUsers of Stata 17 or 18.0 also get these features only built-in natively to Stata 18.5+:\n\nDisplays Stata output without the redundant ‘echo’ of (multi-line) commands\nAutocompletion for variables, macros, matrices, and file paths\nInteractive/richtext help files accessible within notebook\n#delimit ; interactive support (along with all types of comments)\n\nThe video below demonstrates using Stata in a Jupyter notebook. In addition to the NBClassic application shown there, nbstata can also be used with JupyterLab, VS Code, or Quarto.\n\n\n\nWhat can you do with Stata notebooks…\n…that you can’t do with the official Stata interface?\n\nExploratory analysis that is both:\n\ninteractive\npreserved for future reference/editing\n\nPresent results in a way that interweaves:1\n\ncode\nresults (including graphs)\nrich text:\n\nlists\nHeadings\n\nlinks\nmath: \\(y_{it}=\\beta_0+\\varepsilon_{it}\\)\n\n\n\n\n\n\nStata dynamic documents can do this part, though with a less interactive workflow. (See also: markstat, stmd, and Statamarkdown) Using nbstata with Quarto instead gives you a similar workflow, with greater flexibility of output.↩︎",
+    "crumbs": [
+      "nbstata: a new Stata kernel"
+    ]
+  },
+  {
+    "objectID": "index.html#contributing",
+    "href": "index.html#contributing",
+    "title": "nbstata: a new Stata kernel",
+    "section": "Contributing",
+    "text": "Contributing\nnbstata is being developed using nbdev. The /nbs directory is where edits to the source code should be made. (The python code is then exported to the /nbdev library folder.)\nFor more, see CONTRIBUTING.md.",
+    "crumbs": [
+      "nbstata: a new Stata kernel"
+    ]
+  },
+  {
+    "objectID": "index.html#acknowledgements",
+    "href": "index.html#acknowledgements",
+    "title": "nbstata: a new Stata kernel",
+    "section": "Acknowledgements",
+    "text": "Acknowledgements\nKyle Barron authored the original stata_kernel, which works for older versions of Stata. Vinci Chow created a Stata kernel that instead uses pystata, which first became available with Stata 17. nbstata was originally derived from his pystata-kernel, but much of the docs and newer features are derived from stata_kernel.",
+    "crumbs": [
+      "nbstata: a new Stata kernel"
+    ]
+  },
+  {
+    "objectID": "user_guide.html",
+    "href": "user_guide.html",
+    "title": "User Guide",
+    "section": "",
+    "text": "It doesn’t take much to get nbstata up and running. Here’s how:\n\n\n\n\nBecause nbstata uses pystata under the hood, a currently-licensed version of Stata 17+ must already be installed. (If you have an older version of Stata, consider stata_kernel instead.)\n\n\n\n\n\n\nNoteStata troubleshooting (particularly for Arch Linux)\n\n\n\n\n\nMake sure that the stata command (that is, the CLI to Stata, not to be confused with xstata, which is the GUI) works, otherwise nbstata won’t work.\nIn particular, if you are on Arch Linux and you get this error when running stata:\nstata: error while loading shared libraries: libncurses.so.5: cannot open shared object file: No such file or directory\nYou need to install ncurses5-compat-libs from the AUR to fix it.\n\n\n\n\n\n\nIn order to install the kernel, you will also need Python 3.10 or higher.\n\n\n\n\n\n\nNotenbstata Python and Stata version compatibility\n\n\n\n\n\n\nStata 17 users can run nbstata under Python 3.10, 3.11, 3.12, and 3.13 but not under Python 3.14.\nStata 18, 18.5, 19, and 19.5 users can run nbstata under Python 3.10, 3.11, 3.12, 3.13, and 3.14. For Python 3.14, users need to update their version of Stata to the 12 November 2025 revision (or later). To see your version of Stata’s revision date issue in Stata, run either about or display c(born_date).\n\n\n\n\nIf are new to Python, I suggest installing the Anaconda distribution. This doesn’t require administrator privileges and is the simplest way to install Python, JupyterLab and many of the most popular scientific packages.\n(However, the full Anaconda installation is quite large, and it includes many libraries for Python that nbstata doesn’t use. If you don’t plan to use Python and want to use less disk space, install Miniconda, a bare-bones version of Anaconda. Then, at an Anaconda prompt, type conda install jupyterlab to install JupyterLab.)\nThe remainder of this guide assumes you have a Anaconda installed, but all you really need is Python and JupyterLab (or some other way of making use of the Stata kernel, such as Quarto).\n\n\n\n\nTo download and install the python package run the following at an Anaconda prompt:\npip install nbstata\nNext run the Stata kernel install script, which has the following syntax (with square brackets denoting options):\npython -m nbstata.install [--sys-prefix] [--prefix PREFIX] [--conf-file]\nThat is, the most basic kernel install command is just python -m nbstata.install. The options are explained in the next section.\n\n\nInclude --sys-prefix to install the kernel to sys.prefix (e.g. a virtualenv or conda env), or --prefix PREFIX if you want to specify the install path yourself (typing it in place of PREFIX).\nThe --conf-file option creates a configuration file for you. (Note: A configuration file will always be created if the installer cannot locate your Stata installation.)\nThe location of the configuration file will be:\n\n[sys.prefix]/etc/nbstata.conf if --sys-prefix or --prefix is specified.\n~/.config/nbstata/nbstata.conf otherwise.\n\n(If a configuration file exists in both locations at kernel runtime, the home directory (~) version takes precedence. For backwards compatibility, config files saved to ~/.nbstata.conf also work. When in doubt, the %status magic indicates the location of the operative config file.)\n\n\n\nTo upgrade from a previous version of nbstata, run:\npip install nbstata --upgrade\nWhen updating, you don’t have to run python -m nbstata.install again.\n\n\n\n\nThe following settings are permitted inside the configuration file. Aside from the first three, they may also be set within your notebook using the %set magic explained below):\n\nstata_dir: Stata installation directory.\nedition: Stata edition. Acceptable values are ‘be’, ‘se’ and ‘mp’. Default is ‘be’.\nsplash: controls display of the splash message during Stata startup. Default is ‘False’.\ngraph_format: Acceptable values are ‘png’ (the default), ‘pdf’, ‘svg’ and ‘pystata’. Specify the last option if you want to use pystata’s default setting.\ngraph_width/graph_height: By default, graphs are generated with width 5.5in and height 4in. The width or height may be specified as a number (interpreted as inches) or a number and its unit (in, cm, or px). So 3 and 3in are equivalent. Other valid examples: 300px and 7.2 cm. (Note: These values may also be set to default, which values alone enable the xsize and ysize options on Stata graph commands to influence the graph output size. Any values other than default override the xsize and ysize options.)\necho: controls the echo of commands, with the default being ‘None’:\n\n‘True’: echo all commands.\n‘False’: for Stata 18.5+, not echo any command (native Stata implementation); otherwise echo only multi-line commands.\n‘None’: not echo any command (custom nbstata implementation).\n\nmissing: What to display for a missing value in the output of the %browse, %head, and %tail magics. Default is ‘.’, following Stata. To defer to pandas’s format for NaN, specify ‘pandas’.\nbrowse_auto_height: Whether to set ‘height: 100%’ for the %browse widget (default: ‘True’):\n\n‘True’: allows browse widget to expand to height of its container, such as when using ‘Create New View for Output’ in Jupyter Lab.\n‘False’: fixed height of around 22 rows, recommended for NBClassic and VSCode.\n\n\nSettings must be under the title [nbstata]. Not all settings need be included. Example:\n[nbstata]\nstata_dir = /opt/stata\nsplash = True\ngraph_format = pystata\ngraph_width = default\ngraph_height = default\necho = False\nDefault Graph Format\nBoth pystata and stata_kernel default to the SVG image format. nbstata (like pystata-kernel) defaults to the PNG image format instead for several reasons:\n\nJupyter does not show SVG images from untrusted notebooks (link 1).\nNotebooks with empty cells are untrusted (link 2).\nSVG images cannot be copied and pasted directly into Word or PowerPoint.\n\n\n\n\nStata syntax highlighting can be installed for Jupyter Lab:\npip install jupyterlab_stata_highlight2\n(If you prefer the standard Jupyter color scheme, the original jupyterlab-stata-highlight also works.)\n\n\n\nYou can start JupyterLab from within Anaconda Navigator. Or start it from an Anaconda prompt by running:\njupyter lab\nEither should open it up in a new browser tab. From there, you can create a new Stata notebook.\nNote: By default, you can only open/save notebooks within the directory from which JupyterLab is run. To access a different directory, you can instead start it up by running:\njupyter lab --notebook-dir \"YOUR_PATH_HERE\"",
+    "crumbs": [
+      "User Guide"
+    ]
+  },
+  {
+    "objectID": "user_guide.html#getting-started",
+    "href": "user_guide.html#getting-started",
+    "title": "User Guide",
+    "section": "",
+    "text": "It doesn’t take much to get nbstata up and running. Here’s how:\n\n\n\n\nBecause nbstata uses pystata under the hood, a currently-licensed version of Stata 17+ must already be installed. (If you have an older version of Stata, consider stata_kernel instead.)\n\n\n\n\n\n\nNoteStata troubleshooting (particularly for Arch Linux)\n\n\n\n\n\nMake sure that the stata command (that is, the CLI to Stata, not to be confused with xstata, which is the GUI) works, otherwise nbstata won’t work.\nIn particular, if you are on Arch Linux and you get this error when running stata:\nstata: error while loading shared libraries: libncurses.so.5: cannot open shared object file: No such file or directory\nYou need to install ncurses5-compat-libs from the AUR to fix it.\n\n\n\n\n\n\nIn order to install the kernel, you will also need Python 3.10 or higher.\n\n\n\n\n\n\nNotenbstata Python and Stata version compatibility\n\n\n\n\n\n\nStata 17 users can run nbstata under Python 3.10, 3.11, 3.12, and 3.13 but not under Python 3.14.\nStata 18, 18.5, 19, and 19.5 users can run nbstata under Python 3.10, 3.11, 3.12, 3.13, and 3.14. For Python 3.14, users need to update their version of Stata to the 12 November 2025 revision (or later). To see your version of Stata’s revision date issue in Stata, run either about or display c(born_date).\n\n\n\n\nIf are new to Python, I suggest installing the Anaconda distribution. This doesn’t require administrator privileges and is the simplest way to install Python, JupyterLab and many of the most popular scientific packages.\n(However, the full Anaconda installation is quite large, and it includes many libraries for Python that nbstata doesn’t use. If you don’t plan to use Python and want to use less disk space, install Miniconda, a bare-bones version of Anaconda. Then, at an Anaconda prompt, type conda install jupyterlab to install JupyterLab.)\nThe remainder of this guide assumes you have a Anaconda installed, but all you really need is Python and JupyterLab (or some other way of making use of the Stata kernel, such as Quarto).\n\n\n\n\nTo download and install the python package run the following at an Anaconda prompt:\npip install nbstata\nNext run the Stata kernel install script, which has the following syntax (with square brackets denoting options):\npython -m nbstata.install [--sys-prefix] [--prefix PREFIX] [--conf-file]\nThat is, the most basic kernel install command is just python -m nbstata.install. The options are explained in the next section.\n\n\nInclude --sys-prefix to install the kernel to sys.prefix (e.g. a virtualenv or conda env), or --prefix PREFIX if you want to specify the install path yourself (typing it in place of PREFIX).\nThe --conf-file option creates a configuration file for you. (Note: A configuration file will always be created if the installer cannot locate your Stata installation.)\nThe location of the configuration file will be:\n\n[sys.prefix]/etc/nbstata.conf if --sys-prefix or --prefix is specified.\n~/.config/nbstata/nbstata.conf otherwise.\n\n(If a configuration file exists in both locations at kernel runtime, the home directory (~) version takes precedence. For backwards compatibility, config files saved to ~/.nbstata.conf also work. When in doubt, the %status magic indicates the location of the operative config file.)\n\n\n\nTo upgrade from a previous version of nbstata, run:\npip install nbstata --upgrade\nWhen updating, you don’t have to run python -m nbstata.install again.\n\n\n\n\nThe following settings are permitted inside the configuration file. Aside from the first three, they may also be set within your notebook using the %set magic explained below):\n\nstata_dir: Stata installation directory.\nedition: Stata edition. Acceptable values are ‘be’, ‘se’ and ‘mp’. Default is ‘be’.\nsplash: controls display of the splash message during Stata startup. Default is ‘False’.\ngraph_format: Acceptable values are ‘png’ (the default), ‘pdf’, ‘svg’ and ‘pystata’. Specify the last option if you want to use pystata’s default setting.\ngraph_width/graph_height: By default, graphs are generated with width 5.5in and height 4in. The width or height may be specified as a number (interpreted as inches) or a number and its unit (in, cm, or px). So 3 and 3in are equivalent. Other valid examples: 300px and 7.2 cm. (Note: These values may also be set to default, which values alone enable the xsize and ysize options on Stata graph commands to influence the graph output size. Any values other than default override the xsize and ysize options.)\necho: controls the echo of commands, with the default being ‘None’:\n\n‘True’: echo all commands.\n‘False’: for Stata 18.5+, not echo any command (native Stata implementation); otherwise echo only multi-line commands.\n‘None’: not echo any command (custom nbstata implementation).\n\nmissing: What to display for a missing value in the output of the %browse, %head, and %tail magics. Default is ‘.’, following Stata. To defer to pandas’s format for NaN, specify ‘pandas’.\nbrowse_auto_height: Whether to set ‘height: 100%’ for the %browse widget (default: ‘True’):\n\n‘True’: allows browse widget to expand to height of its container, such as when using ‘Create New View for Output’ in Jupyter Lab.\n‘False’: fixed height of around 22 rows, recommended for NBClassic and VSCode.\n\n\nSettings must be under the title [nbstata]. Not all settings need be included. Example:\n[nbstata]\nstata_dir = /opt/stata\nsplash = True\ngraph_format = pystata\ngraph_width = default\ngraph_height = default\necho = False\nDefault Graph Format\nBoth pystata and stata_kernel default to the SVG image format. nbstata (like pystata-kernel) defaults to the PNG image format instead for several reasons:\n\nJupyter does not show SVG images from untrusted notebooks (link 1).\nNotebooks with empty cells are untrusted (link 2).\nSVG images cannot be copied and pasted directly into Word or PowerPoint.\n\n\n\n\nStata syntax highlighting can be installed for Jupyter Lab:\npip install jupyterlab_stata_highlight2\n(If you prefer the standard Jupyter color scheme, the original jupyterlab-stata-highlight also works.)\n\n\n\nYou can start JupyterLab from within Anaconda Navigator. Or start it from an Anaconda prompt by running:\njupyter lab\nEither should open it up in a new browser tab. From there, you can create a new Stata notebook.\nNote: By default, you can only open/save notebooks within the directory from which JupyterLab is run. To access a different directory, you can instead start it up by running:\njupyter lab --notebook-dir \"YOUR_PATH_HERE\"",
+    "crumbs": [
+      "User Guide"
+    ]
+  },
+  {
+    "objectID": "user_guide.html#magics",
+    "href": "user_guide.html#magics",
+    "title": "User Guide",
+    "section": "Magics",
+    "text": "Magics\n‘Magics’ are commands provided by nbstata that enhance the experience of working with Stata in Jupyter. They work only when placed at the beginning of a code cell.\nJupyter magics typically start with %, but nbstata magics may alternatively be prefixed with *% so that, if you export a Stata notebook to a .do file and run it that way, the magics will not cause errors.\nnbstata currently supports the following magics:\n\n\n\n\n\n\n\n\nMagic\nDescription\nFull Syntax\n\n\n\n\n%browse\nInteractively view dataset\n%browse [-h] [varlist] [if] [in] [, nolabel noformat]\n\n\n%head\nView first 5 (or N) rows\n%head [-h] [N] [varlist] [if] [, nolabel noformat]\n\n\n%tail\nView last 5 (or N) rows\n%tail [-h] [N] [varlist] [if] [, nolabel noformat]\n\n\n%frbrowse\nInteractively view frame\n%frbrowse [-h] framename[: [varlist] [if] [in] [, nolabel noformat]]\n\n\n%frhead\nView first 5 (or N) frame rows\n%frhead [-h] framename[: [N] [varlist] [if] [, nolabel noformat]]\n\n\n%frtail\nView last 5 (or N) frame rows\n%frtail [-h] framename[: [N] [varlist] [if] [, nolabel noformat]]\n\n\n%locals\nList locals with their values\n%locals\n\n\n%delimit\nPrint the current delimiter\n%delimit\n\n\n%help\nDisplay Stata help\n%help [-h] command_or_topic_name\n\n\n%set\nSet single config option\n%set [-h] key = value\n\n\n%%set\nSet multiple config options\n%%set [-h]\n\n\n%status\nDisplay Stata/config status\n%status\n\n\n%%echo\nEnsure echo from cell\n%%echo\n\n\n%%noecho\nSuppress echo from cell\n%%noecho\n\n\n%%quietly\nSuppress all output from cell\n%%quietly\n\n\n\nYou can run any magic with the -h option (--help) to see brief help documentation for the magic.\n\n%browse, %head, %tail (and frame equivalents)\nQuickly view your data\n*%browse [-h] [varlist] [if] [in] [, nolabel noformat]\n*%head [-h] [N] [varlist] [if] [, nolabel noformat]\n*%tail [-h] [N] [varlist] [if] [, nolabel noformat]\nThese magics provide alternatives to Stata’s browse command, which is not available in a Stata notebook. They can each be called with standard Stata varlist and if syntax. %browse also supports Stata’s in syntax, whereas %head (and %tail), modeled after pandas, display the first (or last) 5 (or N) observations that meet the (optional) if criteria.\nBy default, the %browse, %head, and %tail magics convert numeric Stata values to strings using their Stata format and value labels. To prevent this behavior, specify the noformat and/or nolabel options.\nThe output of any of these, but especially that of %browse, may be expanded into a separate Jupyter Lab tab by right clicking it and selecting “Create New View for Output.”\n%frbrowse, %frhead, and %frtail do the same for a frame specified as a prefix. Examples:\n%frbrowse alt_frame\n%frhead alt_frame: if var1 == 1, nolabels\n\n\n%locals\nList local macro names and values\nThis takes no arguments. The output format mimics Stata’s macro list command (which only displays global macros).\n\n\n%delimit\nPrint the current Stata command delimiter\nThis takes no arguments; it prints the delimiter currently set: either cr or ;. If you want to change the delimiter, use #delimit ; or #delimit cr. The delimiter will remain set until changed.\n[1]: %delimit\nCurrent Stata command delimiter: cr\n[2]: #delimit ;\ndelimiter now ;\n[3]: *%delimit\nCurrent Stata command delimiter: ;\n[4]: #delimit cr\ndelimiter now cr\n\n\n%help\nDisplay a help file in rich text\n*%help [-h] command_or_topic_name\nAdd the term you want to search for after %help. For example:\n\nThe underlined terms in the output are links. Click on them to open further help in a new tab.\n\n\n%set, %%set\nSet configuration values\nUsage:\n*%set [-h] key = value\n*%%set\nkey1 = value1\n[key2 = value2]\n[...]\n\nkey: Configuration setting name: graph_format, graph_width, graph_height, echo, or missing\nvalue: Value to set. See Configuration above for more information.\n\nExamples:\n*%set graph_format = svg\n%%set\necho = True\nmissing = N/A\nTo prevent the cell magic %%set from causing an error if you export the notebook to a .do file and run it that way, you may surround the key-value statements with /* and */ on separate lines, like this:\n*%%set\n/*\necho = True\nmissing = N/A\n*/\n\n\n%status\nDisplay Stata status and configuration values\n\n\n\n%%echo %%noecho, %%quietly\nToggle cell output type\nPutting %%echo at the top of a cell sets the configuration option echo = True for just that cell. For example, suppose you have configured echo = None but you do want to see the Stata commands echoed for a particular cell:\n[1]: *%%echo\n     disp 1\n     disp 2\n. disp 1\n1\n\n. disp 2\n2\n\n. \n\nSimilarly, %%noecho sets the configuration option echo = None for a single cell:\n[2]: *%%noecho\n     disp 1\n     disp 2\n1\n2\n%%quietly silences all cell output, including graphs. It is a convenience magic equivalent to placing the standard Stata code quietly { at the start and } at the end of the cell.\n[3]: *%%quietly\n     disp 1\n     disp 2",
+    "crumbs": [
+      "User Guide"
+    ]
+  },
+  {
+    "objectID": "user_guide.html#stata-implementation-details",
+    "href": "user_guide.html#stata-implementation-details",
+    "title": "User Guide",
+    "section": "Stata Implementation Details",
+    "text": "Stata Implementation Details\n\n#delimit behavior\nA #delimit; command in one cell will persist into other cells, until #delimit cr is called. For example, see delimit tests.ipynb.\n\n\necho = None: potential for unanticipated errors\nWith Stata 18.5+, echo = False is recommended.\nThe default echo = None configuration does some complicated things under the hood to emulate functionality that pystata does not directly support: running multi-line Stata code without echoing the commands. While extensive automatic tests are in place to help ensure its reliability, unanticipated issues may arise. If, while using this mode, a particular code cell is not working as expected, try placing the %%echo magic at the top of it to see if that resolves the issue. (If so, please report that here.) You can also avoid such potential issues by setting the config echo = False, which will at least not echo single-line Stata commands though it will echo multiple commands for Stata 17 and 18.0.\n\n\nmore and pause\nStata’s more and pause commands do not work in a notebook, so these features should remain in their default ‘off’ states (i.e., set more off and pause off).\n\n\nlinesize\nUnlike in the official Stata interface, the width of Stata output will not automatically adjust to the width of your window. Instead, you can use the set linesize Stata command to change it manually. For example:\nset linesize 130",
+    "crumbs": [
+      "User Guide"
+    ]
+  },
+  {
+    "objectID": "user_guide.html#quarto-tips",
+    "href": "user_guide.html#quarto-tips",
+    "title": "User Guide",
+    "section": "Quarto tips",
+    "text": "Quarto tips\nnbstata can be used with Quarto, starting from either a notebook or a .qmd markdown file, to create output in a wide variety of formats. Just include jupyter: nbstata in the document-level YAML at the top and use *| as the prefix for cell options.\n\nInline calculations\nWith nbstata v0.8+, you can use the standard Quarto syntax for inline code, specifying the Stata expression as ‘[%fmt] exp’, just as you would for a Stata display command. For example:\n```{stata}\n*| include: False\nsysuse auto, clear\nregress price mpg\n```\nAn *increase* of one mpg is associated with a *decrease* in price of \\$`{stata} %5.2f abs(_b[mpg])`.\nwould result in output like this:\n\nAn increase of one mpg is associated with a decrease in price of $238.89.\n\n\n\n\n\n\n\nWarning\n\n\n\nStata locals cannot be referenced within inline code like `x’ because the tick (or “left single quote,” as Stata’s manual calls it) conflicts with Quarto’s inline code syntax. You can instead use globals or scalars to pass things to inline code.\nFor example, this gives the same output as above (whereas defining ‘mpg_coef’ as a local would not work):\n```{stata}\n*| include: False\nscalar mpg_coef = string(abs(_b[mpg]), \"%5.2f\")\n```\nAn *increase* of one mpg is associated with a *decrease* in price of \\$`{stata} mpg_coef`.",
+    "crumbs": [
+      "User Guide"
+    ]
+  },
+  {
+    "objectID": "inspect.html",
+    "href": "inspect.html",
+    "title": "inspect",
+    "section": "",
+    "text": "source\n\nget_inspect\n\ndef get_inspect(\n    code:str='', cursor_pos:int=0, detail_level:int=0, omit_sections:tuple=()\n):\n\n\nlaunch_stata(splash=False)\nrun_sfi(\"\"\"\\\nquietly set obs 5\nquietly gen var1 = _n &gt; 3\ndesc\"\"\")\n\n\nContains data\n Observations:             5                  \n    Variables:             1                  \n-------------------------------------------------------------------------------\nVariable      Storage   Display    Value\n    name         type    format    label      Variable label\n-------------------------------------------------------------------------------\nvar1            float   %9.0g                 \n-------------------------------------------------------------------------------\nSorted by: \n     Note: Dataset has changed since last saved.\n\n\n\nprint(get_inspect())\n\n*** Last updated 13:09:56  4 Feb 2023 ***\n\nContains data\n Observations:             5                  \n    Variables:             1                  \n-------------------------------------------------------------------------------\nVariable      Storage   Display    Value\n    name         type    format    label      Variable label\n-------------------------------------------------------------------------------\nvar1            float   %9.0g                 \n-------------------------------------------------------------------------------\nSorted by: \n     Note: Dataset has changed since last saved.\n\n*** Stored results:\n\nscalars:\n            r(changed) =  1\n              r(width) =  4\n                  r(k) =  1\n                  r(N) =  5\n\n\n\n\nrun_sfi('quietly sum')\nprint(get_inspect())\n\n*** Last updated 13:09:57  4 Feb 2023 ***\n\nContains data\n Observations:             5                  \n    Variables:             1                  \n-------------------------------------------------------------------------------\nVariable      Storage   Display    Value\n    name         type    format    label      Variable label\n-------------------------------------------------------------------------------\nvar1            float   %9.0g                 \n-------------------------------------------------------------------------------\nSorted by: \n     Note: Dataset has changed since last saved.\n\n*** Stored results:\n\nscalars:\n                r(sum) =  2\n                r(max) =  1\n                r(min) =  0\n                 r(sd) =  .5477225575051662\n                r(Var) =  .3\n               r(mean) =  .4\n              r(sum_w) =  5\n                  r(N) =  5\n\n\n\n\nrun_sfi('quietly reg var1')\nprint(get_inspect())\n\n*** Last updated 13:09:58  4 Feb 2023 ***\n\nContains data\n Observations:             5                  \n    Variables:             1                  \n-------------------------------------------------------------------------------\nVariable      Storage   Display    Value\n    name         type    format    label      Variable label\n-------------------------------------------------------------------------------\nvar1            float   %9.0g                 \n-------------------------------------------------------------------------------\nSorted by: \n     Note: Dataset has changed since last saved.\n\n*** Stored results:\n\nmatrices:\n              r(table) :  9 x 1\n\nscalars:\n                  e(N) =  5\n               e(df_m) =  0\n               e(df_r) =  4\n                  e(F) =  0\n                 e(r2) =  0\n               e(rmse) =  .5477225575051662\n                e(mss) =  0\n                e(rss) =  1.2\n               e(r2_a) =  0\n                 e(ll) =  -3.526901776922999\n               e(ll_0) =  -3.526901776922999\n               e(rank) =  1\n\nmacros:\n            e(cmdline) : \"regress var1\"\n              e(title) : \"Linear regression\"\n          e(marginsok) : \"XB default\"\n                e(vce) : \"ols\"\n             e(depvar) : \"var1\"\n                e(cmd) : \"regress\"\n         e(properties) : \"b V\"\n            e(predict) : \"regres_p\"\n              e(model) : \"ols\"\n          e(estat_cmd) : \"regress_estat\"\n\nmatrices:\n                  e(b) :  1 x 1\n                  e(V) :  1 x 1\n\nfunctions:\n             e(sample)   \n\n\n\n\nrun_sfi('clear all')\ntest_eq(get_inspect()[43:],\"\"\"\\\nContains data\n Observations:             0                  \n    Variables:             0                  \nSorted by: \n\"\"\")",
+    "crumbs": [
+      "Developer Docs",
+      "inspect"
+    ]
+  },
+  {
+    "objectID": "stata_more.html",
+    "href": "stata_more.html",
+    "title": "stata_more",
+    "section": "",
+    "text": "For a diagram of the how the principal nbstata modules depend on this one, click here.",
+    "crumbs": [
+      "Developer Docs",
+      "stata_more"
+    ]
+  },
+  {
+    "objectID": "stata_more.html#simple-helpers",
+    "href": "stata_more.html#simple-helpers",
+    "title": "stata_more",
+    "section": "Simple Helpers",
+    "text": "Simple Helpers\n\nsource\n\nrun_direct_cleaned\n\ndef run_direct_cleaned(\n    cmds, quietly:bool=False, echo:bool=False, inline:bool=True\n):\n\nrun_direct_cleaned is a run_direct/pystata.stata.run wrapper function that removes extraneous blank lines from the output.\nWhen given multi-line Stata code, run_direct outputs an extra blank line at the start and two extra lines at the end:\n\nrun_direct(\"\"\"\\\ndisp 1\"\"\", echo=True) # single-line Stata code\n\n. disp 1\n1\n\n\n\nrun_direct(\"\"\"\\\ndisp 1\ndisp 2\"\"\", echo=True) # multi-line Stata code\n\n\n. disp 1\n1\n\n. disp 2\n2\n\n. \n\n\nWe can clean it up like this:\n\nwith redirect_stdout(StringIO()) as diverted:\n    run_direct(dedent(\"\"\"\\\n        disp 1\n        disp 2\"\"\"))\n    output = diverted.getvalue()\nprint(\"\\n\".join(output.splitlines()[1:-2]))\n\n. disp 1\n1\n\n. disp 2\n2\n\n\n\nrun_direct_cleaned(\"\"\"\\\ndisp 1\ndisp 2\"\"\", echo=True)\n\n. disp 1\n1\n\n. disp 2\n2\n\n\nrun_direct_cleaned also removes the blank line output by run_direct with quietly=True\n\nprog_code = \"program define _temp_prog \\n disp 1 \\n end\"\nrun_direct(prog_code, quietly=True)\n\n\n\n\n\nrun_direct(\"capture program drop _temp_prog\", quietly=True)\nrun_direct_cleaned(prog_code, quietly=True)\n\nNote however that run_direct_cleaned delays text output until the code finishes running:\n\ncode = dedent('''\\\n    python:\n    import time\n    print(1)\n    time.sleep(1)\n    print(2)\n    end\n    ''')\nrun_direct(code, quietly=True)\nrun_direct_cleaned(code, quietly=True)\n\n1\n2\n\n1\n2\n\n\nrun_direct_cleaned may also misalign text output relative to graph output:\n\nrun_direct_cleaned(dedent('''\\\n    disp \"the problem arises with multi-line Stata code\"\n    palette symbolpalette'''), echo=True)\n\n\n\n\n\n\n\n\n. disp \"the problem arises with multi-line Stata code\"\nthe problem arises with multi-line Stata code\n\n. palette symbolpalette\n\n\nrun_sfi should only be used for standardized code in which each line is a command suitable for the sfi.SFIToolkit.stata function. For such code, it provides much faster execution (with a noecho option). But it shares the limitations of run_single.\n\nsource\n\n\nrun_sfi\n\ndef run_sfi(\n    std_code, echo:bool=False, show_exc_warning:bool=True\n):\n\n\nrun_sfi(\"\"\"\\\nquietly set obs 5\nquietly gen var1 = _n &gt; 3\ndesc\"\"\")\n\n\nContains data\n Observations:             5                  \n    Variables:             1                  \n-------------------------------------------------------------------------------\nVariable      Storage   Display    Value\n    name         type    format    label      Variable label\n-------------------------------------------------------------------------------\nvar1            float   %9.0g                 \n-------------------------------------------------------------------------------\nSorted by: \n     Note: Dataset has changed since last saved.\n\n\n\nsource\n\n\nSelectVar\n\ndef SelectVar(\n    stata_if_code\n):\n\nClass for generating Stata select_var for getAsDict\nSelectvar.varname is a temporary Stata variable for use in sfi.Data.getAsDict\n\nwith SelectVar(\" if var1==0\") as sel_varname:\n    print(f\"varname: {sel_varname}\")\n    run_single(\"list, clean\")\nrun_single(\"desc, simple\")\n\nvarname: __000000\n\n       var1   __000000  \n  1.      0          1  \n  2.      0          1  \n  3.      0          1  \n  4.      1          0  \n  5.      1          0  \nvar1\n\n\n\nsource\n\n\nIndexVar\n\ndef IndexVar(\n    args:VAR_POSITIONAL, kwargs:VAR_KEYWORD\n):\n\nClass for generating Stata index var for use with pandas\n\nwith Timer():\n    with IndexVar() as idx_var:\n        run_single(\"desc, simple\")\n    run_single(\"desc, simple\")\n\nvar1      __000001\nvar1\nElapsed time: 0.0004 seconds",
+    "crumbs": [
+      "Developer Docs",
+      "stata_more"
+    ]
+  },
+  {
+    "objectID": "stata_more.html#run-commands-as-a-stata-program",
+    "href": "stata_more.html#run-commands-as-a-stata-program",
+    "title": "stata_more",
+    "section": "Run commands as a Stata program",
+    "text": "Run commands as a Stata program\nThe original motivation for adding this functionality is that run_direct/pystata.stata.run can only suppress the “echo” of single commands, not multi-line Stata code:\n\nrun_direct('disp \"test 1\"', echo=False)\n\ntest 1\n\n\n\ntwo_lines_of_code = dedent('''\\\n    disp \"test 1\"\n    disp \"test 2\"\n    ''')\nrun_direct(two_lines_of_code, echo=False)\n\n\n. disp \"test 1\"\ntest 1\n\n. disp \"test 2\"\ntest 2\n\n. \n\n\nAs a workaround when echo is not desired, we can run multiple commands as a Stata program:\n\nrun_direct_cleaned(f\"\"\"\\\nprogram temp_nbstata_program_name\n    {two_lines_of_code}\nend\"\"\", quietly=True)\n\n\nrun_direct(\"temp_nbstata_program_name\", quietly=False, inline=True, echo=False)\n\ntest 1\ntest 2\n\n\n\nrun_single(f\"quietly program drop temp_nbstata_program_name\")\n\n(Note: This and the following two functions assume input Stata code standardized by standardize_code, which will be ensured by the break_out_prog_blocks within the ultimate dispatch_run wrapper function.)\n\nsource\n\nrun_as_program\n\ndef run_as_program(\n    std_non_prog_code, prog_def_option_code:str=''\n):\n\n\nrun_as_program(two_lines_of_code)\n\ntest 1\ntest 2\n\n\nNot all code can be run within a program without modification, however: 1. Programs cannot be defined within another program, nor can python or mata blocks be run. 2. A program definition is a different scope for locals, so: * the program code does not have access to locals defined previously, and * locals set within the program code do not persist outside of it.\n(These issues are addressed by run_noecho.)\n\nwith ExceptionExpected(SystemError):\n    run_as_program(\"\"\"\\\n        program define prog1\n            disp 1\n        end\n        \"\"\")\n\n\nrun_sfi('''\\\nlocal test1 = 1\ndisp \"test1: `test1'\" ''')\n\ntest1: 1\n\n\n\nrun_as_program(\"\"\"\\\n    disp \"test1: `test1'\"\n    local test2 = 2 \"\"\")\n\ntest1: \n\n\n\nrun_sfi('''\\\ndisp \"test1: `test1'\"\ndisp \"test2: `test2'\" ''')\n\ntest1: 1\ntest2: \n\n\nIn the “finally” block, the capture ensures that an error in the program define code doesn’t trigger another error in the “program drop” code due to the program not being defined (as in Issue #25):\n\nwith ExceptionExpected(SystemError):\n    run_as_program(\"/* disp 5\")",
+    "crumbs": [
+      "Developer Docs",
+      "stata_more"
+    ]
+  },
+  {
+    "objectID": "stata_more.html#divert-stata-output-to-string",
+    "href": "stata_more.html#divert-stata-output-to-string",
+    "title": "stata_more",
+    "section": "Divert Stata output to string",
+    "text": "Divert Stata output to string\nThe goal here is to get output from some Stata commands without changing the Stata environment. Three challenges arise:\n\nPreserving r() return values requires special treatment because the log on/off commands needed to ensure this output is not logged are themselves r-class.\nThe input std_code may also contain r-class commands.\nCapturing multi-line Stata output without the commands being echoed poses additional run_as_program-related challenges with regard to local variables.\n\nTo start, we set aside the latter two issues and simply use run_direct to run the Stata code. We handle the first issue by running the log commands inside an r-class program with return add at the start.\nA custom code runner may be specified. This may be useful if, for instance, the input std_code needs to access pre-existing r() results.\n\nsource\n\ndiverted_stata_output\n\ndef diverted_stata_output(\n    std_code, runner:NoneType=None\n):\n\n\nfrom textwrap import dedent\n\n\ntwo_lines_of_code = dedent('''\\\n    disp \"test 1\"\n    disp \"test 2\"\n    ''')\nout = diverted_stata_output(two_lines_of_code)\n\n\nprint(out)\n\n\n. disp \"test 1\"\ntest 1\n\n. disp \"test 2\"\ntest 2\n\n. \n\n\n\n\nprint(diverted_stata_output('disp \"test 1\"', run_as_program))\n\ntest 1\n\n\n\nIf we know the code we’re running is non-program code, we can get a speed improvement by running the log code together with the input std_non_prog_code.\n\nsource\n\n\ndiverted_stata_output_quicker\n\ndef diverted_stata_output_quicker(\n    std_non_prog_code\n):\n\n\nprint(diverted_stata_output_quicker(two_lines_of_code))\n\ntest 1\ntest 2\n\n\n\n\nwith Timer():\n    out1 = diverted_stata_output(two_lines_of_code, runner=run_sfi)\nwith Timer():\n    out2 = diverted_stata_output_quicker(two_lines_of_code)\ntest_eq(out1, out2)\n\nElapsed time: 0.2008 seconds\nElapsed time: 0.0915 seconds",
+    "crumbs": [
+      "Developer Docs",
+      "stata_more"
+    ]
+  },
+  {
+    "objectID": "stata_more.html#get-local-macro-info",
+    "href": "stata_more.html#get-local-macro-info",
+    "title": "stata_more",
+    "section": "Get local macro info",
+    "text": "Get local macro info\nhttps://www.statalist.org/forums/forum/general-stata-discussion/general/1457792-how-to-list-all-locals-and-store-them-in-a-macro\n\nsource\n\nlocal_names\n\ndef local_names(\n    \n):\n\n\nrun_sfi(\"\"\"\\\nlocal test1 = 1\nlocal test2 = 2\"\"\")\ntest_eq(set(local_names()), {'test1', 'test2'})\n\n\nsource\n\n\nget_local_dict\n\ndef get_local_dict(\n    _local_names:NoneType=None\n):\n\n\ntest_eq(get_local_dict(), {'test1': '1', 'test2': '2'})\n\n\nsource\n\n\nlocals_code_from_dict\n\ndef locals_code_from_dict(\n    preexisting_local_dict\n):\n\n\nprint(locals_code_from_dict(get_local_dict()))\n\nlocal test2 `\"2\"'\nlocal test1 `\"1\"'",
+    "crumbs": [
+      "Developer Docs",
+      "stata_more"
+    ]
+  },
+  {
+    "objectID": "stata_more.html#user_expression",
+    "href": "stata_more.html#user_expression",
+    "title": "stata_more",
+    "section": "User_expression",
+    "text": "User_expression\nGiven a string ‘[%fmt] exp’, replicate the output of a Stata display command (for just the one display_directive): https://www.stata.com/help.cgi?display\n\nsource\n\nuser_expression\n\ndef user_expression(\n    input_str\n):\n\n\ninputs_outputs = [\n    ('2+2',                     '4'),\n    ('= 2+2',                   '4'),\n    ('%9.2f 123.456',           '   123.46'),\n    ('%9.2f = 123.456',         '   123.46'),\n    ('% 9.2f 123.456',          '   123.46'),\n    ('%10s = \"Hello, World!\"',  'Hello, World!'),\n    ('   ',                     ''),            # Empty input after stripping\n]\n\nfor input_str, expected_result in inputs_outputs:\n    result = user_expression(input_str)\n    test_eq(result, expected_result)",
+    "crumbs": [
+      "Developer Docs",
+      "stata_more"
+    ]
+  },
+  {
+    "objectID": "misc_utils.html",
+    "href": "misc_utils.html",
+    "title": "misc_utils",
+    "section": "",
+    "text": "source\n\nTimer\n\ndef Timer(\n    args:VAR_POSITIONAL, kwargs:VAR_KEYWORD\n):\n\nInitialize self. See help(type(self)) for accurate signature.\n\nwith Timer():\n    print()\n\n\nElapsed time: 0.0001 seconds\n\n\n\nsource\n\n\nprint_red\n\ndef print_red(\n    text\n):\n\nprint_red source: https://stackoverflow.com/a/16816874/10637373\n\nprint_red(\"test_red\")\n\ntest_red",
+    "crumbs": [
+      "Developer Docs",
+      "misc_utils"
+    ]
+  },
+  {
+    "objectID": "kernel.html",
+    "href": "kernel.html",
+    "title": "kernel",
+    "section": "",
+    "text": "The latest documentation for implementing a wrapper kernel is here, but the current code deviates from those instructions (which call for inheriting from kernelbase.Kernel), instead inheriting from the IPython kernel implementation, IPythonKernel.\nFor a diagram of the main dependencies among the principal nbstata modules, click here.\nsource",
+    "crumbs": [
+      "Developer Docs",
+      "kernel"
+    ]
+  },
+  {
+    "objectID": "kernel.html#config-and-stata-initialization",
+    "href": "kernel.html#config-and-stata-initialization",
+    "title": "kernel",
+    "section": "Config and Stata initialization",
+    "text": "Config and Stata initialization\nStata is initialized during the execution of the first cell (in PyStataKernel.do_execute below) so that any configuration errors can be displayed in the notebook.\n\nsource\n\nPyStataKernel.init_session\n\ndef init_session(\n    \n):",
+    "crumbs": [
+      "Developer Docs",
+      "kernel"
+    ]
+  },
+  {
+    "objectID": "kernel.html#stata-code-execution-and-error-display",
+    "href": "kernel.html#stata-code-execution-and-error-display",
+    "title": "kernel",
+    "section": "Stata code execution (and error display)",
+    "text": "Stata code execution (and error display)\n\nsource\n\nprint_stata_error\n\ndef print_stata_error(\n    text\n):\n\n\nfrom textwrap import dedent\n\n\nprint_stata_error(dedent(\"\"\"\\\n    output prior to error\n    error message\n    error code\n    \"\"\"))\n\noutput prior to error\nerror message\nerror code\n\n\n\n_user_expressions({\"1\": \"5 + 1\"})\n\n{'1': {'status': 'ok', 'data': {'text/plain': '6'}, 'metadata': {}}}\n\n\n\n_user_expressions({\"1\": \"sam\"})\n\nsam not found\n\nInvalid Stata '[%fmt] [=]exp' display expression: sam\n\n\n{'1': {'status': 'error',\n  'traceback': [],\n  'ename': 'Stata user expression error',\n  'evalue': \"sam not found\\n\\nInvalid Stata '[%fmt] [=]exp' display expression: sam\"}}\n\n\n\nsource\n\n\nPyStataKernel.post_do_hook\n\ndef post_do_hook(\n    \n):\n\n\nsource\n\n\nPyStataKernel.do_execute\n\ndef do_execute(\n    code, silent, store_history:bool=True, user_expressions:NoneType=None, allow_stdin:bool=False\n):\n\nExecute Stata code cell",
+    "crumbs": [
+      "Developer Docs",
+      "kernel"
+    ]
+  },
+  {
+    "objectID": "kernel.html#other-kernel-capabilities",
+    "href": "kernel.html#other-kernel-capabilities",
+    "title": "kernel",
+    "section": "Other kernel capabilities",
+    "text": "Other kernel capabilities\n\nsource\n\nPyStataKernel.do_inspect\n\ndef do_inspect(\n    code, cursor_pos, detail_level:int=0, omit_sections:tuple=()\n):\n\nDisplay Stata ‘describe’ output (regardless of cursor position)\n\nsource\n\n\nPyStataKernel.do_complete\n\ndef do_complete(\n    code, cursor_pos\n):\n\nProvide context-aware tab-autocomplete suggestions\n\nsource\n\n\nPyStataKernel.do_is_complete\n\ndef do_is_complete(\n    code\n):\n\nOverrides IPythonKernel with kernelbase default\n\nsource\n\n\nPyStataKernel.do_history\n\ndef do_history(\n    hist_access_type, output, raw, session:NoneType=None, start:NoneType=None, stop:NoneType=None, n:NoneType=None,\n    pattern:NoneType=None, unique:bool=False\n):\n\nOverrides IPythonKernel with kernelbase default",
+    "crumbs": [
+      "Developer Docs",
+      "kernel"
+    ]
+  },
+  {
+    "objectID": "config.html",
+    "href": "config.html",
+    "title": "config",
+    "section": "",
+    "text": "Before we can use pystata, we need to find the local Stata path (i.e., find_path) and then add pystata to sys.path (i.e., set_pystata_path) so it can be imported.\nThe get_config function handles nbstata configuration, more broadly.\nfrom fastcore.test import test_eq, ExceptionExpected\nimport tempfile",
+    "crumbs": [
+      "Developer Docs",
+      "config"
+    ]
+  },
+  {
+    "objectID": "config.html#pystata-configuration",
+    "href": "config.html#pystata-configuration",
+    "title": "config",
+    "section": "pystata configuration",
+    "text": "pystata configuration\n\nAuto-detect Stata directory and edition\n\nsource\n\n\nfind_dir_edition\n\ndef find_dir_edition(\n    stata_path:NoneType=None\n):\n\n\ntest_eq(find_dir_edition('C:/Program Files/Stata17/StataMP-64.exe'), ('C:/Program Files/Stata17', \"mp\"))\nwith ExceptionExpected(OSError):\n    find_dir_edition('')\n\n\nsource\n\n\nfind_edition\n\ndef find_edition(\n    stata_dir\n):\n\n\nif _find_path('') == '': test_eq(find_edition(''), \"be\")\nfind_edition('C:\\\\Program Files\\\\Stata18')\n\n'mp'\n\n\n\nfrom nbstata.misc_utils import Timer\n\n\nwith Timer():\n    print(find_dir_edition())\n\n('C:\\\\Program Files\\\\Stata19', 'mp')\nElapsed time: 0.0004 seconds\n\n\n\n\nInitialize pystata\n\nsource\n\n\nset_pystata_path\n\ndef set_pystata_path(\n    stata_dir:NoneType=None\n):\n\n\nwith Timer():\n    set_pystata_path()\n    import pystata\n\nElapsed time: 0.0031 seconds\n\n\n\nwith ExceptionExpected(): import sfi\n\n\nsource\n\n\nlaunch_stata\n\ndef launch_stata(\n    stata_dir:NoneType=None, edition:NoneType=None, splash:bool=True\n):\n\nWe modify stata_setup to make splash screen optional\n\nwith Timer():\n    launch_stata(splash=False)\n    pystata.config.status()\n\n    System information\n      Python version         3.11.10\n      Stata version          Stata 19.0 (MP)\n      Stata library path     C:\\Program Files\\Stata19\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = default, height = default\n      graphic format         svg\n      command display        default\n      autocompletion         on\n      streaming output       on\nElapsed time: 0.5607 seconds\n\n\nsfi can only be imported after Stata is launched:\n\nimport sfi\n\n\n\nConfigure pystata graph output\nhttps://www.stata.com/python/pystata18/config.html#pystata.config.set_graph_format\n\nsource\n\n\nset_graph_format\n\ndef set_graph_format(\n    gformat\n):\n\n\nwith Timer():\n    set_graph_format('png')\npystata.config.status()\n\nElapsed time: 0.0000 seconds\n    System information\n      Python version         3.11.10\n      Stata version          Stata 19.0 (MP)\n      Stata library path     C:\\Program Files\\Stata19\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = default, height = default\n      graphic format         png\n      command display        default\n      autocompletion         on\n      streaming output       on\n\n\n\n_set_graph_size('2in', '4')\npystata.config.status()\n_set_graph_size('default', 'default')\n\n    System information\n      Python version         3.11.10\n      Stata version          Stata 19.0 (MP)\n      Stata library path     C:\\Program Files\\Stata19\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = 2.0in, height = 4in\n      graphic format         png\n      command display        default\n      autocompletion         on\n      streaming output       on",
+    "crumbs": [
+      "Developer Docs",
+      "config"
+    ]
+  },
+  {
+    "objectID": "config.html#nbstata-configuration",
+    "href": "config.html#nbstata-configuration",
+    "title": "config",
+    "section": "nbstata configuration",
+    "text": "nbstata configuration\n\nConfig file location and parsing\nThe XDG config path is now the default, but the old path is supported for backwards compatibility. See Issue #33.\n\nsource\n\n\nold_user_config_path\n\ndef old_user_config_path(\n    \n):\n\n\nsource\n\n\nxdg_user_config_path\n\ndef xdg_user_config_path(\n    \n):\n\n\nxdg_user_config_path()\n\nPath('C:/Users/tjhuegerich/.config/nbstata/nbstata.conf')\n\n\n\nold_user_config_path()\n\nPath('C:/Users/tjhuegerich/.nbstata.conf')\n\n\nconfigparser is used to parse the config file, after which quotes are stripped from all values.\n\ntest_config_contents = \"\"\"\\\n[nbstata]\nstata_dir = 'C:\\Program Files\\Stata19'\nedition = mp\ngraph_width = default\ngraph_height = default\necho = None\nbrowse_auto_height = False\n\"\"\"\nwith tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:\n    f.write(test_config_contents)\n    f.flush()\n    test_eq(_get_settings_from_config_file(f.name), \n            {'stata_dir': 'C:\\\\Program Files\\\\Stata19',\n             'edition': 'mp',\n             'graph_width': 'default',\n             'graph_height': 'default',\n             'echo': 'None',\n             'browse_auto_height': 'False'}\n           )\n\n\n\nConfig class\nThe Config class loads the configuration file, after which pystata may be initialized with Config.init_stata. Config then also handles configuration changes made by the %set magic (that is, StataMagics.magic_set).\nThe initial Config class definition is here, but additional methods are added via patch_to below.\n\nTest config file parsing and loading\n\ntest_config_contents = \"test content\"\nconfig = Config()\nprint(config.env)\nwith tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:\n    f.write(test_config_contents)\n    f.flush()\n    config._update_env_from_config_file(Path(f.name))\n\n{'stata_dir': None, 'edition': None, 'splash': 'False', 'graph_format': 'png', 'graph_width': '5.5in', 'graph_height': '4in', 'echo': 'None', 'missing': '.', 'browse_auto_height': 'True'}\nConfiguration error in C:\\Users\\TJHUEG~1\\AppData\\Local\\Temp\\tmp08ob504d.txt:\n    File contains no section headers.\nfile: 'C:\\\\Users\\\\TJHUEG~1\\\\AppData\\\\Local\\\\Temp\\\\tmp08ob504d.txt', line: 1\n'test content'\n\n\n\ntest_config_contents = \"\"\"\\\n[nbstata]\nstata_dir = C:\\Program Files\\Stata19\nedition = mp\ngraph_width = default\ngraph_height = default\necho = None\nbrowse_auto_height = False\n\"\"\"\nconfig = Config()\nwith tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:\n    f.write(test_config_contents)\n    f.flush()\n    config._update_env_from_config_file(Path(f.name))\nconfig.env\n\n{'stata_dir': 'C:\\\\Program Files\\\\Stata19',\n 'edition': 'mp',\n 'splash': 'False',\n 'graph_format': 'png',\n 'graph_width': 'default',\n 'graph_height': 'default',\n 'echo': 'None',\n 'missing': '.',\n 'browse_auto_height': 'False'}\n\n\nThe test below reads in the configuration file for the environment in which this notebook is being run:\n\nconfig = Config()\nconfig.process_config_file()\nconfig.env\n\n{'stata_dir': 'C:\\\\Program Files\\\\Stata19',\n 'edition': 'mp',\n 'splash': 'False',\n 'graph_format': 'png',\n 'graph_width': 'default',\n 'graph_height': 'default',\n 'echo': 'None',\n 'missing': '.',\n 'browse_auto_height': 'False'}\n\n\nTesting out error messages explaining invalid keys:\n\nconfig.update({'splash': 'True'})\n\n%set error(s):\n    'splash' is only allowed in a configuration file.\n\n\n\nconfig.update({'splash': 'True'}, init=True)\n\n\nconfig.update({'not_a_key': 'True'})\n\n%set error(s):\n    'not_a_key' is not a valid setting.\n\n\n\n\nApplying graph size/format config settings\nThe configuration file is read in prior to loading Stata (since it can contain a path to the desired Stata executable). But checking the validity of graph size configuration settings uses Stata, so that can’t be done in the same step in which the configuration file is read in. Thus, the following workaround is used: hold the read-in graph size settings until they are actually applied, reverting to previous valid settings if they don’t work:\n\nsource\n\n\n\nConfig.set_graph_size\n\ndef set_graph_size(\n    init:bool=False\n):\n\nIf the configuration file has invalid width/height, the error message says “Graph size not changed” even though, under the hood, the pystata graph size configuration is changing from “default” to definite measures. This behavior ensures that using the %set magic to change just one of the size values, width or height, always exhibits the behavior described in the nbstata user guide rather than the (maintained aspect ratio) behavior described in the pystata docs.\n\nconfig.display_status()\nconfig.set_graph_size(init=True)\nconfig.display_status()\n\n    System information\n      Python version         3.11.10\n      Stata version          Stata 19.0 (MP)\n      Stata library path     C:\\Program Files\\Stata19\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = default, height = default\n      graphic format         png\n      command display        default\n      autocompletion         on\n      streaming output       on\n\n      echo                   None\n      missing                .\n      browse_auto_height     False\n      config file path       C:\\Users\\tjhuegerich\\.config\\nbstata\\nbstata.conf\n    System information\n      Python version         3.11.10\n      Stata version          Stata 19.0 (MP)\n      Stata library path     C:\\Program Files\\Stata19\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = default, height = default\n      graphic format         png\n      command display        default\n      autocompletion         on\n      streaming output       on\n\n      echo                   None\n      missing                .\n      browse_auto_height     False\n      config file path       C:\\Users\\tjhuegerich\\.config\\nbstata\\nbstata.conf\n\n\n\nconfig.update({'graph_width': '3'})\nconfig.set_graph_size()\n\ngraph size was (default, default), is now (3, default).\n\n\n\nconfig.display_status()\nconfig.env\n\n    System information\n      Python version         3.11.10\n      Stata version          Stata 19.0 (MP)\n      Stata library path     C:\\Program Files\\Stata19\\mp-64.dll\n      Stata initialized      True\n      sfi initialized        True\n\n    Settings\n      graphic display        True\n      graphic size           width = 3in, height = default\n      graphic format         png\n      command display        default\n      autocompletion         on\n      streaming output       on\n\n      echo                   None\n      missing                .\n      browse_auto_height     False\n      config file path       C:\\Users\\tjhuegerich\\.config\\nbstata\\nbstata.conf\n\n\n{'stata_dir': 'C:\\\\Program Files\\\\Stata19',\n 'edition': 'mp',\n 'splash': 'True',\n 'graph_format': 'png',\n 'graph_width': '3',\n 'graph_height': 'default',\n 'echo': 'None',\n 'missing': '.',\n 'browse_auto_height': 'False'}\n\n\n\nconfig.update({'graph_height': '-3'})\nconfig.set_graph_size()\nconfig.env\n\nConfiguration error: graph height is invalid. Graph size not changed.\n\n\n{'stata_dir': 'C:\\\\Program Files\\\\Stata19',\n 'edition': 'mp',\n 'splash': 'True',\n 'graph_format': 'png',\n 'graph_width': '3',\n 'graph_height': 'default',\n 'echo': 'None',\n 'missing': '.',\n 'browse_auto_height': 'False'}\n\n\n\nsource\n\n\nConfig.update_graph_config\n\ndef update_graph_config(\n    init:bool=False\n):\n\n\nconfig.update_graph_config()\n\n\nsource\n\n\nConfig.init_stata\n\ndef init_stata(\n    \n):",
+    "crumbs": [
+      "Developer Docs",
+      "config"
+    ]
+  },
+  {
+    "objectID": "stata_session.html",
+    "href": "stata_session.html",
+    "title": "stata_session",
+    "section": "",
+    "text": "Some parts adapted from the stata_kernel version, limited for now to variables, globals, locals, scalars, matrices, and file names.\nfrom nbstata.config import launch_stata\nsource",
+    "crumbs": [
+      "Developer Docs",
+      "stata_session"
+    ]
+  },
+  {
+    "objectID": "stata_session.html#dispatch_run",
+    "href": "stata_session.html#dispatch_run",
+    "title": "stata_session",
+    "section": "dispatch_run",
+    "text": "dispatch_run\nWe incorporate run_noecho within a dispatch_run wrapper that can serve as an alternative to the official pystata.stata.run command, supporting any value of the echo or quietly parameters. The ordinary run_direct (for echo != None) is also prefaced to manage delimiters and prevent certain quirks of pystata.stata.run from biting.\n\n_run_simple(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''), quietly=True)\n\n\n\n\n\nsource\n\nwarn_re_unclosed_comment_block_if_needed\n\ndef warn_re_unclosed_comment_block_if_needed(\n    code\n):\n\n\nsource\n\n\nStataSession.dispatch_run\n\ndef dispatch_run(\n    code, quietly:bool=False, echo:bool=False, noecho:bool=False\n):\n\n\ntest_instance.dispatch_run(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''), quietly=True)\n\n\n\n\n\ntest_instance.dispatch_run(dedent('''\\\n    capture program drop ender\n    program define ender\n        disp \"ender output\"\n    end\n    capture program drop display2\n    program define display2\n        ender\n    end\n    display2\n    '''), noecho=True)\n\n\n\nender output\n\n\n\ncode = dedent('''\\\n    python:\n    print(\"hello\")\n    end\n    ''')\ntest_instance.dispatch_run(code, noecho=True)\n\nhello\n\n\n\n\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=test_instance._run_as_program_w_locals)\n\n1 two \"3\"\n1 two \"3\" blah blah\n\n\n\ncode = \"\"\"\\\nlocal local1 \"foo\"\nlocal local2 \"bar\"\nlocal abcd \"foo bar\"\n\"\"\"\ntest_instance.clear_suggestions()\nrun_noecho(code, run_as_prog=test_instance._run_as_program_w_locals)\ntest_instance.clear_suggestions()\nrun_noecho(dedent(\"\"\"\\\n    disp `\"`local1' `local2' `local3'\"'\n    disp `\"`local1' `local2' `local3' `test1'\"'\n    \"\"\"), run_as_prog=test_instance._run_as_program_w_locals)\n\nfoo bar \"3\"\nfoo bar \"3\" blah blah\n\n\n\ntest_instance.clear_suggestions()\ncode2 = '''\\\ndisplay \"line continuation \" /// commented out\n    \"comment\"'''\ntest_instance.dispatch_run(code2, noecho=True)\n\nline continuation comment\n\n\n\ntest_instance.clear_suggestions()\ncode2 = '''\\\ndisplay \"line continuation \" /// commented out\n    \"comment\"'''\ntest_instance.dispatch_run(code2, noecho=True)\n\nline continuation comment\n\n\n\ntest_instance.clear_suggestions()\ncode2 = '''\\\ndisp c(version)\nversion 15.1\ndisp 1'''\ntest_instance.dispatch_run(code2, noecho=True)\ntest_instance.dispatch_run('disp c(version)', noecho=True)\n\n17\n1\n15.1\n\n\n\ntest_instance.clear_suggestions()\ncode2 = '''\\\ndisp c(version)\nversion 17\ndisp 1'''\ntest_instance.dispatch_run(code2)\ntest_instance.dispatch_run('disp c(version)', echo=True)\n\n\n. capture version 16\n\n. disp c(version)\n16\n\n. version 17\n\n. disp 1\n1\n\n. \n. disp c(version)\n17",
+    "crumbs": [
+      "Developer Docs",
+      "stata_session"
+    ]
+  },
+  {
+    "objectID": "browse.html",
+    "href": "browse.html",
+    "title": "browse",
+    "section": "",
+    "text": "source\n\n\n\ndef in_range(\n    stata_in_code, count\n):\n\nReturn in-statement range\n\ntest_eq(in_range(\"\", 100), (None, None))\ntest_eq(in_range(\"in 10\", 100), (0, 10))\ntest_eq(in_range(\"in 1/10\", 100), (0, 10))\ntest_eq(in_range(\"in F/10\", 100), (0, 10))\ntest_eq(in_range(\"in 3/10\", 100), (2, 10))\ntest_fail(in_range, args=(\"in 10\", 5))\ntest_fail(in_range, args=(\"in 10/1\", 100))\n\nNegative indices are converted to positive, following Stata syntax:\n\ntest_eq(in_range(\"in -10/-1\", 41), (31, 41))",
+    "crumbs": [
+      "Developer Docs",
+      "browse"
+    ]
+  },
+  {
+    "objectID": "browse.html#parsing-stata-code-for-browse-magic",
+    "href": "browse.html#parsing-stata-code-for-browse-magic",
+    "title": "browse",
+    "section": "",
+    "text": "source\n\n\n\ndef in_range(\n    stata_in_code, count\n):\n\nReturn in-statement range\n\ntest_eq(in_range(\"\", 100), (None, None))\ntest_eq(in_range(\"in 10\", 100), (0, 10))\ntest_eq(in_range(\"in 1/10\", 100), (0, 10))\ntest_eq(in_range(\"in F/10\", 100), (0, 10))\ntest_eq(in_range(\"in 3/10\", 100), (2, 10))\ntest_fail(in_range, args=(\"in 10\", 5))\ntest_fail(in_range, args=(\"in 10/1\", 100))\n\nNegative indices are converted to positive, following Stata syntax:\n\ntest_eq(in_range(\"in -10/-1\", 41), (31, 41))",
+    "crumbs": [
+      "Developer Docs",
+      "browse"
+    ]
+  },
+  {
+    "objectID": "browse.html#headtailbrowse-magic-helpers",
+    "href": "browse.html#headtailbrowse-magic-helpers",
+    "title": "browse",
+    "section": "Head/tail/browse magic helpers",
+    "text": "Head/tail/browse magic helpers\n\nsource\n\nparse_browse_magic\n\ndef parse_browse_magic(\n    code\n):\n\n\ncode = \"le if year==1920 in 1/10, noformat\"\ntest_eq(parse_browse_magic(code), \n        (None, ['le'], 'if year==1920', 'in 1/10', '', 'noformat')\n       )\n\n\nrun_single(\"gen date = dofy(year)\")\ntest_eq(parse_browse_magic(\"10 le* if date==mdy(1, 1, 1910), noformat\"),\n        (10, ['le'], 'if date==mdy(1, 1, 1910)', '', '', 'noformat')\n       )\nrun_single(\"drop date\")\n\n\nsource\n\n\nget_df\n\ndef get_df(\n    obs_range, var, stata_if_code, missingval, valuelabel, sformat\n):",
+    "crumbs": [
+      "Developer Docs",
+      "browse"
+    ]
+  },
+  {
+    "objectID": "browse.html#headtail-magic-helpers",
+    "href": "browse.html#headtail-magic-helpers",
+    "title": "browse",
+    "section": "Head/tail magic helpers",
+    "text": "Head/tail magic helpers\n\nsource\n\nheadtail_df_params\n\ndef headtail_df_params(\n    code, count, missing_config, tail:bool=False\n):\n\n\ntest_eq(headtail_df_params(\"\", 50, \".\"),\n        ((range(0, 5), None, '', \".\", True, True)))\n\n\ntest_eq(headtail_df_params(\"10 y le*, noformat\", 50, \".\"),\n        ((range(0, 10), ['year', 'le'], '', \".\", True, False)))\n\n\ntest_eq(headtail_df_params(\"10 y le*, noformat\", 50, \".\", tail=True),\n        ((range(40, 50), ['year', 'le'], '', \".\", True, False)))\n\n\nsource\n\n\nheadtail_get_df\n\ndef headtail_get_df(\n    obs_range, var, stata_if_code, missingval, valuelabel, sformat\n):\n\n\nheadtail_get_df(*headtail_df_params('if year&lt;1903', obs_count(), \".\"))\n\n\n\n\n\n\n\n\nyear\nle\n\n\n\n\n1\n1900\n47.3\n\n\n2\n1901\n.\n\n\n3\n1902\n51.5\n\n\n\n\n\n\n\n\ntest_eq(headtail_get_df(*headtail_df_params('if year&lt;1903', obs_count(), \".\")),\n        headtail_get_df(*headtail_df_params('if year&lt;1903', obs_count(), \".\", tail=True)),)\n\n\nheadtail_get_df(*headtail_df_params('if year&gt;1910', obs_count(), \".\"))\n\n\n\n\n\n\n\n\nyear\nle\n\n\n\n\n12\n1911\n52.6\n\n\n13\n1912\n53.5\n\n\n14\n1913\n52.5\n\n\n15\n1914\n54.2\n\n\n16\n1915\n54.5",
+    "crumbs": [
+      "Developer Docs",
+      "browse"
+    ]
+  },
+  {
+    "objectID": "browse.html#browse-magic-helpers",
+    "href": "browse.html#browse-magic-helpers",
+    "title": "browse",
+    "section": "Browse magic helpers",
+    "text": "Browse magic helpers\n\nsource\n\nbrowse_df_params\n\ndef browse_df_params(\n    code, count, missing_config\n):\n\n\nbrowse_df_params(\"\", 10, 'pandas')\n\n(None, None, '', nan, True, True)\n\n\n\nbrowse_df_params(\"y le* if year&lt;1910, noformat\", 50, '.')\n\n(None, ['year', 'le'], 'if year&lt;1910', '.', True, False)\n\n\n\nbrowse_df_params('in 1/5', 41, '.')\n\n(range(0, 5), None, '', '.', True, True)\n\n\n\nget_df(*browse_df_params('in 1/5', obs_count(), '.'))\n\n\n\n\n\n\n\n\nyear\nle\n\n\n\n\n1\n1900\n47.3\n\n\n2\n1901\n.\n\n\n3\n1902\n51.5\n\n\n4\n1903\n50.5\n\n\n5\n1904\n47.6\n\n\n\n\n\n\n\n\nsource\n\n\nset_ipydatagrid_height\n\ndef set_ipydatagrid_height(\n    \n):\n\n\nsource\n\n\ndisplay_df_as_ipydatagrid\n\ndef display_df_as_ipydatagrid(\n    df, auto_height:bool=True\n):\n\n\n#set_ipydatagrid_height()\nrun_single('gen long_name_1234567 = \"\"')\nrun_single('gen long_str = \"10000000000200000000003000000000040000000000500000000006000000000070000000000800000000009000000000010000000000\"')\n\n(41 missing values generated)\n\n\n\ndf = get_df(*browse_df_params(', noformat', obs_count(), '.'))\ndisplay_df_as_ipydatagrid(df)\n\n\n\n\n\n#set_ipydatagrid_height()\nrun_single('sysuse auto, clear')\n\n(1978 automobile data)\n\n\n\ndf = get_df(*browse_df_params('', obs_count(), '.'))\ndisplay_df_as_ipydatagrid(df, False)\n\n\n\n\nTest output when ‘if’ condition implies no observations:\n\ndf = get_df(*browse_df_params('if 0', obs_count(), '.'))\ndisplay_df_as_ipydatagrid(df, False)\n\nNo observations.\n\n\nTest output when no observations at all:\n\nrun_single('clear')\ndf = get_df(*browse_df_params('', obs_count(), '.'))\ndisplay_df_as_ipydatagrid(df, False)\n\nNo observations.\n\n\n\ndf = get_df(*browse_df_params('if 1', obs_count(), '.'))\ndisplay_df_as_ipydatagrid(df, False)\n\nNo observations.",
+    "crumbs": [
+      "Developer Docs",
+      "browse"
+    ]
+  },
+  {
+    "objectID": "code_utils.html",
+    "href": "code_utils.html",
+    "title": "code_utils",
+    "section": "",
+    "text": "These are mostly intended for use in the noecho module.\nfrom fastcore.test import test_eq, ExceptionExpected\nfrom textwrap import dedent",
+    "crumbs": [
+      "Developer Docs",
+      "code_utils"
+    ]
+  },
+  {
+    "objectID": "code_utils.html#handling-stata-comments-and-delimit",
+    "href": "code_utils.html#handling-stata-comments-and-delimit",
+    "title": "code_utils",
+    "section": "Handling Stata comments and #delimit;",
+    "text": "Handling Stata comments and #delimit;\n\nsource\n\nremove_comments\n\ndef remove_comments(\n    code\n):\n\n\nremove_comments('tab size if inlist(rt_from_to, \"A10TOU to B10\", \"E19 to B19\")  //\"E20 to B20\", \", sort')\n\n'tab size if inlist(rt_from_to, \"A10TOU to B10\", \"E19 to B19\")  '\n\n\n\ntest_eq(\n    remove_comments(dedent(\"\"\"\\\n        disp ///\n        1\"\"\")),\n    \"disp 1\")\n\nCorrectly ignores “///” when not preceded by a space:\n\ntest_eq(\n    remove_comments(dedent(\"\"\"\\\n        disp///\n        1\n        \"\"\")),\n    dedent(\"\"\"\\\n        disp///\n        1\n        \"\"\")\n)\n\n\ntest_eq(\n    remove_comments(dedent(\"\"\"\\\n        /*\n        blah\n        blah\n        */\n        list var\n        \"\"\")),\n    \"\"\"\\\n\nlist var\n\"\"\"\n)\n\n\nsource\n\n\nends_in_comment_block\n\ndef ends_in_comment_block(\n    code\n):\n\n\nends_in_comment_block('tab size /*if ')\n\nTrue\n\n\n\ncode = 'tab size /*if */\\n*'\ncode[code.rfind('*/')+2:]\n\n'\\n*'\n\n\n\ntest_eq(ends_in_comment_block('tab size /*if '), True)\ntest_eq(ends_in_comment_block('tab size /*if */'), False)\ntest_eq(ends_in_comment_block('tab size /*if */\\n*'), False)\ntest_eq(ends_in_comment_block('tab size /*if */\\n//'), False)\n\n\ndelimit_regex.split(dedent(\"\"\"\\\ndisp 3\n#delimit cr\ndisp 1\ndisp 2\n\"\"\"), maxsplit=1)\n\n['disp 3\\n', ' cr', '\\ndisp 1\\ndisp 2\\n']\n\n\n\nsource\n\n\n_replace_delimiter\n\ndef _replace_delimiter(\n    code, sc_delimiter:bool=False\n):\n\nNote: the following more-complicated regex would detect valid delimiters plus macros:\ndelimit_regex = re.compile(r'#delimit( |\\t)+(;|cr|`.+\\'|\\$_.+|\\$.+)')\nbut that’s unnecessary, since Stata’s #delimit x interprets any x other than ‘cr’ as switching the delimiter to ‘;’.\n\ntest_eq(\n    _replace_delimiter(dedent(\"\"\"\\\n        list var1\n        #delimit;\n        list var2;list var3;\n        list\n        var4;\n        \"\"\")),\n    dedent(\"\"\"\\\n        list var1\n         list var2\n        list var3\n         list var4\n        \"\"\")\n)\n\n\ntest_eq(_replace_delimiter(dedent(\"\"\"\\\n    disp \"start\"\n    #delimit;\n    disp \"hello\"; disp \"hello2\";\n    disp \n        \"hello2a\";\n    #delimit cr\n    disp \"hello3\"\n    disp \"hello4\"\n    #delimit;\"\"\")), \n        dedent(\"\"\"\\\n    disp \"start\"\n    disp \"hello\"\n     disp \"hello2\"\n     disp      \"hello2a\"\n     disp \"hello3\"\n    disp \"hello4\"\n    \"\"\"))\n\n\n_replace_delimiter(dedent(\"\"\"\\\ndisp 3\n#delimit cr\ndisp 1\ndisp 2\n\"\"\"), sc_delimiter=True)\n\n''\n\n\n\ntest_eq(_replace_tabs(\"\\tsum\"), \"    sum\")\n\n\nsource\n\n\nvalid_single_line_code\n\ndef valid_single_line_code(\n    code\n):\n\n\ntest_eq(valid_single_line_code('tab size if inlist(rt_from_to, \"A10TOU to B10\")  // E20'), \n        'tab size if inlist(rt_from_to, \"A10TOU to B10\")  ')\ntest_eq(valid_single_line_code('#delimit ;'), \n        '')\ntest_eq(valid_single_line_code('#delimit cr'), \n        '')\n\n\nsource\n\n\nending_sc_delimiter\n\ndef ending_sc_delimiter(\n    code, sc_delimiter:bool=False\n):\n\n\ntest_eq(\n    ending_sc_delimiter(dedent(\"\"\"\\\n        list var1\n        #delimit;\n        list var2;list var3;\n        \"\"\")),\n    True)\n\n\ntest_eq(\n    ending_sc_delimiter(dedent(\"\"\"\\\n        /*\n        #delimit;\n        */\n        disp 1\n        disp 2\"\"\")),\n    False)\n\n\nsource\n\n\nstandardize_code\n\ndef standardize_code(\n    code, sc_delimiter:bool=False\n):\n\nRemove comments spanning multiple lines and replace custom delimiters\n\ntest_eq(\n    standardize_code(dedent(\"\"\"\\\n        list var1\n        #delimit;\n        list var2; list var3;\n        list\n        var4;\n        \"\"\")), \n    dedent(\"\"\"\\\n        list var1\n         list var2\n         list var3\n         list var4\"\"\")\n)\n\n\ntest_eq(\n    standardize_code(dedent(\"\"\"\\\n        /*\n        blah\n        blah\n        */\n        list var\n        \"\"\")), \n    \"list var\")\n\n\ntest_eq(\n    standardize_code(dedent(\"\"\"\\\n        disp /// comment\n        1\n        \"\"\")),\n    \"disp 1\")\n\n\ntest_eq(standardize_code(\"list    var\"), \"list var\")\n\n\nstandardize_code('''\\\ndisplay \"displayed1\"\n/*\ndisplay \"displayed2\"\n*/\ndisplay \"displayed3\"''')\n\n'display \"displayed1\"\\ndisplay \"displayed3\"'",
+    "crumbs": [
+      "Developer Docs",
+      "code_utils"
+    ]
+  },
+  {
+    "objectID": "code_utils.html#detect-version-command",
+    "href": "code_utils.html#detect-version-command",
+    "title": "code_utils",
+    "section": "Detect version command",
+    "text": "Detect version command\n\nsource\n\nending_code_version\n\ndef ending_code_version(\n    code, sc_delimiter:bool=False, code_version:NoneType=None, stata_version:str='17.0'\n):\n\nBased on my trial and error, it seems that Stata’s version command (as of version 17.0) accepts any number between 1 and your Stata version (inclusive) with up to two decimal places.\n\ntest_eq(\n    ending_code_version(dedent(\"#delimit ;\")),\n    None)\ntest_eq(\n    ending_code_version(dedent(\" version 15\")),\n    \"15\")\ntest_eq(\n    ending_code_version(dedent(\"version 15.0\")),\n    \"15\")\ntest_eq(\n    ending_code_version(dedent(\"version 15.1\")),\n    \"15.1\")\ntest_eq(\n    ending_code_version(dedent(\"version 15.141\")),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 23\")),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 0.7\")),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 17\")),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 17.0\")),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 17.0\"), stata_version=\"17.00\"),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 18.0\"), stata_version=\"18.00\"),\n    None)\ntest_eq(\n    ending_code_version(dedent(\"version 18.0\"), stata_version=\"18.10\"),\n    \"18\")",
+    "crumbs": [
+      "Developer Docs",
+      "code_utils"
+    ]
+  },
+  {
+    "objectID": "code_utils.html#check-for-specific-commands-in-std_code",
+    "href": "code_utils.html#check-for-specific-commands-in-std_code",
+    "title": "code_utils",
+    "section": "Check for specific commands in std_code",
+    "text": "Check for specific commands in std_code\n\ntest_eq(bool(local_def_in(\" sysuse auto\")), False)\ntest_eq(bool(local_def_in(\" loc auto=1\")), True)\ntest_eq(bool(local_def_in(\"qui n cap local auto=1\")), True)\ntest_eq(bool(local_def_in(\"list local auto\")), False)\ntest_eq(bool(local_def_in(\"tempfile file1\")), True)\ntest_eq(bool(local_def_in(\" capture token file1\")), True)\ntest_eq(bool(local_def_in(\"mata: st_local(test1, 2)\")), True)\ntest_eq(bool(local_def_in(\"levelsof var1\")), True)\n\n\ntest_eq(bool(preserve_restore_in(\"sysuse auto\")), False)\ntest_eq(bool(preserve_restore_in(\"preserve\")), True)\ntest_eq(bool(preserve_restore_in(\"preserve\\nkeep in 1\")), True)\ntest_eq(bool(preserve_restore_in(\"restore,\")), True)\ntest_eq(bool(preserve_restore_in(\"count\\nrestore\")), True)\ntest_eq(bool(preserve_restore_in(\"gen restore=1\")), False)",
+    "crumbs": [
+      "Developer Docs",
+      "code_utils"
+    ]
+  },
+  {
+    "objectID": "code_utils.html#separate-out-stata-program-code",
+    "href": "code_utils.html#separate-out-stata-program-code",
+    "title": "code_utils",
+    "section": "Separate out Stata program code",
+    "text": "Separate out Stata program code\n…because such code (as well as python/mata blocks) is unsuitable for run_as_program\n\nsource\n\nis_start_of_program_block\n\ndef is_start_of_program_block(\n    std_code_line\n):\n\n\ntest_eq(is_start_of_program_block(\"capture noisily program test_program\"), True)\ntest_eq(is_start_of_program_block(\" capture noisily list var\"), False)\ntest_eq(is_start_of_program_block(\"pr l display1\"), False)\n\n\nsource\n\n\nbreak_out_prog_blocks\n\ndef break_out_prog_blocks(\n    code, sc_delimiter:bool=False\n):\n\n\ntest_eq(\n    break_out_prog_blocks(dedent('''\\\n        capture program drop ender\n        program define ender\n            disp \"ender output\"\n        end\n        capture program drop display2\n        program define display2\n            ender\n        end\n        display2\n        ''')),\n    [{'is_prog': False, 'std_code': 'capture program drop ender'},\n     {'is_prog': True,\n      'std_code': 'program define ender\\n    disp \"ender output\"\\nend'},\n     {'is_prog': False, 'std_code': 'capture program drop display2'},\n     {'is_prog': True, 'std_code': 'program define display2\\n    ender\\nend'},\n     {'is_prog': False, 'std_code': 'display2'}]\n)",
+    "crumbs": [
+      "Developer Docs",
+      "code_utils"
+    ]
+  },
+  {
+    "objectID": "dev_docs_index.html",
+    "href": "dev_docs_index.html",
+    "title": "Developer Docs",
+    "section": "",
+    "text": "For information on how to help improve the nbstata code, see: CONTRIBUTING.md\nThe main dependencies among the principal nbstata modules:\n\n\n\n\n\nflowchart TB\n  A[kernel] -.-&gt; I[config]\n  A -.-&gt; B[cell]\n  B -.-&gt; E[magics]\n  B -.-&gt; D[stata_session]\n  D -.-&gt; C[noecho]\n  E -.-&gt; L[browse]\n  A -.-&gt; F[completions]\n  F -.-&gt; D\n  F -.-&gt; G[completion_env]\n  A -.-&gt; N[inspect]\n  N -.-&gt; H[stata_more]\n  D -.-&gt; H\n  L -.-&gt; M[pandas]\n  L -.-&gt; H\n  M -.-&gt; H\n  C -.-&gt; H\n  click A \"https://hugetim.github.io/nbstata/kernel.html\"\n  click B \"https://hugetim.github.io/nbstata/cell.html\"\n  click C \"https://hugetim.github.io/nbstata/noecho.html\"\n  click D \"https://hugetim.github.io/nbstata/stata_session.html\"\n  click E \"https://hugetim.github.io/nbstata/magics.html\"\n  click F \"https://hugetim.github.io/nbstata/completions.html\"\n  click G \"https://hugetim.github.io/nbstata/completion_env.html\"\n  click H \"https://hugetim.github.io/nbstata/stata_more.html\"\n  click I \"https://hugetim.github.io/nbstata/config.html\"\n  click L \"https://hugetim.github.io/nbstata/browse.html\"\n  click M \"https://hugetim.github.io/nbstata/pandas.html\"\n  click N \"https://hugetim.github.io/nbstata/inspect.html\"\n\n\n\n\n\n\nThe complete list of modules:\n\n\n\n\n\n\n\n\n\n\nTitle\n\n\n\nDescription\n\n\n\n\n\n\n\n\nmisc_utils\n\n\nGeneral helper functions with no Jupyter or pystata dependence\n\n\n\n\n\n\nconfig\n\n\nUtilities for loading Stata and nbstata\n\n\n\n\n\n\nstata\n\n\nSimple wrappers for pystata/sfi functionality\n\n\n\n\n\n\nstata_more\n\n\nHelper functions that expand on pystata/sfi functionality\n\n\n\n\n\n\ncode_utils\n\n\nStata-related helper functions with no Jupyter or pystata dependence\n\n\n\n\n\n\nnoecho\n\n\nFor running multi-line Stata code without echoing the commands\n\n\n\n\n\n\npandas\n\n\nStata-to-pandas utilities, used in nbstata.browse\n\n\n\n\n\n\nbrowse\n\n\nHelpers for browse, head, and tail magics\n\n\n\n\n\n\nstata_session\n\n\nA class for representing a Stata session\n\n\n\n\n\n\nmagics\n\n\nIPython magics for nbstata\n\n\n\n\n\n\ncompletion_env\n\n\nAutocomplete helper: determine context of the token to be autocompleted\n\n\n\n\n\n\ncompletions\n\n\nAutocomplete functionality\n\n\n\n\n\n\ninspect\n\n\nProvides output for kernel.do_inspect()\n\n\n\n\n\n\ncell\n\n\nClass representing a single code cell\n\n\n\n\n\n\nkernel\n\n\nIPythonKernel based on pystata\n\n\n\n\n\n\ninstall\n\n\nnbstata kernel install script\n\n\n\n\n\n\nNo matching items",
+    "crumbs": [
+      "Developer Docs"
+    ]
+  },
+  {
+    "objectID": "completion_env.html",
+    "href": "completion_env.html",
+    "title": "completion_env",
+    "section": "",
+    "text": "Adapted from the stata_kernel version (omitting mata-specific stuff).\nNote the corner cases discussed here, but the commented out test cases below are not yet handled:\n\ngithub.com/kylebarron/language-stata/issues/90\nstatalist.org/forums/forum/general-stata-discussion/general/1448244\n\n\nsource\n\nCompletionEnv\n\ndef CompletionEnv(\n    \n):\n\n\nsource\n\n\nEnv\n\ndef Env(\n    args:VAR_POSITIONAL, kwds:VAR_KEYWORD\n):\n\nEnum where members are also (and must be) ints\n\nsource\n\n\nCompletionEnv.get_env\n\ndef get_env(\n    code:str, # Right-truncated to cursor position\n    r2chars:str, # The two characters immediately after `code`, used to accurately determine rcomp\n    sc_delimiter\n)-&gt;Tuple:\n\nReturns completions environment\n\ntest_eq(\n    test_instance.get_env(\"`\", \"\", None)[0:3],\n    (Env.LOCAL, 1, \"\"))\n\n\ntest_eq(\n    test_instance.get_env(\"*%b\", \"\", None)[0:2],\n    (Env.MAGIC, 1))\n\n\ntest_eq(\n    test_instance.get_env(\"gen time_tc = clock(datea\", \"\", None)[0:2],\n    (Env.GENERAL, 20))\n\n\ntest_eq(\n    test_instance.get_env(\"list var1-v\", \"\", None)[0:2],\n    (Env.GENERAL, 10))",
+    "crumbs": [
+      "Developer Docs",
+      "completion_env"
+    ]
+  },
+  {
+    "objectID": "install.html",
+    "href": "install.html",
+    "title": "install",
+    "section": "",
+    "text": "source\n\ninstall_kernel_spec\n\ndef install_kernel_spec(\n    user:bool=True, prefix:NoneType=None\n):\n\n\nsource\n\n\ncreate_conf_if_needed\n\ndef create_conf_if_needed(\n    conf_path, conf_file_requested:bool=True\n):\n\nCreate config file if requested or if Stata not found automatically\n\nprint(_conf_default())\n\n[nbstata]\nstata_dir = \nedition = \nsplash = False\ngraph_format = png\ngraph_width = 5.5in\ngraph_height = 4in\necho = None\nmissing = .\nbrowse_auto_height = True\n\n\n\n\nsource\n\n\nmain\n\ndef main(\n    argv:NoneType=None\n):",
+    "crumbs": [
+      "Developer Docs",
+      "install"
+    ]
+  },
+  {
+    "objectID": "magics.html",
+    "href": "magics.html",
+    "title": "magics",
+    "section": "",
+    "text": "source",
+    "crumbs": [
+      "Developer Docs",
+      "magics"
+    ]
+  },
+  {
+    "objectID": "magics.html#browse-magic",
+    "href": "magics.html#browse-magic",
+    "title": "magics",
+    "section": "Browse magic",
+    "text": "Browse magic\n\nsource\n\nStataMagics.magic_browse\n\ndef magic_browse(\n    code, kernel, cell\n):\n\nDisplay data interactively.\n\nsource\n\n\nFrame\n\ndef Frame(\n    framename\n):\n\nContext manager class akin to Stata’s frame prefix\n\nsource\n\n\nStataMagics.magic_frbrowse\n\ndef magic_frbrowse(\n    code, kernel, cell\n):\n\nDisplay frame interactively.\nhttps://github.com/bloomberg/ipydatagrid",
+    "crumbs": [
+      "Developer Docs",
+      "magics"
+    ]
+  },
+  {
+    "objectID": "magics.html#headtail-magics",
+    "href": "magics.html#headtail-magics",
+    "title": "magics",
+    "section": "Head/tail magics",
+    "text": "Head/tail magics\nModeled after pandas.\n\nsource\n\nStataMagics.magic_head\n\ndef magic_head(\n    code, kernel, cell\n):\n\nDisplay data in a nicely-formatted table.\n\nsource\n\n\nStataMagics.magic_frhead\n\ndef magic_frhead(\n    code, kernel, cell\n):\n\nDisplay data in a nicely-formatted table.\n\nsource\n\n\nStataMagics.magic_tail\n\ndef magic_tail(\n    code, kernel, cell\n):\n\nDisplay data in a nicely-formatted table.\n\nsource\n\n\nStataMagics.magic_frtail\n\ndef magic_frtail(\n    code, kernel, cell\n):\n\nDisplay data in a nicely-formatted table.",
+    "crumbs": [
+      "Developer Docs",
+      "magics"
+    ]
+  },
+  {
+    "objectID": "magics.html#help-magic",
+    "href": "magics.html#help-magic",
+    "title": "magics",
+    "section": "Help magic",
+    "text": "Help magic\n\nfrom IPython.core.display import HTML\n\n\nHTML(_get_help_html(\"graph set\"))\n\n\n\n\nStataNow 19 help for graph_set\n\n\n\n\n\n\n\n\n\n\n\n\n\n[G-2] graph set -- Set graphics options\nSyntax\n    Manage graph print settings\n        graph set print [setopt setval]\n    Manage graph export settings\n        graph set [exporttype] [setopt setval]\n    where exporttype is the export file type and may be one of \n        ps | eps | svg | pdf\n    and setopt is the option to set with the setting setval.\n    Manage Graph window font settings\n        graph set window fontface       { fontname | default }\n        graph set window fontfacemono   { fontname | default }\n        graph set window fontfacesans   { fontname | default }\n        graph set window fontfaceserif  { fontname | default }\n        graph set window fontfacesymbol { fontname | default }\nDescription\n    graph set without options lists the current graphics font, print, and\n    export settings for all exporttypes. graph set with window, print, or\n    exporttype lists the current settings for the Graph window, for printing,\n    or for the specified exporttype, respectively.\n    graph set print allows you to change the print settings for graphics.\n    graph set exporttype allows you to change the graphics export settings\n    for export file type exporttype.\n    graph set window fontface* allows you to change the Graph window font\n    settings.  (To change font settings for graphs exported to PostScript,\n    Encapsulated PostScript, Scalable Vector Graphic, or Portable Document\n    Format files, use graph set {ps|eps|svg|pdf} fontface*; see [G-3]\n    ps_options, [G-3] eps_options, [G-3] svg_options, or [G-3] pdf_options.)\n    If fontname contains spaces, enclose it in double quotes.  If you specify\n    default for any of the fontface* settings, the default setting will be\n    restored.\nRemarks\n    Remarks are presented under the following headings:\n            Overview\n            Setting defaults\nOverview\n    graph set allows you to permanently set the primary font face used in the\n    Graph window as well as the font faces to be used for the four Stata\n    \"font faces\" supported by the graph SMCL tags {stMono}, {stSans},\n    {stSerif}, and {stSymbol}.  See [G-4] text for more details on these SMCL\n    tags.\n    graph set also allows you to permanently set any of the options supported\n    by graph print (see [G-2] graph print) or by the specific export file\n    types provided by graph export (see [G-2] graph export).\n    To find out more about the graph set print setopt options and their\n    associated values (setval), see [G-3] pr_options.\n    Some graphics file types supported by graph export have options that can\n    be set.  The file types that allow option settings and their associated\n    exporttypes are\n        exporttype  Description                  Available settings\n        ------------------------------------------------------------\n        ps          PostScript                   [G-3] ps_options\n        eps         Encapsulated PostScript      [G-3] eps_options\n        svg         Scalable Vector Graphics     [G-3] svg_options\n        pdf         Portable Document Format     [G-3] pdf_options\n        ------------------------------------------------------------\nSetting defaults\n    If you always want the Graph window to use Times New Roman as its default\n    font, you could type\n        . graph set window fontface \"Times New Roman\"\n    Later, you could type\n        . graph set window fontface default\n    to restore the factory setting.\n    To change the font used by {stMono} in the Graph window, you could type\n        . graph set window fontfacemono \"Lucida Console\"\n    and to reset it, you could type\n        . graph set window fontfacemono default\n    You can list the current graph settings by typing\n        . graph set\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nsource\n\nStataMagics.magic_help\n\ndef magic_help(\n    code, kernel, cell\n):\n\nShow help file from stata.com/help.cgi?{}",
+    "crumbs": [
+      "Developer Docs",
+      "magics"
+    ]
+  },
+  {
+    "objectID": "pandas.html",
+    "href": "pandas.html",
+    "title": "pandas",
+    "section": "",
+    "text": "Improves on pystata.stata.pdataframe_from_data (and pystata.stata.pdataframe_from_frame) by making the pandas DataFrame index correspond to Stata observation numbers and also providing an option to output numeric values as strings using their Stata formats.\n\nsource\n\n\n\ndef better_dataframe_from_stata(\n    stfr, var, obs, selectvar, valuelabel, missingval, sformat\n):\n\n\nsource\n\n\n\n\ndef better_pdataframe_from_data(\n    var:NoneType=None, obs:NoneType=None, selectvar:NoneType=None, valuelabel:bool=False, missingval:NoneType=None,\n    sformat:bool=False\n):\n\n\nsource\n\n\n\n\ndef better_pdataframe_from_frame(\n    stfr, var:NoneType=None, obs:NoneType=None, selectvar:NoneType=None, valuelabel:bool=False,\n    missingval:NoneType=None, sformat:bool=False\n):\n\n\nrun_sfi(\"\"\"\\\nsysuse uslifeexp2, clear\nreplace le = . if _n==5\nreplace year = 2022 if year==1900\nformat year %-ty\ngen str_var = \"test string\" if _n!=5\ngen date = dofy(year)\nformat date %td\ngen double date_tc = cofd(date)\nformat date_tc %tc\ngen double date_tC = Cofd(date)\nformat date_tC %tC\"\"\")\nbetter_pdataframe_from_data().head()\n\n(US life expectancy, 1900–1940)\n(1 real change made, 1 to missing)\n(1 real change made)\n(1 missing value generated)\n\n\n\n\n\n\n\n\n\nyear\nle\nstr_var\ndate\ndate_tc\ndate_tC\n\n\n\n\n1\n2022\n47.299999\ntest string\n22646.0\n1.956614e+12\n1.956614e+12\n\n\n2\n1901\n49.099998\ntest string\n-21549.0\n-1.861834e+12\n-1.861834e+12\n\n\n3\n1902\n51.500000\ntest string\n-21184.0\n-1.830298e+12\n-1.830298e+12\n\n\n4\n1903\n50.500000\ntest string\n-20819.0\n-1.798762e+12\n-1.798762e+12\n\n\n5\n1904\nNaN\n\n-20454.0\n-1.767226e+12\n-1.767226e+12\n\n\n\n\n\n\n\n\nbetter_pdataframe_from_data(sformat=True).head()\n\n\n\n\n\n\n\n\nyear\nle\nstr_var\ndate\ndate_tc\ndate_tC\n\n\n\n\n1\n2022\n47.3\ntest string\n01jan2022\n01jan2022 00:00:00\n01jan2022 00:00:00\n\n\n2\n1901\n49.1\ntest string\n01jan1901\n01jan1901 00:00:00\n01jan1901 00:00:00\n\n\n3\n1902\n51.5\ntest string\n01jan1902\n01jan1902 00:00:00\n01jan1902 00:00:00\n\n\n4\n1903\n50.5\ntest string\n01jan1903\n01jan1903 00:00:00\n01jan1903 00:00:00\n\n\n5\n1904\n.\n\n01jan1904\n01jan1904 00:00:00\n01jan1904 00:00:00",
+    "crumbs": [
+      "Developer Docs",
+      "pandas"
+    ]
+  },
+  {
+    "objectID": "pandas.html#better-stata-to-pandas",
+    "href": "pandas.html#better-stata-to-pandas",
+    "title": "pandas",
+    "section": "",
+    "text": "Improves on pystata.stata.pdataframe_from_data (and pystata.stata.pdataframe_from_frame) by making the pandas DataFrame index correspond to Stata observation numbers and also providing an option to output numeric values as strings using their Stata formats.\n\nsource\n\n\n\ndef better_dataframe_from_stata(\n    stfr, var, obs, selectvar, valuelabel, missingval, sformat\n):\n\n\nsource\n\n\n\n\ndef better_pdataframe_from_data(\n    var:NoneType=None, obs:NoneType=None, selectvar:NoneType=None, valuelabel:bool=False, missingval:NoneType=None,\n    sformat:bool=False\n):\n\n\nsource\n\n\n\n\ndef better_pdataframe_from_frame(\n    stfr, var:NoneType=None, obs:NoneType=None, selectvar:NoneType=None, valuelabel:bool=False,\n    missingval:NoneType=None, sformat:bool=False\n):\n\n\nrun_sfi(\"\"\"\\\nsysuse uslifeexp2, clear\nreplace le = . if _n==5\nreplace year = 2022 if year==1900\nformat year %-ty\ngen str_var = \"test string\" if _n!=5\ngen date = dofy(year)\nformat date %td\ngen double date_tc = cofd(date)\nformat date_tc %tc\ngen double date_tC = Cofd(date)\nformat date_tC %tC\"\"\")\nbetter_pdataframe_from_data().head()\n\n(US life expectancy, 1900–1940)\n(1 real change made, 1 to missing)\n(1 real change made)\n(1 missing value generated)\n\n\n\n\n\n\n\n\n\nyear\nle\nstr_var\ndate\ndate_tc\ndate_tC\n\n\n\n\n1\n2022\n47.299999\ntest string\n22646.0\n1.956614e+12\n1.956614e+12\n\n\n2\n1901\n49.099998\ntest string\n-21549.0\n-1.861834e+12\n-1.861834e+12\n\n\n3\n1902\n51.500000\ntest string\n-21184.0\n-1.830298e+12\n-1.830298e+12\n\n\n4\n1903\n50.500000\ntest string\n-20819.0\n-1.798762e+12\n-1.798762e+12\n\n\n5\n1904\nNaN\n\n-20454.0\n-1.767226e+12\n-1.767226e+12\n\n\n\n\n\n\n\n\nbetter_pdataframe_from_data(sformat=True).head()\n\n\n\n\n\n\n\n\nyear\nle\nstr_var\ndate\ndate_tc\ndate_tC\n\n\n\n\n1\n2022\n47.3\ntest string\n01jan2022\n01jan2022 00:00:00\n01jan2022 00:00:00\n\n\n2\n1901\n49.1\ntest string\n01jan1901\n01jan1901 00:00:00\n01jan1901 00:00:00\n\n\n3\n1902\n51.5\ntest string\n01jan1902\n01jan1902 00:00:00\n01jan1902 00:00:00\n\n\n4\n1903\n50.5\ntest string\n01jan1903\n01jan1903 00:00:00\n01jan1903 00:00:00\n\n\n5\n1904\n.\n\n01jan1904\n01jan1904 00:00:00\n01jan1904 00:00:00",
+    "crumbs": [
+      "Developer Docs",
+      "pandas"
+    ]
+  },
+  {
+    "objectID": "cell.html",
+    "href": "cell.html",
+    "title": "cell",
+    "section": "",
+    "text": "source\n\nCell\n\ndef Cell(\n    kernel, code_w_magics, silent:bool=False\n):\n\nA class for managing execution of a single code cell\nSome Cell functionality can be tested apart from a kernel:\n\nfrom nbstata.config import launch_stata, Config\nfrom fastcore.test import test_eq\nfrom textwrap import dedent\nfrom unittest.mock import Mock\n\n\nkernel1 = Mock()\nkernel1.nbstata_config = Config()\n\ncode_w_magics = '''disp \"test output\"'''\ncell1 = Cell(kernel1, code_w_magics)\ncell1.code\n\n'disp \"test output\"'\n\n\n\nlaunch_stata(splash=False)\nkernel1.stata_session = StataSession()\ncell1a = Cell(kernel1, code_w_magics)\ncell1a.run()\n\ntest output\n\n\n\ncode_w_magics = dedent('''\\\n    *%%quietly\n    disp \"test output\"\n    ''')\ncell2 = Cell(kernel1, code_w_magics)\ntest_eq(cell2.quietly, True)\n\n\ncell2.run()\n\n\nkernel1.nbstata_config.env['echo'] = 'True'\n\ncode_w_magics = '''disp \"test output\"'''\ncell3 = Cell(kernel1, code_w_magics)\ntest_eq(cell3.noecho, False)\n\n\ncell3.run()\n\n. disp \"test output\"\ntest output\n\n\n\ncode_w_magics = dedent('''\\\n    *%%noecho\n    #delimit cr\n    disp \"test output\"\n    ''')\ncell4 = Cell(kernel1, code_w_magics)\ntest_eq(cell4.noecho, True)\n\n\ncell4.run()\n\ntest output",
+    "crumbs": [
+      "Developer Docs",
+      "cell"
+    ]
+  }
+]
