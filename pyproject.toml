@@ -14,6 +14,11 @@ keywords = ['nbdev', 'jupyter', 'notebook', 'python', 'stata']
 classifiers = ["Natural Language :: English", "Intended Audience :: Science/Research", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
 dependencies = ['jupyter-client', 'ipython', 'ipykernel', 'packaging', 'pandas', 'numpy', 'beautifulsoup4', 'fastcore>=1.8.13', 'pygments>=2.8', 'ipydatagrid<1.3']
 
+[project.optional-dependencies]
+dev = [
+  "nbdev>=2.4.6",
+]
+
 [project.urls]
 Repository = "https://github.com/hugetim/nbstata"
 Documentation = "https://hugetim.github.io/nbstata"
