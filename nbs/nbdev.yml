@@ -7,3 +7,8 @@ website:
   description: "Jupyter kernel for Stata built on pystata"
   repo-branch: master
   repo-url: "https://github.com/hugetim/nbstata"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown

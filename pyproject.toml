@@ -1,17 +1,33 @@
 [build-system]
-requires = ["setuptools>=64.0"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name="nbstata"
-requires-python=">=3.10"
-dynamic = [ "keywords", "description", "version", "dependencies", "optional-dependencies", "readme", "license", "authors", "classifiers", "entry-points", "scripts", "urls"]
+name = "nbstata"
+dynamic = ["version"]
+description = "Jupyter kernel for Stata built on pystata"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "GPL-3.0"
+authors = [{name = "Tim Huegerich", email = "hugetim@gmail.com"}]
+keywords = ['nbdev', 'jupyter', 'notebook', 'python', 'stata']
+classifiers = ["Natural Language :: English", "Intended Audience :: Science/Research", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
+dependencies = ['jupyter-client', 'ipython', 'ipykernel', 'packaging', 'pandas', 'numpy', 'beautifulsoup4', 'fastcore>=1.8.13', 'pygments>=2.8', 'ipydatagrid<1.3']
 
-[dependency-groups]
-dev = [
-  "nbdev>=2.4.6,<3",
-  "execnb<0.2",
-]
+[project.urls]
+Repository = "https://github.com/hugetim/nbstata"
+Documentation = "https://hugetim.github.io/nbstata"
 
-[tool.uv]
-cache-keys = [{ file = "pyproject.toml" }, { file = "settings.ini" }, { file = "setup.py" }]
+[project.entry-points.nbdev]
+nbstata = "nbstata._modidx:d"
+
+[tool.setuptools.dynamic]
+version = {attr = "nbstata.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["nbstata"]
+
+[tool.nbdev]
+branch = 'master'
+jupyter_hooks = true
+custom_sidebar = true
