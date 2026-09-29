@@ -31,4 +31,4 @@ jobs:
     
     - name: Run tests in uv virtual environment using nbdev
       run: |
-        uv run nbdev_test
+        uv run nbdev-test
