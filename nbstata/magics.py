@@ -399,7 +399,10 @@ def _process_raw_help_html(html, code, url_base, help_css):
     if brs: brs[-1].decompose()
     
     # Remove last empty paragraph, empty space
-    empty_paragraphs = soup.find_all('p', string="")
+    empty_paragraphs = [
+        p for p in soup.find_all("p")
+        if not p.get_text(strip=True)
+    ]
     if empty_paragraphs:
         empty_paragraphs[-1].decompose()
 
