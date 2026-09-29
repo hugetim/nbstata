@@ -9,7 +9,7 @@ dynamic = [ "keywords", "description", "version", "dependencies", "optional-depe
 
 [dependency-groups]
 dev = [
-  "nbdev>=2.4.6",
+  "nbdev>=2.4.6,<3",
 ]
 
 [tool.uv]
