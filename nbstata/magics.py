@@ -400,7 +400,7 @@ def _process_raw_help_html(html, code, url_base, help_css):
     
     # Remove last empty paragraph, empty space
     empty_paragraphs = soup.find_all('p', string="")
-    if empty_paragraphs and str(empty_paragraphs[-1]) == "<p></p>":
+    if empty_paragraphs:
         empty_paragraphs[-1].decompose()
 
     # Set all the backgrounds to transparent
